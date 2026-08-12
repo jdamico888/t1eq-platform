@@ -39,6 +39,26 @@ const getWorkflowStatus = (actionItem: RepairOrderActionItem) => {
   return "Not Started";
 };
 
+function getGeneratedTravelTotal(actionItem: RepairOrderActionItem): number {
+  if (actionItem.generatedTravelTotal !== undefined) {
+    return actionItem.generatedTravelTotal;
+  }
+
+  const miles = actionItem.generatedTravelMiles ?? 0;
+  const rate = actionItem.generatedTravelRate ?? 0;
+
+  return miles * rate;
+}
+
+function getGeneratedActionTotal(actionItem: RepairOrderActionItem): number {
+  return (
+    (actionItem.generatedLaborTotal ?? actionItem.laborTotal ?? 0) +
+    (actionItem.generatedPartsTotal ?? actionItem.partsTotal ?? 0) +
+    getGeneratedTravelTotal(actionItem) +
+    (actionItem.generatedMiscTotal ?? 0)
+  );
+}
+
 export default function RepairOrderActionItemCard({
   actionItem,
   onEdit,
@@ -46,6 +66,12 @@ export default function RepairOrderActionItemCard({
 }: RepairOrderActionItemCardProps) {
   const beforePhotoCount = actionItem.beforePhotoUrls?.length ?? 0;
   const afterPhotoCount = actionItem.afterPhotoUrls?.length ?? 0;
+
+  const generatedLaborTotal = actionItem.generatedLaborTotal ?? 0;
+  const generatedPartsTotal = actionItem.generatedPartsTotal ?? 0;
+  const generatedTravelTotal = getGeneratedTravelTotal(actionItem);
+  const generatedMiscTotal = actionItem.generatedMiscTotal ?? 0;
+  const generatedActionTotal = getGeneratedActionTotal(actionItem);
 
   return (
     <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-md">
@@ -82,7 +108,7 @@ export default function RepairOrderActionItemCard({
           </div>
 
           <div className="text-xl font-bold text-white">
-            {formatCurrency(actionItem.total ?? 0)}
+            {formatCurrency(actionItem.total ?? generatedActionTotal)}
           </div>
         </div>
       </div>
@@ -90,11 +116,13 @@ export default function RepairOrderActionItemCard({
       <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-4">
         <div>
           <div className="text-xs uppercase tracking-wide text-white/50">
-            Assigned Tech
+            Assigned Employee
           </div>
 
           <div className="mt-1 text-sm font-medium text-white">
-            {actionItem.assignedTechnicianName ?? "Unassigned"}
+            {actionItem.assignedEmployeeDisplayName ??
+              actionItem.assignedTechnicianName ??
+              "Unassigned"}
           </div>
         </div>
 
@@ -127,6 +155,44 @@ export default function RepairOrderActionItemCard({
             {actionItem.timeClockMethod ?? "Not set"}
           </div>
         </div>
+      </div>
+
+      <div className="mt-5 rounded-2xl border border-cyan-400/20 bg-cyan-500/10 p-4">
+        <div className="text-xs font-black uppercase tracking-[0.2em] text-cyan-200">
+          Action Item Generation
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-5">
+          <GeneratedAmount label="Labor" value={generatedLaborTotal} />
+          <GeneratedAmount label="Parts" value={generatedPartsTotal} />
+          <GeneratedAmount label="Travel" value={generatedTravelTotal} />
+          <GeneratedAmount label="Misc" value={generatedMiscTotal} />
+          <GeneratedAmount label="Generated Total" value={generatedActionTotal} />
+        </div>
+
+        <div className="mt-4 grid gap-3 text-xs font-semibold text-cyan-50/80 md:grid-cols-2">
+          {actionItem.generatedLaborDescription && (
+            <p>Labor: {actionItem.generatedLaborDescription}</p>
+          )}
+
+          {actionItem.generatedPartsDescription && (
+            <p>Parts: {actionItem.generatedPartsDescription}</p>
+          )}
+
+          {actionItem.generatedTravelDescription && (
+            <p>Travel: {actionItem.generatedTravelDescription}</p>
+          )}
+
+          {actionItem.generatedMiscDescription && (
+            <p>Misc: {actionItem.generatedMiscDescription}</p>
+          )}
+        </div>
+
+        {actionItem.generationNotes && (
+          <div className="mt-4 rounded-xl border border-cyan-400/20 bg-black/20 p-3 text-sm leading-6 text-cyan-50/90">
+            {actionItem.generationNotes}
+          </div>
+        )}
       </div>
 
       <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-4">
@@ -178,7 +244,7 @@ export default function RepairOrderActionItemCard({
           </div>
 
           <div className="mt-1 text-sm font-medium text-white">
-            {actionItem.laborHours ?? 0}
+            {actionItem.laborHours ?? actionItem.generatedLaborHours ?? 0}
           </div>
         </div>
 
@@ -188,7 +254,7 @@ export default function RepairOrderActionItemCard({
           </div>
 
           <div className="mt-1 text-sm font-medium text-white">
-            {formatCurrency(actionItem.laborTotal ?? 0)}
+            {formatCurrency(actionItem.laborTotal ?? generatedLaborTotal)}
           </div>
         </div>
 
@@ -198,7 +264,7 @@ export default function RepairOrderActionItemCard({
           </div>
 
           <div className="mt-1 text-sm font-medium text-white">
-            {formatCurrency(actionItem.partsTotal ?? 0)}
+            {formatCurrency(actionItem.partsTotal ?? generatedPartsTotal)}
           </div>
         </div>
 
@@ -260,6 +326,19 @@ export default function RepairOrderActionItemCard({
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+function GeneratedAmount({ label, value }: { label: string; value: number }) {
+  return (
+    <div>
+      <div className="text-[10px] uppercase tracking-wide text-cyan-100/60">
+        {label}
+      </div>
+      <div className="mt-1 text-sm font-black text-white">
+        {formatCurrency(value)}
+      </div>
     </div>
   );
 }

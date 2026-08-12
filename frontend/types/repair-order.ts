@@ -253,6 +253,25 @@ export type RepairOrderActionItem = {
   estimatedLaborHours?: number;
   flatRateHours?: number;
 
+  generatedLaborDescription?: string;
+  generatedLaborHours?: number;
+  generatedLaborRate?: number;
+  generatedLaborTotal?: number;
+
+  generatedPartsDescription?: string;
+  generatedPartsTotal?: number;
+
+  generatedTravelDescription?: string;
+  generatedTravelMiles?: number;
+  generatedTravelRate?: number;
+  generatedTravelHours?: number;
+  generatedTravelTotal?: number;
+
+  generatedMiscDescription?: string;
+  generatedMiscTotal?: number;
+
+  generationNotes?: string;
+
   laborHours?: number;
   laborRate?: number;
   laborTotal?: number;

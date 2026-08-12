@@ -45,10 +45,26 @@ function safeString(value: unknown, fallback = "") {
   return typeof value === "string" ? value : fallback;
 }
 
+function optionalString(value: unknown): string | undefined {
+  const stringValue = safeString(value).trim();
+
+  return stringValue ? stringValue : undefined;
+}
+
 function safeNumber(value: unknown, fallback = 0) {
   const parsedValue = Number(value);
 
   return Number.isFinite(parsedValue) ? parsedValue : fallback;
+}
+
+function optionalNumber(value: unknown): number | undefined {
+  if (value === undefined || value === null || value === "") {
+    return undefined;
+  }
+
+  const parsedValue = Number(value);
+
+  return Number.isFinite(parsedValue) ? parsedValue : undefined;
 }
 
 function safeBoolean(value: unknown): boolean | undefined {
@@ -323,6 +339,19 @@ function generateRepairOrderNumber() {
   return `RO-${year}${julianDay}-${hour}${minute}${second}`;
 }
 
+function getGeneratedTravelTotal(
+  actionItem: Partial<RepairOrderActionItem>
+): number {
+  if (actionItem.generatedTravelTotal !== undefined) {
+    return safeNumber(actionItem.generatedTravelTotal);
+  }
+
+  return (
+    safeNumber(actionItem.generatedTravelMiles) *
+    safeNumber(actionItem.generatedTravelRate)
+  );
+}
+
 function normalizePhoto(photo: Partial<RepairOrderPhoto>): RepairOrderPhoto {
   return {
     id: photo.id ?? createId("PHOTO"),
@@ -572,19 +601,56 @@ function normalizeActionItem(
     0
   );
 
+  const partEntryTotal = partEntries.reduce(
+    (total, partEntry) => total + partEntry.total,
+    0
+  );
+
+  const generatedLaborHours = optionalNumber(
+    actionItem.generatedLaborHours ?? actionItem.estimatedLaborHours
+  );
+
+  const generatedLaborRate = optionalNumber(
+    actionItem.generatedLaborRate ?? actionItem.laborRate
+  );
+
+  const generatedLaborTotal = safeNumber(
+    actionItem.generatedLaborTotal,
+    safeNumber(generatedLaborHours) * safeNumber(generatedLaborRate)
+  );
+
+  const generatedPartsTotal = safeNumber(
+    actionItem.generatedPartsTotal,
+    safeNumber(actionItem.partsTotal, partEntryTotal)
+  );
+
+  const generatedTravelMiles = optionalNumber(actionItem.generatedTravelMiles);
+  const generatedTravelRate = optionalNumber(actionItem.generatedTravelRate);
+  const generatedTravelHours = optionalNumber(actionItem.generatedTravelHours);
+  const generatedTravelTotal = getGeneratedTravelTotal(actionItem);
+
+  const generatedMiscTotal = safeNumber(actionItem.generatedMiscTotal);
+
   const laborHours = safeNumber(
     actionItem.laborHours,
-    safeNumber(actionItem.estimatedLaborHours)
+    safeNumber(generatedLaborHours, safeNumber(actionItem.estimatedLaborHours))
   );
-  const laborRate = safeNumber(actionItem.laborRate);
+
+  const laborRate = safeNumber(actionItem.laborRate, safeNumber(generatedLaborRate));
+
   const laborTotal = safeNumber(
     actionItem.laborTotal,
-    laborEntryTotal || laborHours * laborRate
+    laborEntryTotal || generatedLaborTotal || laborHours * laborRate
   );
 
   const partsTotal = safeNumber(
     actionItem.partsTotal,
-    partEntries.reduce((total, partEntry) => total + partEntry.total, 0)
+    partEntryTotal || generatedPartsTotal
+  );
+
+  const total = safeNumber(
+    actionItem.total,
+    laborTotal + partsTotal + generatedTravelTotal + generatedMiscTotal
   );
 
   return {
@@ -596,17 +662,52 @@ function normalizeActionItem(
 
     billingGroup: normalizeBillingGroup(actionItem.billingGroup),
 
-    estimatedLaborHours: safeNumber(actionItem.estimatedLaborHours),
+    scheduledDate: optionalString(actionItem.scheduledDate),
+    scheduledStartTime: optionalString(actionItem.scheduledStartTime),
+    scheduledEndTime: optionalString(actionItem.scheduledEndTime),
+
+    estimatedLaborHours: safeNumber(
+      actionItem.estimatedLaborHours,
+      safeNumber(generatedLaborHours)
+    ),
+
     flatRateHours:
       actionItem.flatRateHours === undefined
-        ? undefined
+        ? generatedLaborHours
         : safeNumber(actionItem.flatRateHours),
+
+    generatedLaborDescription: optionalString(
+      actionItem.generatedLaborDescription
+    ),
+    generatedLaborHours,
+    generatedLaborRate,
+    generatedLaborTotal,
+
+    generatedPartsDescription: optionalString(
+      actionItem.generatedPartsDescription
+    ),
+    generatedPartsTotal,
+
+    generatedTravelDescription: optionalString(
+      actionItem.generatedTravelDescription
+    ),
+    generatedTravelMiles,
+    generatedTravelRate,
+    generatedTravelHours,
+    generatedTravelTotal,
+
+    generatedMiscDescription: optionalString(
+      actionItem.generatedMiscDescription
+    ),
+    generatedMiscTotal,
+
+    generationNotes: optionalString(actionItem.generationNotes),
 
     laborHours,
     laborRate,
     laborTotal,
     partsTotal,
-    total: safeNumber(actionItem.total, laborTotal + partsTotal),
+    total,
 
     laborEntries,
     partEntries,
@@ -618,7 +719,9 @@ function normalizeActionItem(
     assignedEmployeeDisplayName: actionItem.assignedEmployeeDisplayName,
     assignedEmployeeRole: actionItem.assignedEmployeeRole,
 
-    partsRequired: actionItem.partsRequired,
+    partsRequired:
+      actionItem.partsRequired ??
+      optionalString(actionItem.generatedPartsDescription),
     recommendationNotes: actionItem.recommendationNotes,
 
     customerApproved: Boolean(actionItem.customerApproved),
@@ -720,7 +823,9 @@ function calculateTotals(repairOrder: Partial<RepairOrder>) {
   const topLevelPartEntries = normalizePartEntries(repairOrder.partEntries);
 
   const actionLaborTotal = actionItems.reduce(
-    (total, actionItem) => total + safeNumber(actionItem.laborTotal),
+    (total, actionItem) =>
+      total +
+      safeNumber(actionItem.laborTotal, safeNumber(actionItem.generatedLaborTotal)),
     0
   );
 
@@ -730,12 +835,22 @@ function calculateTotals(repairOrder: Partial<RepairOrder>) {
   );
 
   const actionPartsTotal = actionItems.reduce(
-    (total, actionItem) => total + safeNumber(actionItem.partsTotal),
+    (total, actionItem) =>
+      total +
+      safeNumber(actionItem.partsTotal, safeNumber(actionItem.generatedPartsTotal)),
     0
   );
 
   const partEntryTotal = topLevelPartEntries.reduce(
     (total, partEntry) => total + partEntry.total,
+    0
+  );
+
+  const actionOtherTotal = actionItems.reduce(
+    (total, actionItem) =>
+      total +
+      getGeneratedTravelTotal(actionItem) +
+      safeNumber(actionItem.generatedMiscTotal),
     0
   );
 
@@ -747,7 +862,10 @@ function calculateTotals(repairOrder: Partial<RepairOrder>) {
     repairOrder.subtotalParts,
     actionPartsTotal + partEntryTotal
   );
-  const subtotalOther = safeNumber(repairOrder.subtotalOther);
+  const subtotalOther = safeNumber(
+    repairOrder.subtotalOther,
+    actionOtherTotal
+  );
 
   return {
     subtotalLabor,

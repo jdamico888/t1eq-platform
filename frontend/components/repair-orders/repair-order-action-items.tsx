@@ -55,6 +55,17 @@ const calculateLaborHours = (
   );
 };
 
+function getGeneratedTravelTotal(actionItem: RepairOrderActionItem): number {
+  if (actionItem.generatedTravelTotal !== undefined) {
+    return actionItem.generatedTravelTotal;
+  }
+
+  return (
+    (actionItem.generatedTravelMiles ?? 0) *
+    (actionItem.generatedTravelRate ?? 0)
+  );
+}
+
 function formatActionItemSchedule(actionItem: RepairOrderActionItem): string {
   if (
     !actionItem.scheduledDate &&
@@ -147,9 +158,23 @@ export default function RepairOrderActionItems({
     laborEntries: RepairOrderLaborEntry[] = actionItem.laborEntries ?? [],
     partEntries: RepairOrderPartEntry[] = actionItem.partEntries ?? []
   ): RepairOrderActionItem {
-    const laborTotal = calculateLaborTotal(laborEntries);
-    const partsTotal = calculatePartsTotal(partEntries);
-    const laborHours = calculateLaborHours(laborEntries);
+    const generatedTravelTotal = getGeneratedTravelTotal(actionItem);
+    const generatedMiscTotal = actionItem.generatedMiscTotal ?? 0;
+
+    const laborTotal =
+      laborEntries.length > 0
+        ? calculateLaborTotal(laborEntries)
+        : actionItem.generatedLaborTotal ?? actionItem.laborTotal ?? 0;
+
+    const partsTotal =
+      partEntries.length > 0
+        ? calculatePartsTotal(partEntries)
+        : actionItem.generatedPartsTotal ?? actionItem.partsTotal ?? 0;
+
+    const laborHours =
+      laborEntries.length > 0
+        ? calculateLaborHours(laborEntries)
+        : actionItem.generatedLaborHours ?? actionItem.laborHours ?? 0;
 
     return {
       ...actionItem,
@@ -158,7 +183,7 @@ export default function RepairOrderActionItems({
       laborHours,
       laborTotal,
       partsTotal,
-      total: laborTotal + partsTotal,
+      total: laborTotal + partsTotal + generatedTravelTotal + generatedMiscTotal,
       updatedDate: new Date().toISOString(),
     };
   }
