@@ -1,7 +1,21 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import type { ChangeEvent, FormEvent } from "react";
+import {
+  type ChangeEvent,
+  type FormEvent,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import {
+  createTechnicianProfile,
+  deleteTechnicianProfile,
+  getTechnicianProfiles,
+  updateTechnicianProfile,
+} from "@/services/technician-profiles";
+
+import { employeeVacationAccrualMethodOptions } from "@/types/employee-schedule";
 
 import type {
   CustomerLaborBillingMode,
@@ -22,24 +36,10 @@ import {
   employeeClockOutRuleOptions,
   employeePayTypeOptions,
   getDefaultClockingSettings,
-  getDefaultPayrollSettings,
   technicianRoleOptions,
   technicianSkillLevelOptions,
   technicianStatusOptions,
 } from "@/types/technician-profile";
-
-import {
-  createTechnicianProfile,
-  deleteTechnicianProfile,
-  getTechnicianProfiles,
-  updateTechnicianProfile,
-} from "@/services/technician-profiles";
-
-type EmployeeRoleFilter = "All" | EmployeeRole;
-
-function createEmptyForm(): EmployeeProfileInput {
-  return createDefaultTechnicianProfileInput("");
-}
 
 function safeNumber(value: string): number {
   const parsedValue = Number(value);
@@ -51,34 +51,32 @@ function formatMoney(value: number): string {
   return `$${value.toFixed(2)}`;
 }
 
-function getDisplayName(formData: EmployeeProfileInput): string {
-  const combinedName = `${formData.firstName} ${formData.lastName}`.trim();
-
-  return formData.displayName.trim() || combinedName || "Unnamed Employee";
+function getRoleLabel(role: EmployeeRole): string {
+  return role;
 }
 
-function getRoleLabel(role: EmployeeRole): string {
-  if (role === "Technician" || role === "Lead Technician") {
-    return "Technician Group";
+function getDisplayName(employee: EmployeeProfileInput): string {
+  const displayName = employee.displayName.trim();
+
+  if (displayName) {
+    return displayName;
   }
 
-  return role;
+  const fullName = `${employee.firstName} ${employee.lastName}`.trim();
+
+  return fullName || "Unnamed Employee";
 }
 
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState<EmployeeProfile[]>([]);
+  const [formData, setFormData] = useState<EmployeeProfileInput>(() =>
+    createDefaultTechnicianProfileInput()
+  );
   const [editingEmployeeId, setEditingEmployeeId] = useState<string | null>(
     null
   );
   const [search, setSearch] = useState("");
-  const [roleFilter, setRoleFilter] = useState<EmployeeRoleFilter>("All");
-  const [formData, setFormData] = useState<EmployeeProfileInput>(
-    createEmptyForm()
-  );
-
-  useEffect(() => {
-    loadEmployees();
-  }, []);
+  const [roleFilter, setRoleFilter] = useState<"All" | EmployeeRole>("All");
 
   function loadEmployees() {
     setEmployees(getTechnicianProfiles());
@@ -86,7 +84,7 @@ export default function EmployeesPage() {
 
   function resetForm() {
     setEditingEmployeeId(null);
-    setFormData(createEmptyForm());
+    setFormData(createDefaultTechnicianProfileInput());
   }
 
   function updateForm(updates: Partial<EmployeeProfileInput>) {
@@ -96,26 +94,43 @@ export default function EmployeesPage() {
     }));
   }
 
+  useEffect(() => {
+    loadEmployees();
+
+    function handleProfileChange() {
+      loadEmployees();
+    }
+
+    window.addEventListener(
+      "t1eq-technician-profiles-changed",
+      handleProfileChange
+    );
+
+    return () => {
+      window.removeEventListener(
+        "t1eq-technician-profiles-changed",
+        handleProfileChange
+      );
+    };
+  }, []);
+
   function handleBasicFieldChange(
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) {
     const { name, value } = event.target;
 
-    updateForm({
+    setFormData((currentForm) => ({
+      ...currentForm,
       [name]: value,
-    } as Partial<EmployeeProfileInput>);
+    }));
   }
 
   function handlePayTypeChange(payType: EmployeePayType) {
     setFormData((currentForm) => ({
       ...currentForm,
       payrollSettings: {
-        ...getDefaultPayrollSettings(payType),
-        hourlyPayRate: currentForm.payrollSettings.hourlyPayRate,
-        flatRatePayPercent: currentForm.payrollSettings.flatRatePayPercent,
-        salaryAnnualAmount: currentForm.payrollSettings.salaryAnnualAmount,
-        payrollNotes: currentForm.payrollSettings.payrollNotes,
-        payrollEligible: currentForm.payrollSettings.payrollEligible,
+        ...currentForm.payrollSettings,
+        payType,
       },
       clockingSettings: getDefaultClockingSettings(payType),
       compensation: {
@@ -140,6 +155,24 @@ export default function EmployeesPage() {
       compensation: {
         ...currentForm.compensation,
         [name]: numericValue,
+        ...(name === "hourlyPayRate"
+          ? {
+              hourlyRate: numericValue,
+              baseHourlyRate: numericValue,
+            }
+          : {}),
+        ...(name === "flatRatePayRate"
+          ? {
+              flatRatePayRate: numericValue,
+            }
+          : {}),
+        ...(name === "salaryAnnualAmount"
+          ? {
+              salaryAnnualAmount: numericValue,
+              annualSalary: numericValue,
+              salaryAmount: numericValue,
+            }
+          : {}),
       },
     }));
   }
@@ -193,7 +226,8 @@ export default function EmployeesPage() {
       | "billingSettings"
       | "metricSettings"
       | "clockingSettings"
-      | "payrollSettings",
+      | "payrollSettings"
+      | "vacationSettings",
     fieldName: string,
     checked: boolean
   ) {
@@ -212,6 +246,26 @@ export default function EmployeesPage() {
       billingSettings: {
         ...currentForm.billingSettings,
         [fieldName]: safeNumber(value),
+      },
+    }));
+  }
+
+  function handleVacationNumberChange(fieldName: string, value: string) {
+    setFormData((currentForm) => ({
+      ...currentForm,
+      vacationSettings: {
+        ...currentForm.vacationSettings,
+        [fieldName]: safeNumber(value),
+      },
+    }));
+  }
+
+  function handleVacationTextChange(fieldName: string, value: string) {
+    setFormData((currentForm) => ({
+      ...currentForm,
+      vacationSettings: {
+        ...currentForm.vacationSettings,
+        [fieldName]: value,
       },
     }));
   }
@@ -338,6 +392,10 @@ export default function EmployeesPage() {
         employee.clockingSettings.clockInRule,
         employee.clockingSettings.clockOutRule,
         employee.billingSettings.defaultCustomerBillingMode,
+        employee.vacationSettings.accrualMethod,
+        employee.vacationSettings.vacationEligible
+          ? "Vacation Eligible"
+          : "Vacation Not Eligible",
       ];
 
       return searchableFields.some((field) =>
@@ -359,8 +417,8 @@ export default function EmployeesPage() {
           <p className="mt-3 max-w-4xl text-sm font-semibold leading-6 text-slate-300">
             Configure employees by role. Technician is a subgroup of employee
             setup, not a separate parent module. Pay structure, clocking rules,
-            customer labor billing, and company metrics are controlled
-            separately.
+            customer labor billing, company metrics, availability, absence, and
+            vacation tracking are controlled separately.
           </p>
         </header>
 
@@ -563,8 +621,8 @@ export default function EmployeesPage() {
                     value={formData.payrollSettings.flatRatePayRate}
                     onChange={(value) =>
                       handlePayrollNumberChange("flatRatePayRate", value)
-                 }
-                   />
+                    }
+                  />
 
                   <NumberField
                     label="Salary Annual Amount"
@@ -810,6 +868,125 @@ export default function EmployeesPage() {
               </div>
 
               <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <h3 className="text-sm font-black uppercase tracking-wide text-white">
+                  Vacation Settings
+                </h3>
+
+                <p className="mt-2 text-xs font-bold leading-5 text-slate-400">
+                  Vacation eligibility and accrual parameters are stored on the
+                  employee record. The schedule system uses these values to
+                  calculate daily updated vacation balances.
+                </p>
+
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                  <CheckboxField
+                    label="Vacation Eligible"
+                    checked={formData.vacationSettings.vacationEligible}
+                    onChange={(checked) =>
+                      handleBooleanSettingChange(
+                        "vacationSettings",
+                        "vacationEligible",
+                        checked
+                      )
+                    }
+                  />
+
+                  <SelectField
+                    label="Vacation Accrual Method"
+                    value={formData.vacationSettings.accrualMethod}
+                    options={employeeVacationAccrualMethodOptions}
+                    onChange={(value) =>
+                      handleVacationTextChange("accrualMethod", value)
+                    }
+                  />
+
+                  <NumberField
+                    label="Accrual Rate Hours"
+                    value={formData.vacationSettings.accrualRateHours}
+                    onChange={(value) =>
+                      handleVacationNumberChange("accrualRateHours", value)
+                    }
+                  />
+
+                  <NumberField
+                    label="Hours Per Vacation Day"
+                    value={formData.vacationSettings.hoursPerVacationDay}
+                    onChange={(value) =>
+                      handleVacationNumberChange("hoursPerVacationDay", value)
+                    }
+                  />
+
+                  <NumberField
+                    label="Annual Vacation Cap Hours"
+                    value={formData.vacationSettings.annualVacationCapHours}
+                    onChange={(value) =>
+                      handleVacationNumberChange(
+                        "annualVacationCapHours",
+                        value
+                      )
+                    }
+                  />
+
+                  <NumberField
+                    label="Carryover Limit Hours"
+                    value={formData.vacationSettings.carryoverLimitHours}
+                    onChange={(value) =>
+                      handleVacationNumberChange("carryoverLimitHours", value)
+                    }
+                  />
+
+                  <NumberField
+                    label="Starting Vacation Balance Hours"
+                    value={
+                      formData.vacationSettings.startingVacationBalanceHours
+                    }
+                    onChange={(value) =>
+                      handleVacationNumberChange(
+                        "startingVacationBalanceHours",
+                        value
+                      )
+                    }
+                  />
+
+                  <label className="block">
+                    <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
+                      Accrual Start Date
+                    </span>
+                    <input
+                      type="date"
+                      value={formData.vacationSettings.accrualStartDate}
+                      onChange={(event) =>
+                        handleVacationTextChange(
+                          "accrualStartDate",
+                          event.target.value
+                        )
+                      }
+                      className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm font-bold text-white outline-none focus:border-orange-400"
+                    />
+                  </label>
+
+                  <div className="md:col-span-2">
+                    <label className="block">
+                      <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
+                        Vacation Notes
+                      </span>
+                      <textarea
+                        value={formData.vacationSettings.vacationNotes}
+                        onChange={(event) =>
+                          handleVacationTextChange(
+                            "vacationNotes",
+                            event.target.value
+                          )
+                        }
+                        rows={3}
+                        className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm font-bold text-white outline-none placeholder:text-slate-500 focus:border-orange-400"
+                      />
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
                 <TextareaField
                   label="Notes"
                   name="notes"
@@ -885,9 +1062,11 @@ export default function EmployeesPage() {
 
                       <div className="mt-3 grid gap-2 text-xs font-bold text-slate-300 md:grid-cols-2">
                         <p>Clock In: {employee.clockingSettings.clockInRule}</p>
+
                         <p>
                           Clock Out: {employee.clockingSettings.clockOutRule}
                         </p>
+
                         <p>
                           Billing:{" "}
                           {
@@ -895,15 +1074,24 @@ export default function EmployeesPage() {
                               .defaultCustomerBillingMode
                           }
                         </p>
+
                         <p>
                           Customer Rate:{" "}
                           {formatMoney(
                             employee.billingSettings.defaultCustomerLaborRate
                           )}
                         </p>
+
                         <p>
                           Flat Rate Pay:{" "}
-                           {formatMoney(employee.payrollSettings.flatRatePayRate)}
+                          {formatMoney(employee.payrollSettings.flatRatePayRate)}
+                        </p>
+
+                        <p>
+                          Vacation:{" "}
+                          {employee.vacationSettings.vacationEligible
+                            ? employee.vacationSettings.accrualMethod
+                            : "Not Eligible"}
                         </p>
                       </div>
                     </div>
