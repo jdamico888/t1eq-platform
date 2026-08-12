@@ -41,6 +41,12 @@ import {
   technicianStatusOptions,
 } from "@/types/technician-profile";
 
+type PostSaveAction =
+  | "Stay on Employee Setup"
+  | "Open Employee Schedule";
+
+const employeeScheduleRoute = "/employee-schedule";
+
 function safeNumber(value: string): number {
   const parsedValue = Number(value);
 
@@ -67,6 +73,14 @@ function getDisplayName(employee: EmployeeProfileInput): string {
   return fullName || "Unnamed Employee";
 }
 
+function openEmployeeSchedule(employeeProfileId: string) {
+  const query = new URLSearchParams({
+    employeeProfileId,
+  });
+
+  window.location.href = `${employeeScheduleRoute}?${query.toString()}`;
+}
+
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState<EmployeeProfile[]>([]);
   const [formData, setFormData] = useState<EmployeeProfileInput>(() =>
@@ -77,6 +91,9 @@ export default function EmployeesPage() {
   );
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<"All" | EmployeeRole>("All");
+  const [postSaveAction, setPostSaveAction] = useState<PostSaveAction>(
+    "Stay on Employee Setup"
+  );
 
   function loadEmployees() {
     setEmployees(getTechnicianProfiles());
@@ -85,6 +102,7 @@ export default function EmployeesPage() {
   function resetForm() {
     setEditingEmployeeId(null);
     setFormData(createDefaultTechnicianProfileInput());
+    setPostSaveAction("Stay on Employee Setup");
   }
 
   function updateForm(updates: Partial<EmployeeProfileInput>) {
@@ -291,18 +309,24 @@ export default function EmployeesPage() {
       },
     };
 
-    if (editingEmployeeId) {
-      updateTechnicianProfile(editingEmployeeId, normalizedFormData);
-    } else {
-      createTechnicianProfile(normalizedFormData);
-    }
+    const shouldOpenSchedule =
+      !editingEmployeeId && postSaveAction === "Open Employee Schedule";
+
+    const savedEmployee = editingEmployeeId
+      ? updateTechnicianProfile(editingEmployeeId, normalizedFormData)
+      : createTechnicianProfile(normalizedFormData);
 
     loadEmployees();
     resetForm();
+
+    if (shouldOpenSchedule && savedEmployee) {
+      openEmployeeSchedule(savedEmployee.id);
+    }
   }
 
   function handleEdit(employee: EmployeeProfile) {
     setEditingEmployeeId(employee.id);
+    setPostSaveAction("Stay on Employee Setup");
 
     setFormData({
       userId: employee.userId,
@@ -417,8 +441,9 @@ export default function EmployeesPage() {
           <p className="mt-3 max-w-4xl text-sm font-semibold leading-6 text-slate-300">
             Configure employees by role. Technician is a subgroup of employee
             setup, not a separate parent module. Pay structure, clocking rules,
-            customer labor billing, company metrics, availability, absence, and
-            vacation tracking are controlled separately.
+            customer labor billing, company metrics, and vacation parameters are
+            controlled here. Scheduling becomes its own module after the
+            employee record exists.
           </p>
         </header>
 
@@ -985,6 +1010,34 @@ export default function EmployeesPage() {
                   </div>
                 </div>
               </div>
+
+              {!editingEmployeeId && (
+                <div className="rounded-2xl border border-orange-400/20 bg-orange-500/10 p-4">
+                  <h3 className="text-sm font-black uppercase tracking-wide text-orange-200">
+                    After Save Shortcut
+                  </h3>
+
+                  <p className="mt-2 text-xs font-bold leading-5 text-orange-100/80">
+                    Employee Schedule is its own module. Use this shortcut only
+                    when creating a new employee record and you want to continue
+                    directly into schedule setup after saving.
+                  </p>
+
+                  <div className="mt-4">
+                    <SelectField
+                      label="After Saving New Employee"
+                      value={postSaveAction}
+                      options={[
+                        "Stay on Employee Setup",
+                        "Open Employee Schedule",
+                      ]}
+                      onChange={(value) =>
+                        setPostSaveAction(value as PostSaveAction)
+                      }
+                    />
+                  </div>
+                </div>
+              )}
 
               <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
                 <TextareaField
