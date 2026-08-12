@@ -30,6 +30,10 @@ export const navigationItems: NavigationItem[] = [
     href: "/employees",
   },
   {
+    label: "Employee Schedule",
+    href: "/employee-schedule",
+  },
+  {
     label: "Purchase Orders",
     href: "/purchase-orders",
   },
