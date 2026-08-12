@@ -280,6 +280,7 @@ export default function EmployeesPage() {
       clockingSettings: employee.clockingSettings,
       billingSettings: employee.billingSettings,
       metricSettings: employee.metricSettings,
+      vacationSettings: employee.vacationSettings,
 
       notes: employee.notes,
     });

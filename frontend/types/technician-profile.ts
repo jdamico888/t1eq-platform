@@ -3,6 +3,11 @@ import type {
   TechnicianCompensationType,
 } from "@/types/technician-compensation";
 
+import {
+  createDefaultEmployeeVacationSettings,
+  type EmployeeVacationSettings,
+} from "@/types/employee-schedule";
+
 export type EmployeePayType = "Flat Rate" | "Hourly" | "Salary";
 
 export type EmployeeClockInRule =
@@ -58,16 +63,8 @@ export type TechnicianProfileCompensation = TechnicianCompensation & {
   baseHourlyRate?: number;
   laborRate?: number;
 
-  /**
-   * Correct flat-rate model:
-   * flatRatePayRate × generated job hours.
-   */
   flatRatePayRate?: number;
 
-  /**
-   * Legacy compatibility only.
-   * Do not use this for new flat-rate payroll math.
-   */
   flatRatePayPercent?: number;
   flatRatePercentage?: number;
   flatRatePercent?: number;
@@ -87,29 +84,15 @@ export type TechnicianProfileCompensation = TechnicianCompensation & {
 export type TechnicianPayrollSettings = {
   payType: EmployeePayType;
 
-  /**
-   * Hourly employee:
-   * actual clock hours × hourlyPayRate.
-   */
   hourlyPayRate: number;
-
-  /**
-   * Flat-rate employee:
-   * generated job hours × flatRatePayRate.
-   */
   flatRatePayRate: number;
 
   /**
    * Legacy compatibility only.
-   * Kept temporarily so older UI/service code still compiles.
-   * Do not use this for new flat-rate payroll math.
+   * Do not use for new flat-rate payroll math.
    */
   flatRatePayPercent: number;
 
-  /**
-   * Salary employee:
-   * attendance/activity tracking only unless separate payroll logic is added.
-   */
   salaryAnnualAmount: number;
 
   payrollEligible: boolean;
@@ -185,6 +168,7 @@ export type TechnicianProfile = {
   clockingSettings: TechnicianClockingSettings;
   billingSettings: TechnicianBillingSettings;
   metricSettings: TechnicianMetricSettings;
+  vacationSettings: EmployeeVacationSettings;
 
   notes: string;
 
@@ -305,7 +289,6 @@ export function getDefaultPayrollSettings(
     payType,
 
     hourlyPayRate: 0,
-
     flatRatePayRate: 0,
     flatRatePayPercent: 0,
 
@@ -454,6 +437,7 @@ export function createDefaultTechnicianProfileInput(
     clockingSettings: getDefaultClockingSettings(payType),
     billingSettings: getDefaultBillingSettings(),
     metricSettings: getDefaultMetricSettings(),
+    vacationSettings: createDefaultEmployeeVacationSettings(),
 
     notes: "",
   };

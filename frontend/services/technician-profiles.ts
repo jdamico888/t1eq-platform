@@ -14,6 +14,11 @@ import {
   getDefaultPayrollSettings,
 } from "@/types/technician-profile";
 
+import {
+  createDefaultEmployeeVacationSettings,
+  type EmployeeVacationSettings,
+} from "@/types/employee-schedule";
+
 const technicianProfilesStorageKey = "t1eq-technician-profiles";
 
 type UnknownRecord = Record<string, unknown>;
@@ -186,6 +191,61 @@ function normalizeCompensation(
   } as TechnicianProfileCompensation;
 }
 
+function normalizeVacationSettings(value: unknown): EmployeeVacationSettings {
+  const source = isRecord(value) ? value : {};
+  const fallback = createDefaultEmployeeVacationSettings();
+
+  return {
+    ...fallback,
+
+    vacationEligible: safeBoolean(
+      source.vacationEligible,
+      fallback.vacationEligible
+    ),
+
+    accrualMethod:
+      source.accrualMethod === "Hours Per Pay Period" ||
+      source.accrualMethod === "Hours Per Month" ||
+      source.accrualMethod === "Hours Per Year" ||
+      source.accrualMethod === "Percent Of Hours Worked" ||
+      source.accrualMethod === "Manual"
+        ? source.accrualMethod
+        : fallback.accrualMethod,
+
+    accrualRateHours: safeNumber(
+      source.accrualRateHours,
+      fallback.accrualRateHours
+    ),
+
+    hoursPerVacationDay: safeNumber(
+      source.hoursPerVacationDay,
+      fallback.hoursPerVacationDay
+    ),
+
+    annualVacationCapHours: safeNumber(
+      source.annualVacationCapHours,
+      fallback.annualVacationCapHours
+    ),
+
+    carryoverLimitHours: safeNumber(
+      source.carryoverLimitHours,
+      fallback.carryoverLimitHours
+    ),
+
+    startingVacationBalanceHours: safeNumber(
+      source.startingVacationBalanceHours,
+      fallback.startingVacationBalanceHours
+    ),
+
+    accrualStartDate: safeString(
+      source.accrualStartDate,
+      fallback.accrualStartDate
+    ),
+
+    vacationNotes: safeString(source.vacationNotes, fallback.vacationNotes),
+  };
+}
+
 function normalizeStringArray(value: unknown): string[] {
   if (!Array.isArray(value)) {
     return [];
@@ -201,11 +261,13 @@ export function normalizeTechnicianProfile(value: unknown): TechnicianProfile {
   const now = new Date().toISOString();
 
   const displayName = getProfileDisplayName(source);
+
   const compensationSource = isRecord(source.compensation)
     ? source.compensation
     : undefined;
 
   const payType = getCompensationPayType(compensationSource);
+
   const normalizedCompensation = normalizeCompensation(
     source.compensation,
     payType
@@ -216,14 +278,21 @@ export function normalizeTechnicianProfile(value: unknown): TechnicianProfile {
   const payrollSettingsSource = isRecord(source.payrollSettings)
     ? source.payrollSettings
     : {};
+
   const clockingSettingsSource = isRecord(source.clockingSettings)
     ? source.clockingSettings
     : {};
+
   const billingSettingsSource = isRecord(source.billingSettings)
     ? source.billingSettings
     : {};
+
   const metricSettingsSource = isRecord(source.metricSettings)
     ? source.metricSettings
+    : {};
+
+  const vacationSettingsSource = isRecord(source.vacationSettings)
+    ? source.vacationSettings
     : {};
 
   const payrollSettings = {
@@ -293,6 +362,8 @@ export function normalizeTechnicianProfile(value: unknown): TechnicianProfile {
     ...metricSettingsSource,
   };
 
+  const vacationSettings = normalizeVacationSettings(vacationSettingsSource);
+
   return {
     id: safeString(source.id, createId("technician")),
 
@@ -346,10 +417,12 @@ export function normalizeTechnicianProfile(value: unknown): TechnicianProfile {
         : "Technician",
 
     territory: safeString(source.territory, defaultProfile.territory),
+
     serviceVehicleId: safeString(
       source.serviceVehicleId,
       defaultProfile.serviceVehicleId
     ),
+
     serviceVehicleName: safeString(
       source.serviceVehicleName,
       defaultProfile.serviceVehicleName
@@ -362,6 +435,7 @@ export function normalizeTechnicianProfile(value: unknown): TechnicianProfile {
     clockingSettings,
     billingSettings,
     metricSettings,
+    vacationSettings,
 
     notes: safeString(source.notes, defaultProfile.notes),
 
@@ -440,6 +514,7 @@ export function updateTechnicianProfile(
   updates: Partial<TechnicianProfileInput>
 ): TechnicianProfile | null {
   const technicianProfiles = getTechnicianProfiles();
+
   const existingProfile = technicianProfiles.find(
     (technicianProfile) => technicianProfile.id === technicianProfileId
   );
@@ -530,8 +605,11 @@ export function searchTechnicianProfiles(search: string): TechnicianProfile[] {
       technicianProfile.territory,
       technicianProfile.serviceVehicleName,
       technicianProfile.notes,
-      ...technicianProfile.specialties,
-      ...technicianProfile.certifications,
+      technicianProfile.payrollSettings.payType,
+      technicianProfile.clockingSettings.clockInRule,
+      technicianProfile.clockingSettings.clockOutRule,
+      technicianProfile.billingSettings.defaultCustomerBillingMode,
+      technicianProfile.vacationSettings.accrualMethod,
     ];
 
     return searchableFields.some((field) =>
