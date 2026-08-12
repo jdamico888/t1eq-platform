@@ -1,13 +1,229 @@
 import type {
+  AdvertisingBlock,
+  AdvertisingBlockPlacement,
   AppearanceSettings,
   AppFontFamily,
   AppFontSize,
+  OutputAdvertisingPlacement,
+  OutputFooterLayout,
+  OutputHeaderLayout,
+  OutputTemplateDensity,
+  OutputTemplateSettings,
+  QBitEditableGroup,
+  QBitOutputScope,
+  QBitPageScope,
+  QBitScope,
+  QBitScopeType,
   ThreeDEffectLevel,
   TileOrientation,
   TileSize,
 } from "@/types/appearance-settings";
 
 const STORAGE_KEY = "t1eq-appearance-settings";
+
+export const qBitPageScopes: QBitPageScope[] = [
+  "Dashboard",
+  "Repair Order Detail",
+  "Invoice Detail",
+];
+
+export const qBitOutputScopes: QBitOutputScope[] = [
+  "Printable Invoice",
+  "Email Invoice",
+  "Printable Work Order",
+  "Email Work Order",
+];
+
+export const qBitEditableGroups: QBitEditableGroup[] = [
+  "Global Appearance",
+  "Page Background",
+  "Page Cards",
+  "Dashboard Tiles",
+  "Sidebar",
+  "Invoice Header",
+  "Invoice Line Items",
+  "Invoice Totals",
+  "Invoice Footer",
+  "Work Order Header",
+  "Work Order Tasks",
+  "Work Order Footer",
+  "Email Body",
+  "Advertising Blocks",
+];
+
+export const outputTemplateDensityOptions: OutputTemplateDensity[] = [
+  "Compact",
+  "Standard",
+  "Detailed",
+];
+
+export const outputHeaderLayoutOptions: OutputHeaderLayout[] = [
+  "Logo Left",
+  "Centered",
+  "Minimal",
+];
+
+export const outputFooterLayoutOptions: OutputFooterLayout[] = [
+  "Standard",
+  "Payment Focused",
+  "Legal Focused",
+];
+
+export const outputAdvertisingPlacementOptions: OutputAdvertisingPlacement[] = [
+  "None",
+  "Top",
+  "Bottom",
+  "Both",
+  "Email Body",
+];
+
+export const advertisingBlockPlacementOptions: AdvertisingBlockPlacement[] = [
+  "Invoice Top",
+  "Invoice Bottom",
+  "Work Order Bottom",
+  "Email Body",
+];
+
+export const defaultQBitScopes: QBitScope[] = [
+  {
+    id: "page-dashboard",
+    type: "Page",
+    label: "Dashboard",
+    editableGroups: [
+      "Global Appearance",
+      "Page Background",
+      "Page Cards",
+      "Dashboard Tiles",
+      "Sidebar",
+    ],
+  },
+  {
+    id: "page-repair-order-detail",
+    type: "Page",
+    label: "Repair Order Detail",
+    editableGroups: [
+      "Global Appearance",
+      "Page Background",
+      "Page Cards",
+      "Sidebar",
+    ],
+  },
+  {
+    id: "page-invoice-detail",
+    type: "Page",
+    label: "Invoice Detail",
+    editableGroups: [
+      "Global Appearance",
+      "Page Background",
+      "Page Cards",
+      "Sidebar",
+    ],
+  },
+  {
+    id: "output-printable-invoice",
+    type: "Output",
+    label: "Printable Invoice",
+    editableGroups: [
+      "Invoice Header",
+      "Invoice Line Items",
+      "Invoice Totals",
+      "Invoice Footer",
+      "Advertising Blocks",
+    ],
+  },
+  {
+    id: "output-email-invoice",
+    type: "Output",
+    label: "Email Invoice",
+    editableGroups: ["Email Body", "Invoice Totals", "Advertising Blocks"],
+  },
+  {
+    id: "output-printable-work-order",
+    type: "Output",
+    label: "Printable Work Order",
+    editableGroups: [
+      "Work Order Header",
+      "Work Order Tasks",
+      "Work Order Footer",
+      "Advertising Blocks",
+    ],
+  },
+  {
+    id: "output-email-work-order",
+    type: "Output",
+    label: "Email Work Order",
+    editableGroups: ["Email Body", "Work Order Tasks", "Advertising Blocks"],
+  },
+];
+
+export const defaultOutputTemplates: OutputTemplateSettings[] = [
+  {
+    scope: "Printable Invoice",
+    enabled: true,
+    headerLayout: "Logo Left",
+    footerLayout: "Payment Focused",
+    density: "Standard",
+    showLogo: true,
+    showCustomerSummary: true,
+    showEquipmentSummary: true,
+    showRepairOrderReference: true,
+    showTechnicianSummary: false,
+    showTerms: true,
+    showSignatureLine: false,
+    advertisingPlacement: "Bottom",
+    activeAdvertisingBlockIds: [],
+  },
+  {
+    scope: "Email Invoice",
+    enabled: true,
+    headerLayout: "Minimal",
+    footerLayout: "Standard",
+    density: "Compact",
+    showLogo: true,
+    showCustomerSummary: true,
+    showEquipmentSummary: false,
+    showRepairOrderReference: true,
+    showTechnicianSummary: false,
+    showTerms: true,
+    showSignatureLine: false,
+    advertisingPlacement: "Email Body",
+    activeAdvertisingBlockIds: [],
+  },
+  {
+    scope: "Printable Work Order",
+    enabled: true,
+    headerLayout: "Logo Left",
+    footerLayout: "Standard",
+    density: "Detailed",
+    showLogo: true,
+    showCustomerSummary: true,
+    showEquipmentSummary: true,
+    showRepairOrderReference: true,
+    showTechnicianSummary: true,
+    showTerms: false,
+    showSignatureLine: true,
+    advertisingPlacement: "Bottom",
+    activeAdvertisingBlockIds: [],
+  },
+  {
+    scope: "Email Work Order",
+    enabled: true,
+    headerLayout: "Minimal",
+    footerLayout: "Standard",
+    density: "Standard",
+    showLogo: true,
+    showCustomerSummary: true,
+    showEquipmentSummary: true,
+    showRepairOrderReference: true,
+    showTechnicianSummary: true,
+    showTerms: false,
+    showSignatureLine: false,
+    advertisingPlacement: "Email Body",
+    activeAdvertisingBlockIds: [],
+  },
+];
+
+export const defaultAdvertisingBlocks: AdvertisingBlock[] = [];
 
 export const defaultAppearanceSettings: AppearanceSettings = {
   logoUrl: "",
@@ -29,6 +245,10 @@ export const defaultAppearanceSettings: AppearanceSettings = {
 
   sidebarBackgroundColor: "#09090b",
   pageBackgroundColor: "#f4f4f5",
+
+  qBitScopes: defaultQBitScopes,
+  outputTemplates: defaultOutputTemplates,
+  advertisingBlocks: defaultAdvertisingBlocks,
 
   updatedDate: new Date().toISOString(),
 };
@@ -71,6 +291,13 @@ function dispatchAppearanceChange() {
   window.dispatchEvent(new Event("t1eq-appearance-settings-changed"));
 }
 
+function valueIsOneOf<T extends string>(
+  value: unknown,
+  options: readonly T[]
+): value is T {
+  return typeof value === "string" && options.includes(value as T);
+}
+
 function normalizeAccentHue(value: unknown) {
   const parsedValue = Number(value);
 
@@ -93,6 +320,22 @@ function normalizeColor(value: unknown, fallback: string) {
   }
 
   return fallback;
+}
+
+function normalizeString(value: unknown, fallback = "") {
+  if (typeof value !== "string") {
+    return fallback;
+  }
+
+  return value;
+}
+
+function normalizeBoolean(value: unknown, fallback: boolean) {
+  if (typeof value !== "boolean") {
+    return fallback;
+  }
+
+  return value;
 }
 
 function hslToHex(hue: number, saturation: number, lightness: number) {
@@ -152,6 +395,202 @@ function hslToHex(hue: number, saturation: number, lightness: number) {
     .padStart(2, "0")}${blue.toString(16).padStart(2, "0")}`;
 }
 
+function normalizeEditableGroups(value: unknown): QBitEditableGroup[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.filter((entry): entry is QBitEditableGroup =>
+    valueIsOneOf(entry, qBitEditableGroups)
+  );
+}
+
+function normalizeQBitScope(
+  scope: unknown,
+  fallback: QBitScope
+): QBitScope {
+  if (!scope || typeof scope !== "object") {
+    return fallback;
+  }
+
+  const partialScope = scope as Partial<QBitScope>;
+
+  const scopeType: QBitScopeType = valueIsOneOf(partialScope.type, [
+    "Page",
+    "Output",
+  ])
+    ? partialScope.type
+    : fallback.type;
+
+  const pageOrOutputLabel =
+    scopeType === "Page"
+      ? valueIsOneOf(partialScope.label, qBitPageScopes)
+        ? partialScope.label
+        : fallback.label
+      : valueIsOneOf(partialScope.label, qBitOutputScopes)
+        ? partialScope.label
+        : fallback.label;
+
+  const editableGroups = normalizeEditableGroups(partialScope.editableGroups);
+
+  return {
+    id: normalizeString(partialScope.id, fallback.id),
+    type: scopeType,
+    label: pageOrOutputLabel,
+    editableGroups:
+      editableGroups.length > 0 ? editableGroups : fallback.editableGroups,
+  };
+}
+
+function normalizeQBitScopes(value: unknown): QBitScope[] {
+  if (!Array.isArray(value)) {
+    return defaultQBitScopes;
+  }
+
+  return defaultQBitScopes.map((fallbackScope) => {
+    const matchingScope = value.find(
+      (scope) =>
+        scope &&
+        typeof scope === "object" &&
+        (scope as Partial<QBitScope>).id === fallbackScope.id
+    );
+
+    return normalizeQBitScope(matchingScope, fallbackScope);
+  });
+}
+
+function normalizeOutputTemplateSettings(
+  template: unknown,
+  fallback: OutputTemplateSettings
+): OutputTemplateSettings {
+  if (!template || typeof template !== "object") {
+    return fallback;
+  }
+
+  const partialTemplate = template as Partial<OutputTemplateSettings>;
+
+  return {
+    scope: valueIsOneOf(partialTemplate.scope, qBitOutputScopes)
+      ? partialTemplate.scope
+      : fallback.scope,
+    enabled: normalizeBoolean(partialTemplate.enabled, fallback.enabled),
+    headerLayout: valueIsOneOf(
+      partialTemplate.headerLayout,
+      outputHeaderLayoutOptions
+    )
+      ? partialTemplate.headerLayout
+      : fallback.headerLayout,
+    footerLayout: valueIsOneOf(
+      partialTemplate.footerLayout,
+      outputFooterLayoutOptions
+    )
+      ? partialTemplate.footerLayout
+      : fallback.footerLayout,
+    density: valueIsOneOf(
+      partialTemplate.density,
+      outputTemplateDensityOptions
+    )
+      ? partialTemplate.density
+      : fallback.density,
+    showLogo: normalizeBoolean(partialTemplate.showLogo, fallback.showLogo),
+    showCustomerSummary: normalizeBoolean(
+      partialTemplate.showCustomerSummary,
+      fallback.showCustomerSummary
+    ),
+    showEquipmentSummary: normalizeBoolean(
+      partialTemplate.showEquipmentSummary,
+      fallback.showEquipmentSummary
+    ),
+    showRepairOrderReference: normalizeBoolean(
+      partialTemplate.showRepairOrderReference,
+      fallback.showRepairOrderReference
+    ),
+    showTechnicianSummary: normalizeBoolean(
+      partialTemplate.showTechnicianSummary,
+      fallback.showTechnicianSummary
+    ),
+    showTerms: normalizeBoolean(partialTemplate.showTerms, fallback.showTerms),
+    showSignatureLine: normalizeBoolean(
+      partialTemplate.showSignatureLine,
+      fallback.showSignatureLine
+    ),
+    advertisingPlacement: valueIsOneOf(
+      partialTemplate.advertisingPlacement,
+      outputAdvertisingPlacementOptions
+    )
+      ? partialTemplate.advertisingPlacement
+      : fallback.advertisingPlacement,
+    activeAdvertisingBlockIds: Array.isArray(
+      partialTemplate.activeAdvertisingBlockIds
+    )
+      ? partialTemplate.activeAdvertisingBlockIds.filter(
+          (entry): entry is string => typeof entry === "string"
+        )
+      : fallback.activeAdvertisingBlockIds,
+  };
+}
+
+function normalizeOutputTemplates(value: unknown): OutputTemplateSettings[] {
+  if (!Array.isArray(value)) {
+    return defaultOutputTemplates;
+  }
+
+  return defaultOutputTemplates.map((fallbackTemplate) => {
+    const matchingTemplate = value.find(
+      (template) =>
+        template &&
+        typeof template === "object" &&
+        (template as Partial<OutputTemplateSettings>).scope ===
+          fallbackTemplate.scope
+    );
+
+    return normalizeOutputTemplateSettings(matchingTemplate, fallbackTemplate);
+  });
+}
+
+function normalizeAdvertisingBlock(block: unknown): AdvertisingBlock | null {
+  if (!block || typeof block !== "object") {
+    return null;
+  }
+
+  const partialBlock = block as Partial<AdvertisingBlock>;
+
+  if (typeof partialBlock.id !== "string" || !partialBlock.id.trim()) {
+    return null;
+  }
+
+  return {
+    id: partialBlock.id,
+    title: normalizeString(partialBlock.title, "Untitled Advertising Block"),
+    placement: valueIsOneOf(
+      partialBlock.placement,
+      advertisingBlockPlacementOptions
+    )
+      ? partialBlock.placement
+      : "Invoice Bottom",
+    imageUrl: normalizeString(partialBlock.imageUrl),
+    headline: normalizeString(partialBlock.headline),
+    bodyText: normalizeString(partialBlock.bodyText),
+    callToAction: normalizeString(partialBlock.callToAction),
+    expirationDate: normalizeString(partialBlock.expirationDate),
+    isActive: normalizeBoolean(partialBlock.isActive, true),
+    updatedDate: normalizeString(
+      partialBlock.updatedDate,
+      new Date().toISOString()
+    ),
+  };
+}
+
+function normalizeAdvertisingBlocks(value: unknown): AdvertisingBlock[] {
+  if (!Array.isArray(value)) {
+    return defaultAdvertisingBlocks;
+  }
+
+  return value
+    .map((block) => normalizeAdvertisingBlock(block))
+    .filter((block): block is AdvertisingBlock => Boolean(block));
+}
+
 function normalizeAppearanceSettings(
   settings: Partial<AppearanceSettings>
 ): AppearanceSettings {
@@ -190,6 +629,10 @@ function normalizeAppearanceSettings(
       settings.pageBackgroundColor,
       defaultAppearanceSettings.pageBackgroundColor
     ),
+
+    qBitScopes: normalizeQBitScopes(settings.qBitScopes),
+    outputTemplates: normalizeOutputTemplates(settings.outputTemplates),
+    advertisingBlocks: normalizeAdvertisingBlocks(settings.advertisingBlocks),
 
     updatedDate: settings.updatedDate ?? new Date().toISOString(),
   };
@@ -245,4 +688,95 @@ export function resetAppearanceSettings(): AppearanceSettings {
   }
 
   return resetSettings;
+}
+
+export function getQBitScopeById(scopeId: string): QBitScope | null {
+  return getAppearanceSettings().qBitScopes.find(
+    (scope) => scope.id === scopeId
+  ) ?? null;
+}
+
+export function getOutputTemplateSettings(
+  scope: QBitOutputScope
+): OutputTemplateSettings {
+  return (
+    getAppearanceSettings().outputTemplates.find(
+      (template) => template.scope === scope
+    ) ??
+    defaultOutputTemplates.find((template) => template.scope === scope) ??
+    defaultOutputTemplates[0]
+  );
+}
+
+export function saveOutputTemplateSettings(
+  template: OutputTemplateSettings
+): OutputTemplateSettings {
+  const currentSettings = getAppearanceSettings();
+  const normalizedTemplate = normalizeOutputTemplateSettings(template, template);
+
+  const nextTemplates = currentSettings.outputTemplates.map((currentTemplate) =>
+    currentTemplate.scope === normalizedTemplate.scope
+      ? normalizedTemplate
+      : currentTemplate
+  );
+
+  saveAppearanceSettings({
+    ...currentSettings,
+    outputTemplates: nextTemplates,
+  });
+
+  return normalizedTemplate;
+}
+
+export function getAdvertisingBlocks(): AdvertisingBlock[] {
+  return getAppearanceSettings().advertisingBlocks;
+}
+
+export function saveAdvertisingBlock(block: AdvertisingBlock): AdvertisingBlock {
+  const currentSettings = getAppearanceSettings();
+  const normalizedBlock = normalizeAdvertisingBlock(block);
+
+  if (!normalizedBlock) {
+    throw new Error("Invalid advertising block.");
+  }
+
+  const existingBlock = currentSettings.advertisingBlocks.find(
+    (currentBlock) => currentBlock.id === normalizedBlock.id
+  );
+
+  const nextBlock: AdvertisingBlock = {
+    ...(existingBlock ?? normalizedBlock),
+    ...normalizedBlock,
+    updatedDate: new Date().toISOString(),
+  };
+
+  const nextBlocks = existingBlock
+    ? currentSettings.advertisingBlocks.map((currentBlock) =>
+        currentBlock.id === nextBlock.id ? nextBlock : currentBlock
+      )
+    : [...currentSettings.advertisingBlocks, nextBlock];
+
+  saveAppearanceSettings({
+    ...currentSettings,
+    advertisingBlocks: nextBlocks,
+  });
+
+  return nextBlock;
+}
+
+export function deleteAdvertisingBlock(blockId: string): void {
+  const currentSettings = getAppearanceSettings();
+
+  saveAppearanceSettings({
+    ...currentSettings,
+    advertisingBlocks: currentSettings.advertisingBlocks.filter(
+      (block) => block.id !== blockId
+    ),
+    outputTemplates: currentSettings.outputTemplates.map((template) => ({
+      ...template,
+      activeAdvertisingBlockIds: template.activeAdvertisingBlockIds.filter(
+        (activeBlockId) => activeBlockId !== blockId
+      ),
+    })),
+  });
 }

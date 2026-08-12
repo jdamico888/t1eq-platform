@@ -9,6 +9,91 @@ export type AppFontFamily =
 export type AppFontSize = "Small" | "Medium" | "Large" | "Extra Large";
 export type ThreeDEffectLevel = "Off" | "Subtle" | "Medium" | "Strong";
 
+export type QBitPageScope =
+  | "Dashboard"
+  | "Repair Order Detail"
+  | "Invoice Detail";
+
+export type QBitOutputScope =
+  | "Printable Invoice"
+  | "Email Invoice"
+  | "Printable Work Order"
+  | "Email Work Order";
+
+export type QBitScopeType = "Page" | "Output";
+
+export type QBitEditableGroup =
+  | "Global Appearance"
+  | "Page Background"
+  | "Page Cards"
+  | "Dashboard Tiles"
+  | "Sidebar"
+  | "Invoice Header"
+  | "Invoice Line Items"
+  | "Invoice Totals"
+  | "Invoice Footer"
+  | "Work Order Header"
+  | "Work Order Tasks"
+  | "Work Order Footer"
+  | "Email Body"
+  | "Advertising Blocks";
+
+export type QBitScope = {
+  id: string;
+  type: QBitScopeType;
+  label: QBitPageScope | QBitOutputScope;
+  editableGroups: QBitEditableGroup[];
+};
+
+export type OutputTemplateDensity = "Compact" | "Standard" | "Detailed";
+export type OutputHeaderLayout = "Logo Left" | "Centered" | "Minimal";
+export type OutputFooterLayout = "Standard" | "Payment Focused" | "Legal Focused";
+export type OutputAdvertisingPlacement =
+  | "None"
+  | "Top"
+  | "Bottom"
+  | "Both"
+  | "Email Body";
+
+export type OutputTemplateSettings = {
+  scope: QBitOutputScope;
+  enabled: boolean;
+
+  headerLayout: OutputHeaderLayout;
+  footerLayout: OutputFooterLayout;
+  density: OutputTemplateDensity;
+
+  showLogo: boolean;
+  showCustomerSummary: boolean;
+  showEquipmentSummary: boolean;
+  showRepairOrderReference: boolean;
+  showTechnicianSummary: boolean;
+  showTerms: boolean;
+  showSignatureLine: boolean;
+
+  advertisingPlacement: OutputAdvertisingPlacement;
+  activeAdvertisingBlockIds: string[];
+};
+
+export type AdvertisingBlockPlacement =
+  | "Invoice Top"
+  | "Invoice Bottom"
+  | "Work Order Bottom"
+  | "Email Body";
+
+export type AdvertisingBlock = {
+  id: string;
+  title: string;
+  placement: AdvertisingBlockPlacement;
+  imageUrl: string;
+  headline: string;
+  bodyText: string;
+  callToAction: string;
+  expirationDate: string;
+  isActive: boolean;
+  updatedDate: string;
+};
+
 export type AppearanceSettings = {
   logoUrl: string;
 
@@ -51,6 +136,10 @@ export type AppearanceSettings = {
    * Exact main page/background color.
    */
   pageBackgroundColor: string;
+
+  qBitScopes: QBitScope[];
+  outputTemplates: OutputTemplateSettings[];
+  advertisingBlocks: AdvertisingBlock[];
 
   updatedDate: string;
 };
