@@ -55,6 +55,72 @@ const calculateLaborHours = (
   );
 };
 
+function formatActionItemSchedule(actionItem: RepairOrderActionItem): string {
+  if (
+    !actionItem.scheduledDate &&
+    !actionItem.scheduledStartTime &&
+    !actionItem.scheduledEndTime
+  ) {
+    return "No schedule window set";
+  }
+
+  const date = actionItem.scheduledDate || "No date";
+
+  if (actionItem.scheduledStartTime && actionItem.scheduledEndTime) {
+    return `${date} · ${actionItem.scheduledStartTime} - ${actionItem.scheduledEndTime}`;
+  }
+
+  return date;
+}
+
+function RepairOrderActionItemAssignmentSummary({
+  actionItem,
+}: {
+  actionItem: RepairOrderActionItem;
+}) {
+  const hasAssignedEmployee = Boolean(actionItem.assignedEmployeeDisplayName);
+  const hasScheduleWindow = Boolean(
+    actionItem.scheduledDate ||
+      actionItem.scheduledStartTime ||
+      actionItem.scheduledEndTime
+  );
+
+  if (!hasAssignedEmployee && !hasScheduleWindow) {
+    return null;
+  }
+
+  return (
+    <div className="rounded-2xl border border-orange-400/20 bg-orange-500/10 p-4">
+      <div className="text-xs font-black uppercase tracking-[0.2em] text-orange-200">
+        Schedule / Assignment
+      </div>
+
+      <div className="mt-3 grid gap-3 text-sm font-semibold text-orange-50 md:grid-cols-2">
+        <div>
+          <div className="text-[10px] uppercase tracking-wide text-orange-100/60">
+            Assigned Employee
+          </div>
+          <div className="mt-1">
+            {actionItem.assignedEmployeeDisplayName ?? "Unassigned"}
+          </div>
+          {actionItem.assignedEmployeeRole && (
+            <div className="mt-1 text-xs text-orange-100/60">
+              {actionItem.assignedEmployeeRole}
+            </div>
+          )}
+        </div>
+
+        <div>
+          <div className="text-[10px] uppercase tracking-wide text-orange-100/60">
+            Scheduled Window
+          </div>
+          <div className="mt-1">{formatActionItemSchedule(actionItem)}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function RepairOrderActionItems({
   actionItems,
   assignedTruckId,
@@ -252,6 +318,8 @@ export default function RepairOrderActionItems({
             onEdit={onEdit}
             onDelete={onDelete}
           />
+
+          <RepairOrderActionItemAssignmentSummary actionItem={actionItem} />
 
           <RepairOrderActionItemExecution
             actionItem={actionItem}

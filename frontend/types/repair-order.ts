@@ -246,6 +246,10 @@ export type RepairOrderActionItem = {
 
   billingGroup: RepairOrderBillingGroup;
 
+  scheduledDate?: string;
+  scheduledStartTime?: string;
+  scheduledEndTime?: string;
+
   estimatedLaborHours?: number;
   flatRateHours?: number;
 
