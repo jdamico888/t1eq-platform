@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   useEffect,
@@ -59,6 +59,11 @@ type TileOverride = {
   borderColor?: string;
   textColor?: string;
   depth?: ThreeDEffectLevel;
+};
+type QBitEditSession = {
+  target: EditTarget;
+  tileIndex: number | null;
+  startedDate: string;
 };
 
 const editableSelector = [
@@ -651,6 +656,7 @@ export default function AppearanceEditor() {
   const dockPointerStartRef = useRef<PointerStart | null>(null);
   const panelPointerStartRef = useRef<PointerStart | null>(null);
   const panelResizePointerStartRef = useRef<ResizePointerStart | null>(null);
+  const activeEditableElementRef = useRef<HTMLElement | null>(null);
 
   const [editorOpen, setEditorOpen] = useState(false);
   const [editorActive, setEditorActive] = useState(false);
@@ -670,6 +676,7 @@ export default function AppearanceEditor() {
   );
   const [logoUploadMessage, setLogoUploadMessage] = useState("");
   const [logoUploadError, setLogoUploadError] = useState("");
+  const [editSession, setEditSession] = useState<QBitEditSession | null>(null);
 
   useEffect(() => {
     const storedPanelSize = safeReadSize(panelSizeStorageKey);
@@ -766,6 +773,124 @@ export default function AppearanceEditor() {
     };
   }, []);
 
+
+  function resetQBitEditableElement(element: HTMLElement) {
+    element.removeAttribute("data-t1eq-qbit-active");
+    element.removeAttribute("data-t1eq-qbit-locked");
+
+    element.style.opacity = "";
+    element.style.filter = "";
+    element.style.pointerEvents = "";
+    element.style.outline = "";
+    element.style.outlineOffset = "";
+    element.style.boxShadow = "";
+    element.style.transition = "";
+  }
+
+  function clearQBitEditLockVisualState() {
+    if (typeof document === "undefined") {
+      return;
+    }
+
+    document
+      .querySelectorAll<HTMLElement>(editableSelector)
+      .forEach((element) => {
+        resetQBitEditableElement(element);
+      });
+  }
+
+  function applyQBitEditLockVisualState(activeElement: HTMLElement | null) {
+    if (typeof document === "undefined") {
+      return;
+    }
+
+    document
+      .querySelectorAll<HTMLElement>(editableSelector)
+      .forEach((element) => {
+        if (panelRef.current?.contains(element)) {
+          return;
+        }
+
+        if (dockButtonRef.current?.contains(element)) {
+          return;
+        }
+
+        if (element.closest("[data-t1eq-appearance-editor='true']")) {
+          return;
+        }
+
+        resetQBitEditableElement(element);
+
+        if (activeElement && element === activeElement) {
+          element.setAttribute("data-t1eq-qbit-active", "true");
+          element.style.opacity = "1";
+          element.style.filter = "none";
+          element.style.pointerEvents = "auto";
+          element.style.outline = "3px solid rgb(251 146 60 / 0.95)";
+          element.style.outlineOffset = "4px";
+          element.style.boxShadow = "0 0 0 8px rgb(251 146 60 / 0.16)";
+          element.style.transition =
+            "opacity 160ms ease, filter 160ms ease, outline 160ms ease, box-shadow 160ms ease";
+          return;
+        }
+
+        element.setAttribute("data-t1eq-qbit-locked", "true");
+        element.style.opacity = "0.32";
+        element.style.filter = "grayscale(1)";
+        element.style.pointerEvents = "none";
+        element.style.transition = "opacity 160ms ease, filter 160ms ease";
+      });
+  }
+
+  function clearEditSession() {
+    setEditSession(null);
+    activeEditableElementRef.current = null;
+    clearQBitEditLockVisualState();
+  }
+
+  function openLockedEditorSession(
+    target: EditTarget,
+    tileIndex: number | null,
+    activeElement: HTMLElement | null
+  ) {
+    clearQBitEditLockVisualState();
+
+    activeEditableElementRef.current = activeElement;
+
+    setEditTarget(target);
+    setSelectedTileIndex(tileIndex);
+    setPanelBoxSelected(false);
+    setEditSession({
+      target,
+      tileIndex,
+      startedDate: new Date().toISOString(),
+    });
+    setEditorActive(false);
+    setEditorOpen(true);
+
+    window.requestAnimationFrame(() => {
+      applyQBitEditLockVisualState(activeElement);
+    });
+  }
+
+  useEffect(() => {
+    if (!editorOpen || !editSession) {
+      clearQBitEditLockVisualState();
+      return;
+    }
+
+    applyQBitEditLockVisualState(activeEditableElementRef.current);
+
+    return () => {
+      clearQBitEditLockVisualState();
+    };
+  }, [editorOpen, editSession]);
+
+  useEffect(() => {
+    return () => {
+      clearQBitEditLockVisualState();
+    };
+  }, []);
   useEffect(() => {
     function handleDocumentClick(event: MouseEvent) {
       if (!editorActive) return;
@@ -783,19 +908,29 @@ export default function AppearanceEditor() {
 
       const editableElement = target.closest(editableSelector);
 
-      if (editableElement?.hasAttribute("data-t1eq-tile")) {
-        setEditTarget("Tile");
-        setSelectedTileIndex(getTileIndex(editableElement));
-      } else if (editableElement?.hasAttribute("data-t1eq-sidebar")) {
-        setEditTarget("Sidebar");
-        setSelectedTileIndex(null);
-      } else {
-        setEditTarget("Background");
-        setSelectedTileIndex(null);
+      if (!(editableElement instanceof HTMLElement)) {
+        return;
       }
 
-      setEditorActive(false);
-      setEditorOpen(true);
+      if (editableElement.closest("[data-t1eq-appearance-editor='true']")) {
+        return;
+      }
+
+      if (editableElement.hasAttribute("data-t1eq-tile")) {
+        openLockedEditorSession(
+          "Tile",
+          getTileIndex(editableElement),
+          editableElement
+        );
+        return;
+      }
+
+      if (editableElement.hasAttribute("data-t1eq-sidebar")) {
+        openLockedEditorSession("Sidebar", null, editableElement);
+        return;
+      }
+
+      openLockedEditorSession("Background", null, editableElement);
     }
 
     document.addEventListener("click", handleDocumentClick, true);
@@ -868,6 +1003,7 @@ export default function AppearanceEditor() {
   function closeEditor() {
     setEditorOpen(false);
     setEditorActive(false);
+    clearEditSession();
   }
 
   function handleReset() {
@@ -969,8 +1105,13 @@ export default function AppearanceEditor() {
     }
 
     if (!pointerStart.moved) {
-      setEditorOpen(false);
-      setEditorActive((currentValue) => !currentValue);
+      if (editSession) {
+        setEditorOpen(true);
+        setEditorActive(false);
+      } else {
+        setEditorOpen(false);
+        setEditorActive((currentValue) => !currentValue);
+      }
     }
 
     dockPointerStartRef.current = null;
@@ -1137,6 +1278,13 @@ export default function AppearanceEditor() {
   }
 
   function openPanelDirectly() {
+    if (editSession) {
+      setEditorActive(false);
+      setEditorOpen(true);
+      return;
+    }
+
+    clearEditSession();
     setEditorActive(false);
     setEditTarget("Background");
     setSelectedTileIndex(null);
@@ -1238,6 +1386,12 @@ export default function AppearanceEditor() {
     <>
       {editorActive && (
         <div className={bannerClass}>Click Tile, Sidebar, or Background</div>
+      )}
+
+      {editorOpen && editSession && (
+        <div className={bannerClass}>
+          Q-Bit edit locked — save current element before selecting another
+        </div>
       )}
 
       {hoveringDock && (
@@ -1366,9 +1520,10 @@ export default function AppearanceEditor() {
 
             <div className={panelBodyClass}>
               <div className="mb-2 rounded-lg border border-orange-300 bg-orange-50 p-2 text-[11px] font-bold leading-snug text-orange-800">
-                Click Q-Bit once to select another element. Click this box edge
-                to edit its size, shape, and position.
-              </div>
+            {editSession
+              ? "Q-Bit has locked this edit target. Save before selecting another element."
+              : "Click Q-Bit once to select another element. Click this box edge to edit its size, shape, and position."}
+          </div>
 
               {panelBoxSelected && (
                 <div className="mb-3 rounded-lg border border-zinc-300 bg-zinc-50 p-2">
@@ -1999,6 +2154,12 @@ export default function AppearanceEditor() {
                   <button
                     type="button"
                     onClick={() => {
+                      if (editSession) {
+                        setEditorOpen(true);
+                        setEditorActive(false);
+                        return;
+                      }
+
                       setEditorOpen(false);
                       setEditorActive(true);
                     }}
@@ -2023,3 +2184,4 @@ export default function AppearanceEditor() {
     </>
   );
 }
+
