@@ -177,14 +177,72 @@ function calculateElapsedMinutes(startDate: string, endDate: string) {
   return Math.max(0, Math.round((endTime - startTime) / 60000));
 }
 
-function getCustomerLaborTotal(employeeProfile: EmployeeProfile, hours: number) {
+function getGeneratedJobHours(
+  employeeProfile: EmployeeProfile,
+  actualClockHours: number
+) {
+  const billingSettings = employeeProfile.billingSettings;
+
+  if (
+    billingSettings.defaultCustomerBillingMode === "Company Flat Rate" &&
+    billingSettings.flatJobLaborAmount > 0 &&
+    billingSettings.defaultCustomerLaborRate > 0
+  ) {
+    return Number(
+      (
+        billingSettings.flatJobLaborAmount /
+        billingSettings.defaultCustomerLaborRate
+      ).toFixed(2)
+    );
+  }
+
+  return actualClockHours;
+}
+
+function getCustomerLaborHours(
+  employeeProfile: EmployeeProfile,
+  actualClockHours: number,
+  generatedJobHours: number
+) {
   const billingSettings = employeeProfile.billingSettings;
 
   if (!billingSettings.canGenerateCustomerLaborCharges) {
     return 0;
   }
 
-  const hourlyTotal = hours * billingSettings.defaultCustomerLaborRate;
+  if (billingSettings.defaultCustomerBillingMode === "Company Flat Rate") {
+    return generatedJobHours;
+  }
+
+  if (
+    billingSettings.defaultCustomerBillingMode === "Company Hourly" ||
+    billingSettings.defaultCustomerBillingMode === "Company Minimum Charge"
+  ) {
+    return actualClockHours;
+  }
+
+  return 0;
+}
+
+function getCustomerLaborTotal(
+  employeeProfile: EmployeeProfile,
+  actualClockHours: number,
+  generatedJobHours: number
+) {
+  const billingSettings = employeeProfile.billingSettings;
+
+  if (!billingSettings.canGenerateCustomerLaborCharges) {
+    return 0;
+  }
+
+  const customerLaborHours = getCustomerLaborHours(
+    employeeProfile,
+    actualClockHours,
+    generatedJobHours
+  );
+
+  const hourlyTotal =
+    customerLaborHours * billingSettings.defaultCustomerLaborRate;
 
   if (billingSettings.defaultCustomerBillingMode === "Company Flat Rate") {
     return billingSettings.flatJobLaborAmount > 0
@@ -203,10 +261,24 @@ function getCustomerLaborTotal(employeeProfile: EmployeeProfile, hours: number) 
   return 0;
 }
 
-function getPayrollAmount(
+function getPayrollRate(employeeProfile: EmployeeProfile) {
+  const payrollSettings = employeeProfile.payrollSettings;
+
+  if (payrollSettings.payType === "Flat Rate") {
+    return payrollSettings.flatRatePayRate;
+  }
+
+  if (payrollSettings.payType === "Hourly") {
+    return payrollSettings.hourlyPayRate;
+  }
+
+  return 0;
+}
+
+function getPayrollHours(
   employeeProfile: EmployeeProfile,
-  hours: number,
-  customerLaborTotal: number
+  actualClockHours: number,
+  generatedJobHours: number
 ) {
   const payrollSettings = employeeProfile.payrollSettings;
 
@@ -214,18 +286,40 @@ function getPayrollAmount(
     return 0;
   }
 
-  if (payrollSettings.payType === "Hourly") {
-    return hours * payrollSettings.hourlyPayRate;
+  if (payrollSettings.payType === "Flat Rate") {
+    return generatedJobHours;
   }
 
-  if (payrollSettings.payType === "Flat Rate") {
-    return customerLaborTotal * (payrollSettings.flatRatePayPercent / 100);
+  if (payrollSettings.payType === "Hourly") {
+    return actualClockHours;
   }
 
   return 0;
 }
 
-function getActiveLaborEntry(
+function getPayrollAmount(
+  employeeProfile: EmployeeProfile,
+  payrollHours: number
+) {
+  const payrollSettings = employeeProfile.payrollSettings;
+
+  if (!payrollSettings.payrollEligible) {
+    return 0;
+  }
+
+  if (payrollSettings.payType === "Flat Rate") {
+    return payrollHours * payrollSettings.flatRatePayRate;
+  }
+
+  if (payrollSettings.payType === "Hourly") {
+    return payrollHours * payrollSettings.hourlyPayRate;
+  }
+
+  return 0;
+}
+
+function getActiveLaborEntry
+(
   repairOrder: RepairOrder,
   employeeProfile: EmployeeProfile | null
 ) {
@@ -562,10 +656,7 @@ export default function RepairOrderWorkspacePage() {
       customerFlatJobLaborAmount: billingSettings.flatJobLaborAmount,
 
       payrollEligible: payrollSettings.payrollEligible,
-      payrollRate:
-        payrollSettings.payType === "Hourly"
-          ? payrollSettings.hourlyPayRate
-          : 0,
+      payrollRate: getPayrollRate(selectedEmployeeProfile),
       payrollHours: 0,
       payrollAmount: 0,
       salaryAttendanceOnly: payrollSettings.payType === "Salary",
@@ -598,112 +689,134 @@ export default function RepairOrderWorkspacePage() {
   }
 
   function handleClockOut() {
-    if (!repairOrder || !selectedEmployeeProfile || !activeLaborEntry) return;
+  if (!repairOrder || !selectedEmployeeProfile || !activeLaborEntry) return;
 
-    if (
-      selectedEmployeeProfile.clockingSettings
-        .requiresCustomerSignatureForClockOut &&
-      !repairOrder.customerSignature
-    ) {
-      alert(
-        "This employee profile requires a customer signature before job clock-out."
-      );
-      return;
+  if (
+    selectedEmployeeProfile.clockingSettings
+      .requiresCustomerSignatureForClockOut &&
+    !repairOrder.customerSignature
+  ) {
+    alert(
+      "This employee profile requires a customer signature before job clock-out."
+    );
+    return;
+  }
+
+  const now = new Date().toISOString();
+
+  const elapsedMinutes = calculateElapsedMinutes(
+    activeLaborEntry.clockInDate ?? now,
+    now
+  );
+
+  const actualClockHours = Number((elapsedMinutes / 60).toFixed(2));
+
+  const generatedJobHours = getGeneratedJobHours(
+    selectedEmployeeProfile,
+    actualClockHours
+  );
+
+  const customerLaborHours = getCustomerLaborHours(
+    selectedEmployeeProfile,
+    actualClockHours,
+    generatedJobHours
+  );
+
+  const customerLaborTotal = getCustomerLaborTotal(
+    selectedEmployeeProfile,
+    actualClockHours,
+    generatedJobHours
+  );
+
+  const payrollHours = getPayrollHours(
+    selectedEmployeeProfile,
+    actualClockHours,
+    generatedJobHours
+  );
+
+  const payrollRate = getPayrollRate(selectedEmployeeProfile);
+  const payrollAmount = getPayrollAmount(
+    selectedEmployeeProfile,
+    payrollHours
+  );
+
+  const payrollSettings = selectedEmployeeProfile.payrollSettings;
+  const billingSettings = selectedEmployeeProfile.billingSettings;
+  const metricSettings = selectedEmployeeProfile.metricSettings;
+
+  const updatedLaborEntries = repairOrder.laborEntries.map((laborEntry) => {
+    if (laborEntry.id !== activeLaborEntry.id) {
+      return laborEntry;
     }
 
-    const now = new Date().toISOString();
-    const elapsedMinutes = calculateElapsedMinutes(
-      activeLaborEntry.clockInDate ?? now,
-      now
-    );
-    const hours = Number((elapsedMinutes / 60).toFixed(2));
+    const updatedLaborEntry: RepairOrderLaborEntry = {
+      ...laborEntry,
 
-    const customerLaborTotal = getCustomerLaborTotal(
-      selectedEmployeeProfile,
-      hours
-    );
-    const payrollAmount = getPayrollAmount(
-      selectedEmployeeProfile,
-      hours,
-      customerLaborTotal
-    );
+      clockOutDate: now,
+      clockOutMethod: getClockOutMethod(selectedEmployeeProfile),
 
-    const payrollSettings = selectedEmployeeProfile.payrollSettings;
-    const billingSettings = selectedEmployeeProfile.billingSettings;
-    const metricSettings = selectedEmployeeProfile.metricSettings;
+      customerSignatureRequiredForClockOut:
+        selectedEmployeeProfile.clockingSettings
+          .requiresCustomerSignatureForClockOut,
+      customerSignatureCapturedForClockOut: Boolean(
+        repairOrder.customerSignature
+      ),
+      customerSignatureUrlForClockOut:
+        repairOrder.customerSignature?.signatureDataUrl,
 
-    const updatedLaborEntries = repairOrder.laborEntries.map((laborEntry) => {
-      if (laborEntry.id !== activeLaborEntry.id) {
-        return laborEntry;
-      }
+      hours: actualClockHours,
+      totalMinutes: elapsedMinutes,
 
-      const updatedLaborEntry: RepairOrderLaborEntry = {
-        ...laborEntry,
+      laborRate: billingSettings.defaultCustomerLaborRate,
+      rateSource: "Company Billing Settings",
 
-        clockOutDate: now,
-        clockOutMethod: getClockOutMethod(selectedEmployeeProfile),
+      customerBillingMode: billingSettings.defaultCustomerBillingMode,
+      billableToCustomer: billingSettings.canGenerateCustomerLaborCharges,
+      customerLaborRate: billingSettings.defaultCustomerLaborRate,
+      customerLaborHours,
+      customerLaborTotal,
+      customerMinimumLaborCharge: billingSettings.minimumLaborCharge,
+      customerFlatJobLaborAmount: billingSettings.flatJobLaborAmount,
 
-        customerSignatureRequiredForClockOut:
-          selectedEmployeeProfile.clockingSettings
-            .requiresCustomerSignatureForClockOut,
-        customerSignatureCapturedForClockOut: Boolean(
-          repairOrder.customerSignature
-        ),
-        customerSignatureUrlForClockOut:
-          repairOrder.customerSignature?.signatureDataUrl,
+      payrollEligible: payrollSettings.payrollEligible,
+      payrollRate,
+      payrollHours,
+      payrollAmount,
+      salaryAttendanceOnly: payrollSettings.payType === "Salary",
 
-        hours,
-        totalMinutes: elapsedMinutes,
+      metricEligible: metricSettings.includedInCompanyMetrics,
+      metricLaborHours: metricSettings.countsTowardLaborHours
+        ? actualClockHours
+        : 0,
+      metricLaborRevenue: metricSettings.countsTowardLaborRevenue
+        ? customerLaborTotal
+        : 0,
+      metricUtilizationHours: metricSettings.countsTowardUtilization
+        ? actualClockHours
+        : 0,
+      metricEfficiencyHours: metricSettings.countsTowardEfficiency
+        ? generatedJobHours
+        : 0,
+      metricComebackEligible: metricSettings.countsTowardComebacks,
+      metricFirstTimeFixEligible: metricSettings.countsTowardFirstTimeFixRate,
+      metricCustomerSatisfactionEligible:
+        metricSettings.countsTowardCustomerSatisfaction,
 
-        laborRate: billingSettings.defaultCustomerLaborRate,
-        rateSource: "Company Billing Settings",
+      total: customerLaborTotal,
 
-        customerBillingMode: billingSettings.defaultCustomerBillingMode,
-        billableToCustomer: billingSettings.canGenerateCustomerLaborCharges,
-        customerLaborRate: billingSettings.defaultCustomerLaborRate,
-        customerLaborHours: hours,
-        customerLaborTotal,
-        customerMinimumLaborCharge: billingSettings.minimumLaborCharge,
-        customerFlatJobLaborAmount: billingSettings.flatJobLaborAmount,
+      notes: "Labor clock closed from Employee Setup rules.",
+      updatedDate: now,
+    };
 
-        payrollEligible: payrollSettings.payrollEligible,
-        payrollRate:
-          payrollSettings.payType === "Hourly"
-            ? payrollSettings.hourlyPayRate
-            : 0,
-        payrollHours: hours,
-        payrollAmount,
-        salaryAttendanceOnly: payrollSettings.payType === "Salary",
+    return updatedLaborEntry;
+  });
 
-        metricEligible: metricSettings.includedInCompanyMetrics,
-        metricLaborHours: metricSettings.countsTowardLaborHours ? hours : 0,
-        metricLaborRevenue: metricSettings.countsTowardLaborRevenue
-          ? customerLaborTotal
-          : 0,
-        metricUtilizationHours: metricSettings.countsTowardUtilization
-          ? hours
-          : 0,
-        metricEfficiencyHours: metricSettings.countsTowardEfficiency ? hours : 0,
-        metricComebackEligible: metricSettings.countsTowardComebacks,
-        metricFirstTimeFixEligible: metricSettings.countsTowardFirstTimeFixRate,
-        metricCustomerSatisfactionEligible:
-          metricSettings.countsTowardCustomerSatisfaction,
+  updateRepairOrder(repairOrder.id, {
+    laborEntries: updatedLaborEntries,
+  });
 
-        total: customerLaborTotal,
-
-        notes: "Labor clock closed from Employee Setup rules.",
-        updatedDate: now,
-      };
-
-      return updatedLaborEntry;
-    });
-
-    updateRepairOrder(repairOrder.id, {
-      laborEntries: updatedLaborEntries,
-    });
-
-    loadRepairOrder();
-  }
+  loadRepairOrder();
+}
 
   if (!repairOrder) {
     return (

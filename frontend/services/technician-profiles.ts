@@ -96,12 +96,37 @@ function getCompensationPayType(
   );
 }
 
+function getLegacyFlatRatePayRate(
+  compensation: UnknownRecord | undefined,
+  fallback = 0
+): number {
+  if (!compensation) {
+    return fallback;
+  }
+
+  return safeNumber(
+    compensation.flatRatePayRate,
+    safeNumber(
+      compensation.hourlyRate,
+      safeNumber(
+        compensation.baseHourlyRate,
+        safeNumber(compensation.laborRate, fallback)
+      )
+    )
+  );
+}
+
 function normalizeCompensation(
   value: unknown,
   payType: EmployeePayType
 ): TechnicianProfileCompensation {
   const source = isRecord(value) ? value : {};
   const fallback = createDefaultCompensationSettings(payType);
+
+  const flatRatePayRate = safeNumber(
+    source.flatRatePayRate,
+    getLegacyFlatRatePayRate(source, fallback.flatRatePayRate)
+  );
 
   return {
     ...fallback,
@@ -126,6 +151,8 @@ function normalizeCompensation(
       fallback.baseHourlyRate
     ),
     laborRate: safeNumber(source.laborRate, fallback.laborRate),
+
+    flatRatePayRate,
 
     flatRatePayPercent: safeNumber(
       source.flatRatePayPercent,
@@ -177,9 +204,15 @@ export function normalizeTechnicianProfile(value: unknown): TechnicianProfile {
   const compensationSource = isRecord(source.compensation)
     ? source.compensation
     : undefined;
+
   const payType = getCompensationPayType(compensationSource);
+  const normalizedCompensation = normalizeCompensation(
+    source.compensation,
+    payType
+  );
 
   const defaultProfile = createDefaultTechnicianProfileInput(displayName);
+
   const payrollSettingsSource = isRecord(source.payrollSettings)
     ? source.payrollSettings
     : {};
@@ -196,23 +229,37 @@ export function normalizeTechnicianProfile(value: unknown): TechnicianProfile {
   const payrollSettings = {
     ...getDefaultPayrollSettings(payType),
     ...payrollSettingsSource,
+
     payType,
+
     hourlyPayRate: safeNumber(
       payrollSettingsSource.hourlyPayRate,
-      safeNumber(compensationSource?.hourlyRate)
+      safeNumber(
+        compensationSource?.hourlyRate,
+        safeNumber(compensationSource?.baseHourlyRate)
+      )
     ),
+
+    flatRatePayRate: safeNumber(
+      payrollSettingsSource.flatRatePayRate,
+      normalizedCompensation.flatRatePayRate ?? 0
+    ),
+
     flatRatePayPercent: safeNumber(
       payrollSettingsSource.flatRatePayPercent,
       safeNumber(compensationSource?.flatRatePayPercent)
     ),
+
     salaryAnnualAmount: safeNumber(
       payrollSettingsSource.salaryAnnualAmount,
       safeNumber(compensationSource?.salaryAnnualAmount)
     ),
+
     payrollEligible: safeBoolean(
       payrollSettingsSource.payrollEligible,
       safeBoolean(compensationSource?.payrollEligible, true)
     ),
+
     payrollNotes: safeString(payrollSettingsSource.payrollNotes),
   };
 
@@ -224,16 +271,20 @@ export function normalizeTechnicianProfile(value: unknown): TechnicianProfile {
   const billingSettings = {
     ...getDefaultBillingSettings(),
     ...billingSettingsSource,
+
     defaultCustomerLaborRate: safeNumber(
       billingSettingsSource.defaultCustomerLaborRate,
       safeNumber(compensationSource?.laborRate, 145)
     ),
+
     minimumLaborCharge: safeNumber(billingSettingsSource.minimumLaborCharge),
     flatJobLaborAmount: safeNumber(billingSettingsSource.flatJobLaborAmount),
+
     canGenerateCustomerLaborCharges: safeBoolean(
       billingSettingsSource.canGenerateCustomerLaborCharges,
       true
     ),
+
     billingNotes: safeString(billingSettingsSource.billingNotes),
   };
 
@@ -247,7 +298,14 @@ export function normalizeTechnicianProfile(value: unknown): TechnicianProfile {
 
     userId: safeString(source.userId, safeString(source.id)),
     active: safeBoolean(source.active, true),
-    compensation: normalizeCompensation(source.compensation, payType),
+
+    compensation: {
+      ...normalizedCompensation,
+      flatRatePayRate: payrollSettings.flatRatePayRate,
+      hourlyRate: payrollSettings.hourlyPayRate,
+      salaryAnnualAmount: payrollSettings.salaryAnnualAmount,
+      payrollEligible: payrollSettings.payrollEligible,
+    },
 
     technicianNumber: safeString(
       source.technicianNumber,
@@ -489,3 +547,11 @@ export function seedTechnicianProfile(
 
   return createTechnicianProfile(input);
 }
+
+export const getTechnicians = getTechnicianProfiles;
+export const saveTechnicians = saveTechnicianProfiles;
+export const createTechnician = createTechnicianProfile;
+export const updateTechnician = updateTechnicianProfile;
+export const deleteTechnician = deleteTechnicianProfile;
+export const getTechnicianById = getTechnicianProfileById;
+export const getActiveTechnicians = getActiveTechnicianProfiles;

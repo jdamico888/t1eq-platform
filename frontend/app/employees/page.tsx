@@ -558,12 +558,12 @@ export default function EmployeesPage() {
                   />
 
                   <NumberField
-                    label="Flat Rate Pay Percent"
-                    value={formData.payrollSettings.flatRatePayPercent}
+                    label="Flat Rate Pay Rate"
+                    value={formData.payrollSettings.flatRatePayRate}
                     onChange={(value) =>
-                      handlePayrollNumberChange("flatRatePayPercent", value)
-                    }
-                  />
+                      handlePayrollNumberChange("flatRatePayRate", value)
+                 }
+                   />
 
                   <NumberField
                     label="Salary Annual Amount"
@@ -899,6 +899,10 @@ export default function EmployeesPage() {
                           {formatMoney(
                             employee.billingSettings.defaultCustomerLaborRate
                           )}
+                        </p>
+                        <p>
+                          Flat Rate Pay:{" "}
+                           {formatMoney(employee.payrollSettings.flatRatePayRate)}
                         </p>
                       </div>
                     </div>
