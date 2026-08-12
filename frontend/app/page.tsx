@@ -1,0 +1,573 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+
+import type { CompanyTool } from "@/types/company-tool";
+import type { InventoryDiscrepancy } from "@/types/inventory-discrepancy";
+import type { InventoryItem } from "@/types/inventory-item";
+import type { PurchaseOrder } from "@/types/purchase-order";
+import type { Truck } from "@/types/truck-stock";
+
+import { getCompanyTools } from "@/services/company-tools";
+import { getInventoryDiscrepancies } from "@/services/inventory-discrepancies";
+import { getInventoryItems, getLowStockItems } from "@/services/inventory";
+import { getPurchaseOrders } from "@/services/purchase-orders";
+import { getTrucks } from "@/services/truck-stock";
+
+type DashboardTileTone = "Normal" | "Attention" | "Warning" | "Good";
+
+type DashboardTileMetric = {
+  label: string;
+  value: string | number;
+};
+
+type DashboardCategoryTile = {
+  title: string;
+  description: string;
+  href: string;
+  metrics: DashboardTileMetric[];
+  tone?: DashboardTileTone;
+};
+
+type LocalCounts = {
+  repairOrders: number;
+  openRepairOrders: number;
+  completedRepairOrders: number;
+  waitingPartsRepairOrders: number;
+  dispatchJobs: number;
+  activeDispatchJobs: number;
+  invoices: number;
+  openInvoices: number;
+  paidInvoices: number;
+  customers: number;
+  equipment: number;
+  suppliers: number;
+  users: number;
+};
+
+const pageClass = "min-h-screen bg-zinc-100 p-6 text-black";
+
+const pageHeaderClass =
+  "mb-6 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm";
+
+const sectionClass =
+  "rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm";
+
+const dashboardGridClass =
+  "grid auto-rows-fr gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4";
+
+const baseTileClass =
+  "flex h-full min-h-[250px] flex-col rounded-2xl border p-5 text-left shadow-sm transition hover:shadow-md";
+
+const normalTileClass =
+  `${baseTileClass} border-zinc-200 bg-white hover:border-zinc-400`;
+
+const attentionTileClass =
+  `${baseTileClass} border-orange-300 bg-orange-50 hover:border-orange-500`;
+
+const warningTileClass =
+  `${baseTileClass} border-red-300 bg-red-50 hover:border-red-500`;
+
+const goodTileClass =
+  `${baseTileClass} border-green-300 bg-green-50 hover:border-green-500`;
+
+const linkButtonClass =
+  "inline-flex items-center justify-center rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm font-bold text-black shadow-sm transition hover:bg-zinc-50";
+
+const metricBoxClass =
+  "rounded-xl border border-zinc-200 bg-white px-3 py-2 shadow-sm";
+
+function getTileClass(tone: DashboardTileTone = "Normal") {
+  if (tone === "Warning") {
+    return warningTileClass;
+  }
+
+  if (tone === "Attention") {
+    return attentionTileClass;
+  }
+
+  if (tone === "Good") {
+    return goodTileClass;
+  }
+
+  return normalTileClass;
+}
+
+function safeReadLocalStorageArray(key: string) {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  const storedValue = localStorage.getItem(key);
+
+  if (!storedValue) {
+    return [];
+  }
+
+  try {
+    const parsedValue = JSON.parse(storedValue);
+
+    if (!Array.isArray(parsedValue)) {
+      return [];
+    }
+
+    return parsedValue;
+  } catch {
+    return [];
+  }
+}
+
+function getStatusValue(record: unknown) {
+  if (!record || typeof record !== "object") {
+    return "";
+  }
+
+  const possibleRecord = record as {
+    status?: unknown;
+    repairOrderStatus?: unknown;
+    invoiceStatus?: unknown;
+    dispatchStatus?: unknown;
+  };
+
+  const status =
+    possibleRecord.status ??
+    possibleRecord.repairOrderStatus ??
+    possibleRecord.invoiceStatus ??
+    possibleRecord.dispatchStatus ??
+    "";
+
+  return typeof status === "string" ? status : "";
+}
+
+function statusIsOpen(status: string) {
+  return ![
+    "Completed",
+    "Closed",
+    "Invoiced",
+    "Paid",
+    "Cancelled",
+    "Canceled",
+    "Resolved",
+    "Dismissed",
+  ].includes(status);
+}
+
+function statusMatches(status: string, targetStatuses: string[]) {
+  return targetStatuses.includes(status);
+}
+
+function loadLocalCounts(): LocalCounts {
+  const repairOrders = safeReadLocalStorageArray("t1eq-repair-orders");
+  const dispatchJobs = safeReadLocalStorageArray("t1eq-dispatch-jobs");
+  const invoices = safeReadLocalStorageArray("t1eq-invoices");
+  const customers = safeReadLocalStorageArray("t1eq-customers");
+  const equipment = safeReadLocalStorageArray("t1eq-equipment");
+  const suppliers = safeReadLocalStorageArray("t1eq-suppliers");
+  const users = safeReadLocalStorageArray("t1eq-users");
+
+  return {
+    repairOrders: repairOrders.length,
+    openRepairOrders: repairOrders.filter((record) =>
+      statusIsOpen(getStatusValue(record))
+    ).length,
+    completedRepairOrders: repairOrders.filter((record) =>
+      statusMatches(getStatusValue(record), ["Completed", "Closed", "Invoiced"])
+    ).length,
+    waitingPartsRepairOrders: repairOrders.filter((record) =>
+      statusMatches(getStatusValue(record), ["Waiting Parts"])
+    ).length,
+    dispatchJobs: dispatchJobs.length,
+    activeDispatchJobs: dispatchJobs.filter((record) =>
+      statusIsOpen(getStatusValue(record))
+    ).length,
+    invoices: invoices.length,
+    openInvoices: invoices.filter((record) =>
+      statusIsOpen(getStatusValue(record))
+    ).length,
+    paidInvoices: invoices.filter((record) =>
+      statusMatches(getStatusValue(record), ["Paid", "Closed"])
+    ).length,
+    customers: customers.length,
+    equipment: equipment.length,
+    suppliers: suppliers.length,
+    users: users.length,
+  };
+}
+
+function isOpenPurchaseOrder(purchaseOrder: PurchaseOrder) {
+  return ["Draft", "Open", "Ordered", "Partially Received"].includes(
+    purchaseOrder.status
+  );
+}
+
+function isReceivedPurchaseOrder(purchaseOrder: PurchaseOrder) {
+  return purchaseOrder.status === "Received";
+}
+
+function isDraftPurchaseOrder(purchaseOrder: PurchaseOrder) {
+  return purchaseOrder.status === "Draft";
+}
+
+function isOrderedPurchaseOrder(purchaseOrder: PurchaseOrder) {
+  return purchaseOrder.status === "Ordered";
+}
+
+function isOpenInventoryDiscrepancy(discrepancy: InventoryDiscrepancy) {
+  return (
+    discrepancy.status === "Open" || discrepancy.status === "Under Review"
+  );
+}
+
+function isAvailableTool(tool: CompanyTool) {
+  return tool.status === "Available";
+}
+
+function isAssignedTool(tool: CompanyTool) {
+  return tool.status === "Assigned";
+}
+
+function DashboardCategoryCard({
+  title,
+  description,
+  href,
+  metrics,
+  tone = "Normal",
+}: DashboardCategoryTile) {
+  return (
+    <a
+      href={href}
+      data-t1eq-tile="true"
+      data-t1eq-page-card="true"
+      className={getTileClass(tone)}
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <div className="text-xs font-black uppercase tracking-[0.22em] text-zinc-500">
+            Operations Area
+          </div>
+
+          <h2 className="mt-2 text-2xl font-black text-black">{title}</h2>
+        </div>
+
+        <div className="rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs font-black uppercase tracking-wide text-zinc-600">
+          Open
+        </div>
+      </div>
+
+      <div className="mt-5 grid grid-cols-2 gap-2">
+        {metrics.map((metric) => (
+          <div key={metric.label} className={metricBoxClass}>
+            <div className="text-xs font-black uppercase tracking-wide text-zinc-500">
+              {metric.label}
+            </div>
+
+            <div className="mt-1 text-2xl font-black text-black">
+              {metric.value}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <p className="mt-4 text-sm font-semibold leading-6 text-zinc-600">
+        {description}
+      </p>
+
+      <div className="mt-auto pt-5">
+        <div className="rounded-xl border border-zinc-300 bg-white px-4 py-2 text-center text-sm font-black text-black shadow-sm">
+          Open {title}
+        </div>
+      </div>
+    </a>
+  );
+}
+
+export default function OperationsDashboardPage() {
+  const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
+  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
+  const [lowStockItems, setLowStockItems] = useState<InventoryItem[]>([]);
+  const [inventoryDiscrepancies, setInventoryDiscrepancies] = useState<
+    InventoryDiscrepancy[]
+  >([]);
+  const [companyTools, setCompanyTools] = useState<CompanyTool[]>([]);
+  const [trucks, setTrucks] = useState<Truck[]>([]);
+  const [localCounts, setLocalCounts] = useState<LocalCounts>({
+    repairOrders: 0,
+    openRepairOrders: 0,
+    completedRepairOrders: 0,
+    waitingPartsRepairOrders: 0,
+    dispatchJobs: 0,
+    activeDispatchJobs: 0,
+    invoices: 0,
+    openInvoices: 0,
+    paidInvoices: 0,
+    customers: 0,
+    equipment: 0,
+    suppliers: 0,
+    users: 0,
+  });
+
+  useEffect(() => {
+    setPurchaseOrders(getPurchaseOrders());
+    setInventoryItems(getInventoryItems());
+    setLowStockItems(getLowStockItems());
+    setInventoryDiscrepancies(getInventoryDiscrepancies());
+    setCompanyTools(getCompanyTools());
+    setTrucks(getTrucks());
+    setLocalCounts(loadLocalCounts());
+  }, []);
+
+  const openPurchaseOrders = useMemo(
+    () => purchaseOrders.filter(isOpenPurchaseOrder),
+    [purchaseOrders]
+  );
+
+  const draftPurchaseOrders = useMemo(
+    () => purchaseOrders.filter(isDraftPurchaseOrder),
+    [purchaseOrders]
+  );
+
+  const orderedPurchaseOrders = useMemo(
+    () => purchaseOrders.filter(isOrderedPurchaseOrder),
+    [purchaseOrders]
+  );
+
+  const receivedPurchaseOrders = useMemo(
+    () => purchaseOrders.filter(isReceivedPurchaseOrder),
+    [purchaseOrders]
+  );
+
+  const openInventoryDiscrepancies = useMemo(
+    () => inventoryDiscrepancies.filter(isOpenInventoryDiscrepancy),
+    [inventoryDiscrepancies]
+  );
+
+  const availableTools = useMemo(
+    () => companyTools.filter(isAvailableTool),
+    [companyTools]
+  );
+
+  const assignedTools = useMemo(
+    () => companyTools.filter(isAssignedTool),
+    [companyTools]
+  );
+
+  const dashboardCategories: DashboardCategoryTile[] = [
+    {
+      title: "Repair Orders",
+      description:
+        "Active repair workflow from customer complaint through technician action items, parts, labor, signature, and invoice handoff.",
+      href: "/repair-orders",
+      tone: localCounts.openRepairOrders > 0 ? "Attention" : "Good",
+      metrics: [
+        { label: "Total", value: localCounts.repairOrders },
+        { label: "Open", value: localCounts.openRepairOrders },
+        { label: "Waiting Parts", value: localCounts.waitingPartsRepairOrders },
+        { label: "Completed", value: localCounts.completedRepairOrders },
+      ],
+    },
+    {
+      title: "Dispatch",
+      description:
+        "Field movement, technician assignment, route status, urgent calls, waiting parts, and customer arrival workflow.",
+      href: "/dispatch",
+      tone: localCounts.activeDispatchJobs > 0 ? "Attention" : "Normal",
+      metrics: [
+        { label: "Total", value: localCounts.dispatchJobs },
+        { label: "Active", value: localCounts.activeDispatchJobs },
+        { label: "Routes", value: localCounts.dispatchJobs },
+        { label: "Techs", value: localCounts.users },
+      ],
+    },
+    {
+      title: "Invoicing",
+      description:
+        "Billing status, repair order charges, parts totals, labor totals, customer invoice creation, and payment closure.",
+      href: "/invoices",
+      tone: localCounts.openInvoices > 0 ? "Attention" : "Good",
+      metrics: [
+        { label: "Total", value: localCounts.invoices },
+        { label: "Open", value: localCounts.openInvoices },
+        { label: "Paid", value: localCounts.paidInvoices },
+        { label: "RO Billing", value: localCounts.completedRepairOrders },
+      ],
+    },
+    {
+      title: "Inventory",
+      description:
+        "Stocked parts, receiving, tools, inventory transactions, discrepancies, truck stock, and mobile inventory movement.",
+      href: "/inventory",
+      tone:
+        lowStockItems.length > 0 || openInventoryDiscrepancies.length > 0
+          ? "Warning"
+          : "Good",
+      metrics: [
+        { label: "Items", value: inventoryItems.length },
+        { label: "Low Stock", value: lowStockItems.length },
+        { label: "Discrep.", value: openInventoryDiscrepancies.length },
+        { label: "Tools", value: companyTools.length },
+      ],
+    },
+    {
+      title: "Purchase Orders",
+      description:
+        "Purchasing from supplier order through receiving, warehouse stock, truck stock, direct-charge RO parts, and cost control.",
+      href: "/purchase-orders",
+      tone: openPurchaseOrders.length > 0 ? "Attention" : "Good",
+      metrics: [
+        { label: "Total", value: purchaseOrders.length },
+        { label: "Open", value: openPurchaseOrders.length },
+        { label: "Ordered", value: orderedPurchaseOrders.length },
+        { label: "Received", value: receivedPurchaseOrders.length },
+      ],
+    },
+    {
+      title: "Accounting",
+      description:
+        "Invoicing, payroll, purchase orders, supplier spend, technician pay, labor cost, parts cost, and accounting review.",
+      href: "/invoices",
+      tone: localCounts.openInvoices > 0 ? "Attention" : "Normal",
+      metrics: [
+        { label: "Invoices", value: localCounts.invoices },
+        { label: "Open Inv.", value: localCounts.openInvoices },
+        { label: "POs", value: purchaseOrders.length },
+        { label: "Payroll", value: "Pay" },
+      ],
+    },
+    {
+      title: "Customers",
+      description:
+        "Customer records, service locations, site addresses, equipment ownership, repair history, and billing relationships.",
+      href: "/customers",
+      metrics: [
+        { label: "Customers", value: localCounts.customers },
+        { label: "Equipment", value: localCounts.equipment },
+        { label: "ROs", value: localCounts.repairOrders },
+        { label: "Invoices", value: localCounts.invoices },
+      ],
+    },
+    {
+      title: "Equipment",
+      description:
+        "Customer equipment, model and serial data, service history, inspection records, repair orders, photos, and asset movement.",
+      href: "/equipment",
+      metrics: [
+        { label: "Assets", value: localCounts.equipment },
+        { label: "Customers", value: localCounts.customers },
+        { label: "ROs", value: localCounts.repairOrders },
+        { label: "Photos", value: "Req." },
+      ],
+    },
+    {
+      title: "Scheduling",
+      description:
+        "Technician workload, recurring service, field appointments, customer commitments, dispatch preparation, and capacity.",
+      href: "/scheduling",
+      metrics: [
+        { label: "Calendar", value: "Plan" },
+        { label: "Dispatch", value: localCounts.dispatchJobs },
+        { label: "Techs", value: localCounts.users },
+        { label: "Open ROs", value: localCounts.openRepairOrders },
+      ],
+    },
+    {
+      title: "Payroll",
+      description:
+        "Technician labor entries, flat-rate work, mileage, hourly time, completed jobs, and payroll approval.",
+      href: "/payroll",
+      metrics: [
+        { label: "Users", value: localCounts.users },
+        { label: "Open ROs", value: localCounts.openRepairOrders },
+        { label: "Completed", value: localCounts.completedRepairOrders },
+        { label: "Mileage", value: "Track" },
+      ],
+    },
+    {
+      title: "Suppliers",
+      description:
+        "Vendors, parts sources, purchase order suppliers, pricing history, and procurement relationships.",
+      href: "/suppliers",
+      metrics: [
+        { label: "Suppliers", value: localCounts.suppliers },
+        { label: "POs", value: purchaseOrders.length },
+        { label: "Open POs", value: openPurchaseOrders.length },
+        { label: "Drafts", value: draftPurchaseOrders.length },
+      ],
+    },
+    {
+      title: "Users",
+      description:
+        "Technicians, owner access, office users, tax users, future inspectors, permissions, and role-based workflows.",
+      href: "/users",
+      metrics: [
+        { label: "Users", value: localCounts.users },
+        { label: "Dispatch", value: localCounts.dispatchJobs },
+        { label: "Payroll", value: "Pay" },
+        { label: "Roles", value: "Access" },
+      ],
+    },
+  ];
+
+  return (
+    <div className={pageClass}>
+      <header data-t1eq-page-card="true" className={pageHeaderClass}>
+        <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+          <div>
+            <p className="text-sm font-black uppercase tracking-wide text-zinc-500">
+              Tier One Equipment
+            </p>
+
+            <h1 className="mt-2 text-4xl font-black text-black">
+              Operations Dashboard
+            </h1>
+
+            <p className="mt-2 max-w-4xl text-base font-semibold text-zinc-600">
+              At-a-glance command center for the key operational areas of the
+              business. Each equal-size tile shows multiple live status values
+              and opens the category main menu when clicked.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <a href="/repair-orders" className={linkButtonClass}>
+              Repair Orders
+            </a>
+
+            <a href="/dispatch" className={linkButtonClass}>
+              Dispatch
+            </a>
+
+            <a href="/invoices" className={linkButtonClass}>
+              Invoices
+            </a>
+
+            <a href="/inventory" className={linkButtonClass}>
+              Inventory
+            </a>
+          </div>
+        </div>
+      </header>
+
+      <section data-t1eq-page-card="true" className={sectionClass}>
+        <div className="mb-5">
+          <p className="text-sm font-black uppercase tracking-wide text-zinc-500">
+            Command Center
+          </p>
+
+          <h2 className="mt-1 text-2xl font-black text-black">
+            Operational Category Tiles
+          </h2>
+
+          <p className="mt-1 text-sm font-semibold text-zinc-600">
+            Click any tile to open that category’s main menu.
+          </p>
+        </div>
+
+        <div data-t1eq-tile-grid="true" className={dashboardGridClass}>
+          {dashboardCategories.map((category) => (
+            <DashboardCategoryCard key={category.title} {...category} />
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}

@@ -1,0 +1,328 @@
+"use client";
+
+import { useMemo, useState } from "react";
+
+import type {
+  Invoice,
+  InvoiceLineItem,
+  InvoiceStatus,
+} from "@/types/invoice";
+
+type CreateInvoiceModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  onCreateInvoice: (invoice: Invoice) => void;
+};
+
+const createId = () => {
+  return crypto.randomUUID();
+};
+
+const createInvoiceNumber = () => {
+  return `INV-${Date.now()}`;
+};
+
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(value);
+};
+
+export default function CreateInvoiceModal({
+  isOpen,
+  onClose,
+  onCreateInvoice,
+}: CreateInvoiceModalProps) {
+  const [customerId, setCustomerId] = useState("");
+  const [customerName, setCustomerName] = useState("");
+  const [repairOrderId, setRepairOrderId] = useState("");
+  const [repairOrderNumber, setRepairOrderNumber] = useState("");
+  const [description, setDescription] = useState("");
+  const [quantity, setQuantity] = useState(1);
+  const [unitPrice, setUnitPrice] = useState(0);
+  const [taxRate, setTaxRate] = useState(0.04712);
+  const [status, setStatus] = useState<InvoiceStatus>("Open");
+  const [notes, setNotes] = useState("");
+
+  const lineItems = useMemo<InvoiceLineItem[]>(() => {
+    const lineTotal = quantity * unitPrice;
+
+    return [
+      {
+        id: createId(),
+        description: description || "Service / Labor",
+        quantity,
+        unitPrice,
+        total: lineTotal,
+      },
+    ];
+  }, [description, quantity, unitPrice]);
+
+  const subtotal = useMemo(() => {
+    return lineItems.reduce(
+      (total, lineItem) => total + lineItem.total,
+      0
+    );
+  }, [lineItems]);
+
+  const taxAmount = useMemo(() => {
+    return subtotal * taxRate;
+  }, [subtotal, taxRate]);
+
+  const totalAmount = useMemo(() => {
+    return subtotal + taxAmount;
+  }, [subtotal, taxAmount]);
+
+  if (!isOpen) {
+    return null;
+  }
+
+  const handleCreateInvoice = () => {
+    const now = new Date().toISOString();
+
+    const invoice: Invoice = {
+      id: createId(),
+
+      invoiceNumber: createInvoiceNumber(),
+
+      repairOrderId: repairOrderId || undefined,
+      repairOrderNumber: repairOrderNumber || undefined,
+
+      customerId: customerId || createId(),
+      customerName: customerName || "Unknown Customer",
+
+      subtotal,
+      taxAmount,
+      totalAmount,
+
+      status,
+
+      issuedDate: now,
+      dueDate: undefined,
+      paidDate: undefined,
+
+      lineItems,
+
+      notes: notes || undefined,
+
+      createdDate: now,
+      updatedDate: now,
+    };
+
+    onCreateInvoice(invoice);
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-6">
+      <div className="w-full max-w-3xl rounded-2xl bg-white p-6 text-black shadow-2xl">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-3xl font-bold">Create Invoice</h2>
+
+            <p className="mt-1 text-sm text-black/60">
+              Create a customer invoice using the current invoice data model.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg border border-black/10 px-3 py-2 text-sm hover:bg-black/5"
+          >
+            Close
+          </button>
+        </div>
+
+        <div className="mt-6 grid gap-4 md:grid-cols-2">
+          <label className="space-y-1">
+            <span className="text-sm font-medium text-black/70">
+              Customer ID
+            </span>
+
+            <input
+              value={customerId}
+              onChange={(event) => setCustomerId(event.target.value)}
+              className="w-full rounded-lg border border-black/10 px-3 py-2"
+              placeholder="CUST-001"
+            />
+          </label>
+
+          <label className="space-y-1">
+            <span className="text-sm font-medium text-black/70">
+              Customer Name
+            </span>
+
+            <input
+              value={customerName}
+              onChange={(event) => setCustomerName(event.target.value)}
+              className="w-full rounded-lg border border-black/10 px-3 py-2"
+              placeholder="Customer name"
+            />
+          </label>
+
+          <label className="space-y-1">
+            <span className="text-sm font-medium text-black/70">
+              Repair Order ID
+            </span>
+
+            <input
+              value={repairOrderId}
+              onChange={(event) => setRepairOrderId(event.target.value)}
+              className="w-full rounded-lg border border-black/10 px-3 py-2"
+              placeholder="Optional"
+            />
+          </label>
+
+          <label className="space-y-1">
+            <span className="text-sm font-medium text-black/70">
+              Repair Order Number
+            </span>
+
+            <input
+              value={repairOrderNumber}
+              onChange={(event) =>
+                setRepairOrderNumber(event.target.value)
+              }
+              className="w-full rounded-lg border border-black/10 px-3 py-2"
+              placeholder="RO-00001"
+            />
+          </label>
+
+          <label className="space-y-1 md:col-span-2">
+            <span className="text-sm font-medium text-black/70">
+              Line Item Description
+            </span>
+
+            <input
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+              className="w-full rounded-lg border border-black/10 px-3 py-2"
+              placeholder="Service / Labor"
+            />
+          </label>
+
+          <label className="space-y-1">
+            <span className="text-sm font-medium text-black/70">
+              Quantity
+            </span>
+
+            <input
+              type="number"
+              value={quantity}
+              onChange={(event) =>
+                setQuantity(Number(event.target.value) || 0)
+              }
+              className="w-full rounded-lg border border-black/10 px-3 py-2"
+              min={0}
+            />
+          </label>
+
+          <label className="space-y-1">
+            <span className="text-sm font-medium text-black/70">
+              Unit Price
+            </span>
+
+            <input
+              type="number"
+              value={unitPrice}
+              onChange={(event) =>
+                setUnitPrice(Number(event.target.value) || 0)
+              }
+              className="w-full rounded-lg border border-black/10 px-3 py-2"
+              min={0}
+              step="0.01"
+            />
+          </label>
+
+          <label className="space-y-1">
+            <span className="text-sm font-medium text-black/70">
+              Tax Rate
+            </span>
+
+            <input
+              type="number"
+              value={taxRate}
+              onChange={(event) =>
+                setTaxRate(Number(event.target.value) || 0)
+              }
+              className="w-full rounded-lg border border-black/10 px-3 py-2"
+              min={0}
+              step="0.00001"
+            />
+          </label>
+
+          <label className="space-y-1">
+            <span className="text-sm font-medium text-black/70">
+              Status
+            </span>
+
+            <select
+              value={status}
+              onChange={(event) =>
+                setStatus(event.target.value as InvoiceStatus)
+              }
+              className="w-full rounded-lg border border-black/10 px-3 py-2"
+            >
+              <option value="Draft">Draft</option>
+              <option value="Open">Open</option>
+              <option value="Partial">Partial</option>
+              <option value="Paid">Paid</option>
+              <option value="Overdue">Overdue</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </label>
+
+          <label className="space-y-1 md:col-span-2">
+            <span className="text-sm font-medium text-black/70">
+              Notes
+            </span>
+
+            <textarea
+              value={notes}
+              onChange={(event) => setNotes(event.target.value)}
+              className="min-h-24 w-full rounded-lg border border-black/10 px-3 py-2"
+              placeholder="Optional invoice notes"
+            />
+          </label>
+        </div>
+
+        <div className="mt-6 rounded-xl border border-black/10 bg-black/[0.03] p-4">
+          <div className="flex justify-between text-sm">
+            <span>Subtotal</span>
+            <span>{formatCurrency(subtotal)}</span>
+          </div>
+
+          <div className="mt-2 flex justify-between text-sm">
+            <span>Tax</span>
+            <span>{formatCurrency(taxAmount)}</span>
+          </div>
+
+          <div className="mt-3 flex justify-between border-t border-black/10 pt-3 text-lg font-bold">
+            <span>Total</span>
+            <span>{formatCurrency(totalAmount)}</span>
+          </div>
+        </div>
+
+        <div className="mt-6 flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg border border-black/10 px-4 py-2 hover:bg-black/5"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="button"
+            onClick={handleCreateInvoice}
+            className="rounded-lg bg-black px-4 py-2 font-semibold text-white hover:bg-black/80"
+          >
+            Create Invoice
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
