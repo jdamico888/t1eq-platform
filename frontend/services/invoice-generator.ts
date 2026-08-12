@@ -5,75 +5,14 @@ import type {
   RepairOrderPartEntry,
 } from "@/types/repair-order";
 
-export type InvoiceLineItemType =
-  | "Labor"
-  | "Parts"
-  | "Inspection"
-  | "Repair"
-  | "Other";
+import type {
+  Invoice,
+  InvoiceCustomerSnapshot,
+  InvoiceLineItem,
+  InvoiceLineItemType,
+} from "@/types/invoice";
 
-export type InvoiceLineItem = {
-  id: string;
-  type: InvoiceLineItemType;
-  description: string;
-  quantity: number;
-  unitPrice: number;
-  total: number;
-  sourceId?: string;
-  notes?: string;
-};
-
-export type InvoiceCustomerSnapshot = {
-  customerId?: string;
-  customerName: string;
-  contactName: string;
-  phone: string;
-  email: string;
-  billingAddress: string;
-  serviceAddress: string;
-};
-
-export type GeneratedInvoice = {
-  id: string;
-  invoiceNumber: string;
-
-  repairOrderId: string;
-  repairOrderNumber: string;
-
-  customerId?: string;
-  customerName: string;
-  customerSnapshot: InvoiceCustomerSnapshot;
-
-  siteId?: string;
-  siteName: string;
-
-  equipmentId?: string;
-  equipmentName: string;
-  equipmentDescription: string;
-
-  complaint: string;
-  customerConcern: string;
-  workPerformed: string;
-  recommendations: string;
-  notes: string;
-
-  lineItems: InvoiceLineItem[];
-
-  subtotalLabor: number;
-  subtotalParts: number;
-  subtotalOther: number;
-  subtotal: number;
-  taxRate: number;
-  taxAmount: number;
-  totalAmount: number;
-
-  status: "Draft" | "Issued" | "Paid" | "Void";
-
-  createdDate: string;
-  updatedDate: string;
-};
-
-export type Invoice = GeneratedInvoice;
+export type GeneratedInvoice = Invoice;
 
 function createId(prefix = "INV") {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -88,17 +27,19 @@ function createTimestamp() {
 }
 
 function safeString(value: unknown, fallback = ""): string {
-  if (typeof value !== "string") {
-    return fallback;
-  }
+  return typeof value === "string" ? value : fallback;
+}
 
-  return value;
+function optionalString(value: unknown): string | undefined {
+  const valueString = safeString(value).trim();
+
+  return valueString ? valueString : undefined;
 }
 
 function safeNumber(value: unknown, fallback = 0): number {
   const parsedValue = Number(value);
 
-  if (Number.isNaN(parsedValue)) {
+  if (!Number.isFinite(parsedValue)) {
     return fallback;
   }
 
@@ -210,81 +151,227 @@ function getActionItemDescription(actionItem: RepairOrderActionItem): string {
   return actionItem.title || actionItem.description || actionItem.type;
 }
 
-function createLaborLineItemFromActionItem(
+function shouldKeepLineItem(
+  quantity: number,
+  unitPrice: number,
+  total: number
+): boolean {
+  return quantity > 0 || unitPrice > 0 || total > 0;
+}
+
+function createLineItem({
+  id,
+  type,
+  description,
+  quantity,
+  unitPrice,
+  total,
+  repairOrder,
+  actionItem,
+  sourceId,
+  sourceType,
+  notes,
+}: {
+  id: string;
+  type: InvoiceLineItemType;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  total: number;
+  repairOrder: RepairOrder;
+  actionItem?: RepairOrderActionItem;
+  sourceId?: string;
+  sourceType: InvoiceLineItem["sourceType"];
+  notes?: string;
+}): InvoiceLineItem | null {
+  if (!shouldKeepLineItem(quantity, unitPrice, total)) {
+    return null;
+  }
+
+  return {
+    id,
+    type,
+    description,
+
+    quantity,
+    unitPrice,
+    rate: unitPrice,
+    total,
+
+    repairOrderId: repairOrder.id,
+    repairOrderNumber: getRepairOrderNumber(repairOrder),
+
+    actionItemId: actionItem?.id,
+
+    sourceId,
+    sourceType,
+
+    notes: optionalString(notes),
+  };
+}
+
+function createGeneratedLaborLineItemFromActionItem(
+  repairOrder: RepairOrder,
   actionItem: RepairOrderActionItem
 ): InvoiceLineItem | null {
   const quantity = safeNumber(
-    actionItem.laborHours,
-    safeNumber(actionItem.estimatedLaborHours)
+    actionItem.generatedLaborHours,
+    safeNumber(actionItem.laborHours, safeNumber(actionItem.estimatedLaborHours))
   );
-  const unitPrice = safeNumber(actionItem.laborRate);
-  const total = safeNumber(actionItem.laborTotal, quantity * unitPrice);
+  const unitPrice = safeNumber(
+    actionItem.generatedLaborRate,
+    safeNumber(actionItem.laborRate)
+  );
+  const total = safeNumber(
+    actionItem.generatedLaborTotal,
+    safeNumber(actionItem.laborTotal, quantity * unitPrice)
+  );
 
-  if (quantity <= 0 && unitPrice <= 0 && total <= 0) {
-    return null;
-  }
-
-  return {
-    id: `labor-action-${actionItem.id}`,
+  return createLineItem({
+    id: `generated-labor-${actionItem.id}`,
     type: "Labor",
-    description: `${getActionItemDescription(actionItem)} labor`,
+    description: `Labor: ${getActionItemDescription(actionItem)}`,
     quantity,
     unitPrice,
     total,
+    repairOrder,
+    actionItem,
     sourceId: actionItem.id,
-    notes: actionItem.notes ?? actionItem.completionNotes,
-  };
+    sourceType: "Generated Labor",
+    notes:
+      actionItem.generatedLaborDescription ??
+      actionItem.generationNotes ??
+      actionItem.notes,
+  });
 }
 
-function createPartsLineItemFromActionItem(
+function createGeneratedPartsLineItemFromActionItem(
+  repairOrder: RepairOrder,
   actionItem: RepairOrderActionItem
 ): InvoiceLineItem | null {
-  const total = safeNumber(actionItem.partsTotal);
+  const total = safeNumber(
+    actionItem.generatedPartsTotal,
+    safeNumber(actionItem.partsTotal)
+  );
 
-  if (total <= 0) {
-    return null;
-  }
-
-  return {
-    id: `parts-action-${actionItem.id}`,
+  return createLineItem({
+    id: `generated-parts-${actionItem.id}`,
     type: "Parts",
-    description: `${getActionItemDescription(actionItem)} parts`,
-    quantity: 1,
+    description: `Parts: ${getActionItemDescription(actionItem)}`,
+    quantity: total > 0 ? 1 : 0,
     unitPrice: total,
     total,
+    repairOrder,
+    actionItem,
     sourceId: actionItem.id,
-    notes: actionItem.partsRequired,
-  };
+    sourceType: "Generated Parts",
+    notes:
+      actionItem.generatedPartsDescription ??
+      actionItem.partsRequired ??
+      actionItem.generationNotes,
+  });
+}
+
+function createGeneratedTravelLineItemFromActionItem(
+  repairOrder: RepairOrder,
+  actionItem: RepairOrderActionItem
+): InvoiceLineItem | null {
+  const miles = safeNumber(actionItem.generatedTravelMiles);
+  const hours = safeNumber(actionItem.generatedTravelHours);
+  const rate = safeNumber(actionItem.generatedTravelRate);
+
+  const calculatedTravelTotal = miles * rate;
+
+  const total = safeNumber(
+    actionItem.generatedTravelTotal,
+    calculatedTravelTotal
+  );
+
+  const quantity = miles > 0 ? miles : hours > 0 ? hours : total > 0 ? 1 : 0;
+  const unitPrice =
+    rate > 0 ? rate : quantity > 0 ? Number((total / quantity).toFixed(2)) : 0;
+
+  return createLineItem({
+    id: `generated-travel-${actionItem.id}`,
+    type: "Travel",
+    description: `Travel: ${getActionItemDescription(actionItem)}`,
+    quantity,
+    unitPrice,
+    total,
+    repairOrder,
+    actionItem,
+    sourceId: actionItem.id,
+    sourceType: "Generated Travel",
+    notes:
+      actionItem.generatedTravelDescription ??
+      actionItem.generationNotes,
+  });
+}
+
+function createGeneratedMiscLineItemFromActionItem(
+  repairOrder: RepairOrder,
+  actionItem: RepairOrderActionItem
+): InvoiceLineItem | null {
+  const total = safeNumber(actionItem.generatedMiscTotal);
+
+  return createLineItem({
+    id: `generated-misc-${actionItem.id}`,
+    type: "Misc",
+    description: `Misc: ${getActionItemDescription(actionItem)}`,
+    quantity: total > 0 ? 1 : 0,
+    unitPrice: total,
+    total,
+    repairOrder,
+    actionItem,
+    sourceId: actionItem.id,
+    sourceType: "Generated Misc",
+    notes:
+      actionItem.generatedMiscDescription ??
+      actionItem.generationNotes,
+  });
 }
 
 function createLineItemFromLaborEntry(
-  laborEntry: RepairOrderLaborEntry
+  repairOrder: RepairOrder,
+  laborEntry: RepairOrderLaborEntry,
+  actionItem?: RepairOrderActionItem
 ): InvoiceLineItem | null {
-  const quantity = safeNumber(laborEntry.hours);
-  const unitPrice = safeNumber(laborEntry.laborRate);
-  const total = safeNumber(laborEntry.total, quantity * unitPrice);
+  const quantity = safeNumber(
+    laborEntry.customerLaborHours,
+    safeNumber(laborEntry.hours)
+  );
+  const unitPrice = safeNumber(
+    laborEntry.customerLaborRate,
+    safeNumber(laborEntry.laborRate)
+  );
+  const total = safeNumber(
+    laborEntry.customerLaborTotal,
+    safeNumber(laborEntry.total, quantity * unitPrice)
+  );
 
-  if (quantity <= 0 && unitPrice <= 0 && total <= 0) {
-    return null;
-  }
-
-  return {
+  return createLineItem({
     id: `labor-entry-${laborEntry.id}`,
     type: "Labor",
     description:
       laborEntry.actionItemTitle ??
+      (actionItem ? `Labor: ${getActionItemDescription(actionItem)}` : undefined) ??
       laborEntry.laborType ??
       "Labor",
     quantity,
     unitPrice,
     total,
+    repairOrder,
+    actionItem,
     sourceId: laborEntry.id,
+    sourceType: "Labor Entry",
     notes: laborEntry.notes,
-  };
+  });
 }
 
 function createLineItemFromPartEntry(
-  partEntry: RepairOrderPartEntry
+  repairOrder: RepairOrder,
+  partEntry: RepairOrderPartEntry,
+  actionItem?: RepairOrderActionItem
 ): InvoiceLineItem | null {
   const quantity = safeNumber(partEntry.quantity, 1);
   const unitPrice = safeNumber(
@@ -292,54 +379,79 @@ function createLineItemFromPartEntry(
   );
   const total = safeNumber(partEntry.total, quantity * unitPrice);
 
-  if (quantity <= 0 && unitPrice <= 0 && total <= 0) {
-    return null;
-  }
-
-  return {
+  return createLineItem({
     id: `part-entry-${partEntry.id}`,
     type: "Parts",
     description: `${partEntry.partNumber} - ${partEntry.description}`,
     quantity,
     unitPrice,
     total,
+    repairOrder,
+    actionItem,
     sourceId: partEntry.id,
+    sourceType: "Part Entry",
     notes: partEntry.notes,
-  };
+  });
+}
+
+function buildActionItemInvoiceLines(
+  repairOrder: RepairOrder,
+  actionItem: RepairOrderActionItem
+): InvoiceLineItem[] {
+  const nestedLaborLines = (actionItem.laborEntries ?? [])
+    .map((laborEntry) =>
+      createLineItemFromLaborEntry(repairOrder, laborEntry, actionItem)
+    )
+    .filter((lineItem): lineItem is InvoiceLineItem => Boolean(lineItem));
+
+  const nestedPartLines = (actionItem.partEntries ?? [])
+    .map((partEntry) =>
+      createLineItemFromPartEntry(repairOrder, partEntry, actionItem)
+    )
+    .filter((lineItem): lineItem is InvoiceLineItem => Boolean(lineItem));
+
+  const generatedLaborLine =
+    nestedLaborLines.length > 0
+      ? null
+      : createGeneratedLaborLineItemFromActionItem(repairOrder, actionItem);
+
+  const generatedPartsLine =
+    nestedPartLines.length > 0
+      ? null
+      : createGeneratedPartsLineItemFromActionItem(repairOrder, actionItem);
+
+  const generatedTravelLine = createGeneratedTravelLineItemFromActionItem(
+    repairOrder,
+    actionItem
+  );
+
+  const generatedMiscLine = createGeneratedMiscLineItemFromActionItem(
+    repairOrder,
+    actionItem
+  );
+
+  return [
+    generatedLaborLine,
+    generatedPartsLine,
+    generatedTravelLine,
+    generatedMiscLine,
+    ...nestedLaborLines,
+    ...nestedPartLines,
+  ].filter((lineItem): lineItem is InvoiceLineItem => Boolean(lineItem));
 }
 
 function buildInvoiceLineItems(repairOrder: RepairOrder): InvoiceLineItem[] {
-  const actionItemLines = repairOrder.actionItems.flatMap((actionItem) => {
-    const lines: InvoiceLineItem[] = [];
-
-    const laborLine = createLaborLineItemFromActionItem(actionItem);
-    const partsLine = createPartsLineItemFromActionItem(actionItem);
-
-    if (laborLine) {
-      lines.push(laborLine);
-    }
-
-    if (partsLine) {
-      lines.push(partsLine);
-    }
-
-    const nestedLaborLines = (actionItem.laborEntries ?? [])
-      .map(createLineItemFromLaborEntry)
-      .filter((lineItem): lineItem is InvoiceLineItem => Boolean(lineItem));
-
-    const nestedPartLines = (actionItem.partEntries ?? [])
-      .map(createLineItemFromPartEntry)
-      .filter((lineItem): lineItem is InvoiceLineItem => Boolean(lineItem));
-
-    return [...lines, ...nestedLaborLines, ...nestedPartLines];
-  });
+  const actionItemLines = repairOrder.actionItems.flatMap((actionItem) =>
+    buildActionItemInvoiceLines(repairOrder, actionItem)
+  );
 
   const laborEntryLines = repairOrder.laborEntries
-    .map(createLineItemFromLaborEntry)
+    .filter((laborEntry) => !laborEntry.actionItemId)
+    .map((laborEntry) => createLineItemFromLaborEntry(repairOrder, laborEntry))
     .filter((lineItem): lineItem is InvoiceLineItem => Boolean(lineItem));
 
   const partEntryLines = (repairOrder.partEntries ?? [])
-    .map(createLineItemFromPartEntry)
+    .map((partEntry) => createLineItemFromPartEntry(repairOrder, partEntry))
     .filter((lineItem): lineItem is InvoiceLineItem => Boolean(lineItem));
 
   return [...actionItemLines, ...laborEntryLines, ...partEntryLines];
@@ -354,6 +466,20 @@ function calculateSubtotalByType(
     .reduce((total, lineItem) => total + lineItem.total, 0);
 }
 
+function buildCustomerSnapshot(
+  repairOrder: RepairOrder
+): InvoiceCustomerSnapshot {
+  return {
+    customerId: repairOrder.customerId,
+    customerName: getCustomerName(repairOrder),
+    contactName: getContactName(repairOrder),
+    phone: getPhone(repairOrder),
+    email: getEmail(repairOrder),
+    billingAddress: getBillingAddress(repairOrder),
+    serviceAddress: getServiceAddress(repairOrder),
+  };
+}
+
 export function generateInvoiceFromRepairOrder(
   repairOrder: RepairOrder,
   taxRate = 0
@@ -361,32 +487,16 @@ export function generateInvoiceFromRepairOrder(
   const now = createTimestamp();
   const lineItems = buildInvoiceLineItems(repairOrder);
 
-  const lineItemLaborSubtotal = calculateSubtotalByType(lineItems, "Labor");
-  const lineItemPartsSubtotal = calculateSubtotalByType(lineItems, "Parts");
-  const lineItemOtherSubtotal =
-    lineItems.reduce((total, lineItem) => total + lineItem.total, 0) -
-    lineItemLaborSubtotal -
-    lineItemPartsSubtotal;
+  const subtotalLabor = calculateSubtotalByType(lineItems, "Labor");
+  const subtotalParts = calculateSubtotalByType(lineItems, "Parts");
+  const subtotal = lineItems.reduce(
+    (total, lineItem) => total + lineItem.total,
+    0
+  );
+  const subtotalOther = subtotal - subtotalLabor - subtotalParts;
 
-  const subtotalLabor = safeNumber(
-    repairOrder.subtotalLabor,
-    lineItemLaborSubtotal
-  );
-  const subtotalParts = safeNumber(
-    repairOrder.subtotalParts,
-    lineItemPartsSubtotal
-  );
-  const subtotalOther = safeNumber(
-    repairOrder.subtotalOther,
-    lineItemOtherSubtotal
-  );
-
-  const subtotal = subtotalLabor + subtotalParts + subtotalOther;
   const taxAmount = subtotal * taxRate;
-  const totalAmount = safeNumber(
-    repairOrder.totalAmount,
-    subtotal + taxAmount
-  );
+  const totalAmount = subtotal + taxAmount;
 
   return {
     id: createId("INV"),
@@ -394,18 +504,12 @@ export function generateInvoiceFromRepairOrder(
 
     repairOrderId: repairOrder.id,
     repairOrderNumber: getRepairOrderNumber(repairOrder),
+    repairOrderRO: repairOrder.ro,
 
-    customerId: repairOrder.customerId,
+    customerId: repairOrder.customerId ?? "",
     customerName: getCustomerName(repairOrder),
-    customerSnapshot: {
-      customerId: repairOrder.customerId,
-      customerName: getCustomerName(repairOrder),
-      contactName: getContactName(repairOrder),
-      phone: getPhone(repairOrder),
-      email: getEmail(repairOrder),
-      billingAddress: getBillingAddress(repairOrder),
-      serviceAddress: getServiceAddress(repairOrder),
-    },
+    customer: getCustomerName(repairOrder),
+    customerSnapshot: buildCustomerSnapshot(repairOrder),
 
     siteId: repairOrder.siteId,
     siteName: getSiteName(repairOrder),
@@ -418,19 +522,31 @@ export function generateInvoiceFromRepairOrder(
     customerConcern: getCustomerConcern(repairOrder),
     workPerformed: getWorkPerformed(repairOrder),
     recommendations: getRecommendations(repairOrder),
-    notes: getNotes(repairOrder),
-
-    lineItems,
 
     subtotalLabor,
     subtotalParts,
     subtotalOther,
+
     subtotal,
+
     taxRate,
+    tax: taxAmount,
     taxAmount,
+
     totalAmount,
+    total: totalAmount,
+
+    amountPaid: 0,
+    balanceDue: totalAmount,
 
     status: "Draft",
+
+    invoiceDate: now,
+    issuedDate: now,
+
+    lineItems,
+
+    notes: getNotes(repairOrder),
 
     createdDate: now,
     updatedDate: now,

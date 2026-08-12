@@ -1,147 +1,261 @@
-type StoredInvoiceLineItem = {
-  id: string;
-  description: string;
-  quantity: number;
-  rate?: number;
-  unitPrice?: number;
-  total: number;
-  repairOrderId?: string;
-  repairOrderNumber?: string;
-  actionItemId?: string;
-  notes?: string;
-  [key: string]: any;
-};
+import type {
+  Invoice,
+  InvoiceLineItem,
+  InvoiceLineItemType,
+  InvoiceStatus,
+} from "@/types/invoice";
 
-type StoredInvoice = {
-  id: string;
-  invoiceNumber: string;
+export type { Invoice, InvoiceLineItem };
 
-  customerId: string;
-  customerName: string;
-
-  repairOrderId?: string;
-  repairOrderNumber?: string;
-
-  status: string;
-
-  invoiceDate?: string;
-  dueDate?: string;
-
-  lineItems: StoredInvoiceLineItem[];
-
-  subtotal: number;
-  tax: number;
-  taxAmount: number;
-  total: number;
-  totalAmount: number;
-
-  amountPaid: number;
-  balanceDue: number;
-
-  notes?: string;
-
-  createdDate: string;
-  updatedDate?: string;
-
-  [key: string]: any;
-};
-
-export type Invoice = StoredInvoice;
-export type InvoiceLineItem = StoredInvoiceLineItem;
-export type InvoiceInput = Record<string, any>;
+export type InvoiceInput = Partial<Invoice> & Record<string, unknown>;
 
 const STORAGE_KEY = "t1eq-invoices";
 
-const createId = () => {
-  return `INV-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-};
+function createId(prefix = "INV") {
+  return `${prefix}-${Date.now()}-${Math.random()
+    .toString(36)
+    .slice(2, 8)}`;
+}
 
-const createTimestamp = () => {
+function createTimestamp() {
   return new Date().toISOString();
-};
+}
 
-export function calculateInvoiceTotals(
-  lineItems: StoredInvoiceLineItem[] = [],
-  taxRate = 0
-) {
-  const subtotal = lineItems.reduce((total, lineItem) => {
-    return total + Number(lineItem.total || 0);
-  }, 0);
+function safeString(value: unknown, fallback = ""): string {
+  return typeof value === "string" ? value : fallback;
+}
 
-  const taxAmount = subtotal * taxRate;
-  const total = subtotal + taxAmount;
+function optionalString(value: unknown): string | undefined {
+  const stringValue = safeString(value).trim();
+
+  return stringValue ? stringValue : undefined;
+}
+
+function safeNumber(value: unknown, fallback = 0): number {
+  const parsedValue = Number(value);
+
+  return Number.isFinite(parsedValue) ? parsedValue : fallback;
+}
+
+function normalizeInvoiceStatus(value: unknown): InvoiceStatus {
+  if (
+    value === "Draft" ||
+    value === "Open" ||
+    value === "Issued" ||
+    value === "Paid" ||
+    value === "Partial" ||
+    value === "Overdue" ||
+    value === "Cancelled" ||
+    value === "Void"
+  ) {
+    return value;
+  }
+
+  return "Draft";
+}
+
+function normalizeLineItemType(value: unknown): InvoiceLineItemType {
+  if (
+    value === "Labor" ||
+    value === "Parts" ||
+    value === "Travel" ||
+    value === "Misc" ||
+    value === "Inspection" ||
+    value === "Repair" ||
+    value === "Other"
+  ) {
+    return value;
+  }
+
+  return "Other";
+}
+
+function normalizeInvoiceLineItem(
+  lineItem: Partial<InvoiceLineItem>
+): InvoiceLineItem {
+  const quantity = safeNumber(lineItem.quantity, 1);
+  const unitPrice = safeNumber(lineItem.unitPrice ?? lineItem.rate);
+  const total = safeNumber(lineItem.total, quantity * unitPrice);
 
   return {
+    id: safeString(lineItem.id, createId("LINE")),
+    type: normalizeLineItemType(lineItem.type),
+    description: safeString(lineItem.description, "Invoice line item"),
+
+    quantity,
+
+    unitPrice,
+    rate: lineItem.rate === undefined ? unitPrice : safeNumber(lineItem.rate),
+
+    total,
+
+    repairOrderId: optionalString(lineItem.repairOrderId),
+    repairOrderNumber: optionalString(lineItem.repairOrderNumber),
+
+    actionItemId: optionalString(lineItem.actionItemId),
+
+    sourceId: optionalString(lineItem.sourceId),
+    sourceType: lineItem.sourceType,
+
+    notes: optionalString(lineItem.notes),
+  };
+}
+
+function normalizeInvoiceLineItems(value: unknown): InvoiceLineItem[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .filter(
+      (lineItem): lineItem is Partial<InvoiceLineItem> => Boolean(lineItem)
+    )
+    .map(normalizeInvoiceLineItem);
+}
+
+function calculateSubtotalByType(
+  lineItems: InvoiceLineItem[],
+  type: InvoiceLineItemType
+): number {
+  return lineItems
+    .filter((lineItem) => lineItem.type === type)
+    .reduce((total, lineItem) => total + lineItem.total, 0);
+}
+
+export function calculateInvoiceTotals(
+  lineItems: InvoiceLineItem[] = [],
+  taxRate = 0
+) {
+  const subtotalLabor = calculateSubtotalByType(lineItems, "Labor");
+  const subtotalParts = calculateSubtotalByType(lineItems, "Parts");
+
+  const subtotal = lineItems.reduce(
+    (total, lineItem) => total + lineItem.total,
+    0
+  );
+
+  const subtotalOther = subtotal - subtotalLabor - subtotalParts;
+
+  const taxAmount = subtotal * taxRate;
+  const totalAmount = subtotal + taxAmount;
+
+  return {
+    subtotalLabor,
+    subtotalParts,
+    subtotalOther,
     subtotal,
     tax: taxAmount,
     taxAmount,
-    total,
-    totalAmount: total,
+    total: totalAmount,
+    totalAmount,
   };
 }
 
-function normalizeInvoice(invoice: Record<string, any>): StoredInvoice {
+function normalizeInvoice(invoice: InvoiceInput): Invoice {
   const timestamp = createTimestamp();
 
-  const lineItems: StoredInvoiceLineItem[] = Array.isArray(invoice.lineItems)
-    ? invoice.lineItems
-    : [];
+  const lineItems = normalizeInvoiceLineItems(invoice.lineItems);
 
-  const totals = calculateInvoiceTotals(lineItems, 0);
+  const taxRate = safeNumber(invoice.taxRate);
+  const calculatedTotals = calculateInvoiceTotals(lineItems, taxRate);
 
-  const total = Number(
-    invoice.totalAmount ?? invoice.total ?? totals.total ?? 0
+  const subtotalLabor = safeNumber(
+    invoice.subtotalLabor,
+    calculatedTotals.subtotalLabor
+  );
+  const subtotalParts = safeNumber(
+    invoice.subtotalParts,
+    calculatedTotals.subtotalParts
+  );
+  const subtotalOther = safeNumber(
+    invoice.subtotalOther,
+    calculatedTotals.subtotalOther
   );
 
-  const amountPaid = Number(invoice.amountPaid ?? 0);
+  const subtotal = safeNumber(
+    invoice.subtotal,
+    subtotalLabor + subtotalParts + subtotalOther
+  );
+
+  const taxAmount = safeNumber(
+    invoice.taxAmount ?? invoice.tax,
+    subtotal * taxRate
+  );
+
+  const totalAmount = safeNumber(
+    invoice.totalAmount ?? invoice.total,
+    subtotal + taxAmount
+  );
+
+  const amountPaid = safeNumber(invoice.amountPaid);
+  const balanceDue = safeNumber(invoice.balanceDue, totalAmount - amountPaid);
+
+  const invoiceDate =
+    optionalString(invoice.invoiceDate) ??
+    optionalString(invoice.issuedDate) ??
+    optionalString(invoice.createdDate) ??
+    timestamp;
 
   return {
-    ...invoice,
+    id: safeString(invoice.id, createId("INV")),
 
-    id: String(invoice.id ?? createId()),
+    invoiceNumber: safeString(invoice.invoiceNumber, generateInvoiceNumber()),
 
-    invoiceNumber: String(
-      invoice.invoiceNumber ?? generateInvoiceNumber()
-    ),
+    repairOrderId: optionalString(invoice.repairOrderId),
+    repairOrderNumber: optionalString(invoice.repairOrderNumber),
+    repairOrderRO: optionalString(invoice.repairOrderRO),
 
-    customerId: String(invoice.customerId ?? ""),
-    customerName: String(invoice.customerName ?? "No Customer"),
+    customerId: safeString(invoice.customerId),
+    customerName: safeString(invoice.customerName, "No Customer"),
+    customer: optionalString(invoice.customer),
 
-    repairOrderId: invoice.repairOrderId
-      ? String(invoice.repairOrderId)
-      : undefined,
+    customerSnapshot: invoice.customerSnapshot,
 
-    repairOrderNumber: invoice.repairOrderNumber
-      ? String(invoice.repairOrderNumber)
-      : undefined,
+    siteId: optionalString(invoice.siteId),
+    siteName: optionalString(invoice.siteName),
 
-    status: String(invoice.status ?? "Draft"),
+    equipmentId: optionalString(invoice.equipmentId),
+    equipmentName: optionalString(invoice.equipmentName),
+    equipmentDescription: optionalString(invoice.equipmentDescription),
 
-    invoiceDate: invoice.invoiceDate
-      ? String(invoice.invoiceDate)
-      : String(invoice.createdDate ?? timestamp),
+    complaint: optionalString(invoice.complaint),
+    customerConcern: optionalString(invoice.customerConcern),
+    workPerformed: optionalString(invoice.workPerformed),
+    recommendations: optionalString(invoice.recommendations),
 
-    dueDate: invoice.dueDate ? String(invoice.dueDate) : undefined,
+    subtotalLabor,
+    subtotalParts,
+    subtotalOther,
+
+    subtotal,
+
+    taxRate,
+    tax: taxAmount,
+    taxAmount,
+
+    totalAmount,
+    total: totalAmount,
+
+    amountPaid,
+    balanceDue,
+
+    status: normalizeInvoiceStatus(invoice.status),
+
+    invoiceDate,
+    issuedDate: optionalString(invoice.issuedDate) ?? invoiceDate,
+    dueDate: optionalString(invoice.dueDate),
+    paidDate: optionalString(invoice.paidDate),
 
     lineItems,
 
-    subtotal: Number(invoice.subtotal ?? totals.subtotal ?? 0),
-    tax: Number(invoice.tax ?? totals.tax ?? 0),
-    taxAmount: Number(invoice.taxAmount ?? totals.taxAmount ?? 0),
-    total,
-    totalAmount: total,
+    notes: optionalString(invoice.notes),
 
-    amountPaid,
-    balanceDue: Number(invoice.balanceDue ?? total - amountPaid),
-
-    notes: invoice.notes ? String(invoice.notes) : undefined,
-
-    createdDate: String(invoice.createdDate ?? timestamp),
-    updatedDate: invoice.updatedDate ? String(invoice.updatedDate) : undefined,
+    createdDate: safeString(invoice.createdDate, timestamp),
+    updatedDate: optionalString(invoice.updatedDate),
   };
 }
 
-export function getInvoices(): any[] {
+function readInvoicesStorage(): Invoice[] {
   if (typeof window === "undefined") {
     return [];
   }
@@ -153,7 +267,15 @@ export function getInvoices(): any[] {
   }
 
   try {
-    return (JSON.parse(data) as Record<string, any>[]).map(normalizeInvoice);
+    const parsedValue = JSON.parse(data);
+
+    if (!Array.isArray(parsedValue)) {
+      return [];
+    }
+
+    return parsedValue.map((invoice) =>
+      normalizeInvoice(invoice as InvoiceInput)
+    );
   } catch (error) {
     console.error("Failed to parse invoices.", error);
 
@@ -161,35 +283,54 @@ export function getInvoices(): any[] {
   }
 }
 
-export function saveInvoices(invoices: any[]): void {
+function writeInvoicesStorage(invoices: Invoice[]) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
   localStorage.setItem(STORAGE_KEY, JSON.stringify(invoices));
+  window.dispatchEvent(new Event("t1eq-invoices-changed"));
+}
+
+export function getInvoices(): Invoice[] {
+  return readInvoicesStorage();
+}
+
+export function saveInvoices(invoices: Invoice[]): Invoice[] {
+  const normalizedInvoices = invoices.map((invoice) =>
+    normalizeInvoice(invoice)
+  );
+
+  writeInvoicesStorage(normalizedInvoices);
+
+  return normalizedInvoices;
 }
 
 export function generateInvoiceNumber(): string {
-  const invoices = getInvoices();
-
+  const invoices = readInvoicesStorage();
   const nextNumber = invoices.length + 1;
 
   return `INV-${nextNumber.toString().padStart(5, "0")}`;
 }
 
-export function createInvoice(invoiceInput: InvoiceInput = {}): any {
+export function createInvoice(invoiceInput: InvoiceInput = {}): Invoice {
   const invoices = getInvoices();
-
   const timestamp = createTimestamp();
 
   const newInvoice = normalizeInvoice({
     ...invoiceInput,
 
-    id: createId(),
+    id: invoiceInput.id ?? createId("INV"),
 
-    invoiceNumber: invoiceInput.invoiceNumber ?? generateInvoiceNumber(),
+    invoiceNumber:
+      invoiceInput.invoiceNumber ?? generateInvoiceNumber(),
 
     status: invoiceInput.status ?? "Draft",
 
     invoiceDate: invoiceInput.invoiceDate ?? timestamp,
+    issuedDate: invoiceInput.issuedDate ?? timestamp,
 
-    createdDate: timestamp,
+    createdDate: invoiceInput.createdDate ?? timestamp,
     updatedDate: timestamp,
   });
 
@@ -199,15 +340,15 @@ export function createInvoice(invoiceInput: InvoiceInput = {}): any {
 }
 
 export function updateInvoice(
-  idOrInvoice: string | Record<string, any>,
-  updates?: Record<string, any>
-): any | null {
+  idOrInvoice: string | InvoiceInput,
+  updates?: InvoiceInput
+): Invoice | null {
   const invoices = getInvoices();
 
   const id =
     typeof idOrInvoice === "string"
       ? idOrInvoice
-      : String(idOrInvoice.id);
+      : safeString(idOrInvoice.id);
 
   const existingInvoice = invoices.find((invoice) => invoice.id === id);
 
@@ -221,6 +362,9 @@ export function updateInvoice(
   const updatedInvoice = normalizeInvoice({
     ...existingInvoice,
     ...updatePayload,
+    id: existingInvoice.id,
+    invoiceNumber: existingInvoice.invoiceNumber,
+    createdDate: existingInvoice.createdDate,
     updatedDate: createTimestamp(),
   });
 
@@ -239,19 +383,19 @@ export function deleteInvoice(invoiceId: string): void {
   );
 }
 
-export function getInvoiceById(invoiceId: string): any | undefined {
+export function getInvoiceById(invoiceId: string): Invoice | undefined {
   return getInvoices().find((invoice) => invoice.id === invoiceId);
 }
 
 export function getInvoiceByNumber(
   invoiceNumber: string
-): any | undefined {
+): Invoice | undefined {
   return getInvoices().find(
     (invoice) => invoice.invoiceNumber === invoiceNumber
   );
 }
 
-export function getInvoicesByCustomerId(customerId: string): any[] {
+export function getInvoicesByCustomerId(customerId: string): Invoice[] {
   return getInvoices().filter(
     (invoice) => invoice.customerId === customerId
   );
@@ -259,13 +403,13 @@ export function getInvoicesByCustomerId(customerId: string): any[] {
 
 export function getInvoicesByRepairOrderId(
   repairOrderId: string
-): any[] {
+): Invoice[] {
   return getInvoices().filter(
     (invoice) => invoice.repairOrderId === repairOrderId
   );
 }
 
-export function searchInvoices(searchTerm: string): any[] {
+export function searchInvoices(searchTerm: string): Invoice[] {
   const normalizedSearch = searchTerm.trim().toLowerCase();
 
   if (!normalizedSearch) {
@@ -274,18 +418,12 @@ export function searchInvoices(searchTerm: string): any[] {
 
   return getInvoices().filter((invoice) => {
     return (
-      String(invoice.invoiceNumber ?? "")
+      invoice.invoiceNumber.toLowerCase().includes(normalizedSearch) ||
+      invoice.customerName.toLowerCase().includes(normalizedSearch) ||
+      (invoice.repairOrderNumber ?? "")
         .toLowerCase()
         .includes(normalizedSearch) ||
-      String(invoice.customerName ?? "")
-        .toLowerCase()
-        .includes(normalizedSearch) ||
-      String(invoice.repairOrderNumber ?? "")
-        .toLowerCase()
-        .includes(normalizedSearch) ||
-      String(invoice.status ?? "")
-        .toLowerCase()
-        .includes(normalizedSearch)
+      invoice.status.toLowerCase().includes(normalizedSearch)
     );
   });
 }

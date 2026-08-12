@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import type {
   Invoice,
   InvoiceLineItem,
+  InvoiceLineItemType,
   InvoiceStatus,
 } from "@/types/invoice";
 
@@ -38,6 +39,8 @@ export default function CreateInvoiceModal({
   const [customerName, setCustomerName] = useState("");
   const [repairOrderId, setRepairOrderId] = useState("");
   const [repairOrderNumber, setRepairOrderNumber] = useState("");
+  const [lineItemType, setLineItemType] =
+    useState<InvoiceLineItemType>("Labor");
   const [description, setDescription] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [unitPrice, setUnitPrice] = useState(0);
@@ -51,13 +54,45 @@ export default function CreateInvoiceModal({
     return [
       {
         id: createId(),
+
+        type: lineItemType,
         description: description || "Service / Labor",
+
         quantity,
+
         unitPrice,
+        rate: unitPrice,
+
         total: lineTotal,
+
+        repairOrderId: repairOrderId || undefined,
+        repairOrderNumber: repairOrderNumber || undefined,
+
+        sourceType: "Manual",
+
+        notes: undefined,
       },
     ];
-  }, [description, quantity, unitPrice]);
+  }, [
+    description,
+    lineItemType,
+    quantity,
+    repairOrderId,
+    repairOrderNumber,
+    unitPrice,
+  ]);
+
+  const subtotalLabor = useMemo(() => {
+    return lineItems
+      .filter((lineItem) => lineItem.type === "Labor")
+      .reduce((total, lineItem) => total + lineItem.total, 0);
+  }, [lineItems]);
+
+  const subtotalParts = useMemo(() => {
+    return lineItems
+      .filter((lineItem) => lineItem.type === "Parts")
+      .reduce((total, lineItem) => total + lineItem.total, 0);
+  }, [lineItems]);
 
   const subtotal = useMemo(() => {
     return lineItems.reduce(
@@ -65,6 +100,10 @@ export default function CreateInvoiceModal({
       0
     );
   }, [lineItems]);
+
+  const subtotalOther = useMemo(() => {
+    return subtotal - subtotalLabor - subtotalParts;
+  }, [subtotal, subtotalLabor, subtotalParts]);
 
   const taxAmount = useMemo(() => {
     return subtotal * taxRate;
@@ -88,16 +127,31 @@ export default function CreateInvoiceModal({
 
       repairOrderId: repairOrderId || undefined,
       repairOrderNumber: repairOrderNumber || undefined,
+      repairOrderRO: repairOrderNumber || undefined,
 
       customerId: customerId || createId(),
       customerName: customerName || "Unknown Customer",
+      customer: customerName || "Unknown Customer",
+
+      subtotalLabor,
+      subtotalParts,
+      subtotalOther,
 
       subtotal,
+
+      taxRate,
+      tax: taxAmount,
       taxAmount,
+
       totalAmount,
+      total: totalAmount,
+
+      amountPaid: 0,
+      balanceDue: totalAmount,
 
       status,
 
+      invoiceDate: now,
       issuedDate: now,
       dueDate: undefined,
       paidDate: undefined,
@@ -190,6 +244,28 @@ export default function CreateInvoiceModal({
             />
           </label>
 
+          <label className="space-y-1">
+            <span className="text-sm font-medium text-black/70">
+              Line Item Type
+            </span>
+
+            <select
+              value={lineItemType}
+              onChange={(event) =>
+                setLineItemType(event.target.value as InvoiceLineItemType)
+              }
+              className="w-full rounded-lg border border-black/10 px-3 py-2"
+            >
+              <option value="Labor">Labor</option>
+              <option value="Parts">Parts</option>
+              <option value="Travel">Travel</option>
+              <option value="Misc">Misc</option>
+              <option value="Inspection">Inspection</option>
+              <option value="Repair">Repair</option>
+              <option value="Other">Other</option>
+            </select>
+          </label>
+
           <label className="space-y-1 md:col-span-2">
             <span className="text-sm font-medium text-black/70">
               Line Item Description
@@ -267,10 +343,12 @@ export default function CreateInvoiceModal({
             >
               <option value="Draft">Draft</option>
               <option value="Open">Open</option>
+              <option value="Issued">Issued</option>
               <option value="Partial">Partial</option>
               <option value="Paid">Paid</option>
               <option value="Overdue">Overdue</option>
               <option value="Cancelled">Cancelled</option>
+              <option value="Void">Void</option>
             </select>
           </label>
 
@@ -290,8 +368,18 @@ export default function CreateInvoiceModal({
 
         <div className="mt-6 rounded-xl border border-black/10 bg-black/[0.03] p-4">
           <div className="flex justify-between text-sm">
-            <span>Subtotal</span>
-            <span>{formatCurrency(subtotal)}</span>
+            <span>Labor</span>
+            <span>{formatCurrency(subtotalLabor)}</span>
+          </div>
+
+          <div className="mt-2 flex justify-between text-sm">
+            <span>Parts</span>
+            <span>{formatCurrency(subtotalParts)}</span>
+          </div>
+
+          <div className="mt-2 flex justify-between text-sm">
+            <span>Other</span>
+            <span>{formatCurrency(subtotalOther)}</span>
           </div>
 
           <div className="mt-2 flex justify-between text-sm">
