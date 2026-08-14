@@ -1,0 +1,568 @@
+diff --git a/frontend/components/appearance/ColorSwatchPicker.tsx b/frontend/components/appearance/ColorSwatchPicker.tsx
+new file mode 100644
+index 0000000..f526d4d
+--- /dev/null
++++ b/frontend/components/appearance/ColorSwatchPicker.tsx
+@@ -0,0 +1,110 @@
++"use client";
++
++import { useRef } from "react";
++
++export type ColorSwatch = {
++  name: string;
++  hex: string;
++};
++
++export const DEFAULT_COLOR_SWATCHES: ColorSwatch[] = [
++  { name: "Black", hex: "#000000" },
++  { name: "Charcoal", hex: "#27272a" },
++  { name: "Slate", hex: "#334155" },
++  { name: "Zinc Gray", hex: "#71717a" },
++  { name: "Light Gray", hex: "#d4d4d8" },
++  { name: "White", hex: "#ffffff" },
++  { name: "Tier One Orange", hex: "#e26209" },
++  { name: "Red", hex: "#dc2626" },
++  { name: "Amber", hex: "#d97706" },
++  { name: "Yellow", hex: "#eab308" },
++  { name: "Green", hex: "#16a34a" },
++  { name: "Teal", hex: "#0d9488" },
++  { name: "Blue", hex: "#2563eb" },
++  { name: "Indigo", hex: "#4f46e5" },
++  { name: "Purple", hex: "#7c3aed" },
++  { name: "Pink", hex: "#db2777" },
++];
++
++type ColorSwatchPickerProps = {
++  value: string;
++  onChange: (hex: string) => void;
++  swatches?: ColorSwatch[];
++};
++
++function normalizeHex(hexValue: string) {
++  return hexValue.trim().toLowerCase();
++}
++
++export default function ColorSwatchPicker({
++  value,
++  onChange,
++  swatches = DEFAULT_COLOR_SWATCHES,
++}: ColorSwatchPickerProps) {
++  const customInputRef = useRef<HTMLInputElement | null>(null);
++
++  const normalizedValue = normalizeHex(value || "");
++  const matchesPreset = swatches.some(
++    (swatch) => normalizeHex(swatch.hex) === normalizedValue
++  );
++
++  const nativeColorInputValue = /^#[0-9a-f]{6}$/i.test(value)
++    ? value
++    : "#000000";
++
++  return (
++    <div className="mt-1 flex flex-wrap items-center gap-1.5">
++      {swatches.map((swatch) => {
++        const isSelected = normalizeHex(swatch.hex) === normalizedValue;
++
++        return (
++          <button
++            key={swatch.hex}
++            type="button"
++            title={swatch.name}
++            aria-label={swatch.name}
++            aria-pressed={isSelected}
++            onClick={() => onChange(swatch.hex)}
++            className={`h-7 w-7 shrink-0 rounded-md border-2 transition ${
++              isSelected
++                ? "border-black ring-2 ring-black/30 ring-offset-1"
++                : "border-zinc-300 hover:border-zinc-500"
++            }`}
++            style={{ backgroundColor: swatch.hex }}
++          />
++        );
++      })}
++
++      <button
++        type="button"
++        title={matchesPreset ? "Custom color" : `Custom color: ${value}`}
++        aria-label="Custom color"
++        aria-pressed={!matchesPreset}
++        onClick={() => customInputRef.current?.click()}
++        className={`relative h-7 w-7 shrink-0 overflow-hidden rounded-md border-2 transition ${
++          !matchesPreset
++            ? "border-black ring-2 ring-black/30 ring-offset-1"
++            : "border-zinc-300 hover:border-zinc-500"
++        }`}
++        style={
++          matchesPreset
++            ? {
++                backgroundImage:
++                  "conic-gradient(from 90deg, #ef4444, #eab308, #22c55e, #06b6d4, #3b82f6, #a855f7, #ef4444)",
++              }
++            : { backgroundColor: value }
++        }
++      >
++        <input
++          ref={customInputRef}
++          type="color"
++          value={nativeColorInputValue}
++          onChange={(event) => onChange(event.target.value)}
++          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
++          aria-hidden="true"
++          tabIndex={-1}
++        />
++      </button>
++    </div>
++  );
++}
+diff --git a/frontend/app/settings/appearance/page.tsx b/frontend/app/settings/appearance/page.tsx
+index e9a8505..650d6cd 100644
+--- a/frontend/app/settings/appearance/page.tsx
++++ b/frontend/app/settings/appearance/page.tsx
+@@ -2,6 +2,8 @@
+ 
+ import { ChangeEvent, useEffect, useMemo, useState } from "react";
+ 
++import ColorSwatchPicker from "@/components/appearance/ColorSwatchPicker";
++
+ import type {
+   AdvertisingBlock,
+   AdvertisingBlockPlacement,
+@@ -48,8 +50,6 @@ const smallLabelClass =
+   "text-xs font-black uppercase tracking-wide text-zinc-500";
+ const inputClass =
+   "w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-base font-semibold text-black outline-none transition focus:border-black focus:ring-2 focus:ring-black/10";
+-const colorInputClass =
+-  "h-12 w-full cursor-pointer rounded-xl border border-zinc-300 bg-white p-1 shadow-sm";
+ const smallInputClass =
+   "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-bold text-black outline-none transition focus:border-black focus:ring-2 focus:ring-black/10";
+ const primaryButtonClass =
+@@ -669,19 +669,19 @@ export default function AppearanceSettingsPage() {
+               <div className="mt-4 grid gap-4 md:grid-cols-2">
+                 <label className="space-y-2">
+                   <span className={labelClass}>Button Background</span>
+-                  <input type="color" value={settings.sidebarItemBackgroundColor} onChange={(event) => updateDraft({ sidebarItemBackgroundColor: event.target.value })} className={colorInputClass} />
++                  <ColorSwatchPicker value={settings.sidebarItemBackgroundColor} onChange={(hex) => updateDraft({ sidebarItemBackgroundColor: hex })} />
+                 </label>
+                 <label className="space-y-2">
+                   <span className={labelClass}>Button Text</span>
+-                  <input type="color" value={settings.sidebarItemTextColor} onChange={(event) => updateDraft({ sidebarItemTextColor: event.target.value })} className={colorInputClass} />
++                  <ColorSwatchPicker value={settings.sidebarItemTextColor} onChange={(hex) => updateDraft({ sidebarItemTextColor: hex })} />
+                 </label>
+                 <label className="space-y-2">
+                   <span className={labelClass}>Active Button Background</span>
+-                  <input type="color" value={settings.sidebarItemActiveBackgroundColor} onChange={(event) => updateDraft({ sidebarItemActiveBackgroundColor: event.target.value })} className={colorInputClass} />
++                  <ColorSwatchPicker value={settings.sidebarItemActiveBackgroundColor} onChange={(hex) => updateDraft({ sidebarItemActiveBackgroundColor: hex })} />
+                 </label>
+                 <label className="space-y-2">
+                   <span className={labelClass}>Active Button Text</span>
+-                  <input type="color" value={settings.sidebarItemActiveTextColor} onChange={(event) => updateDraft({ sidebarItemActiveTextColor: event.target.value })} className={colorInputClass} />
++                  <ColorSwatchPicker value={settings.sidebarItemActiveTextColor} onChange={(hex) => updateDraft({ sidebarItemActiveTextColor: hex })} />
+                 </label>
+               </div>
+             </div>
+@@ -691,15 +691,15 @@ export default function AppearanceSettingsPage() {
+               <div className="mt-4 grid gap-4 md:grid-cols-3">
+                 <label className="space-y-2">
+                   <span className={labelClass}>Balloon Background</span>
+-                  <input type="color" value={settings.balloonBackgroundColor} onChange={(event) => updateDraft({ balloonBackgroundColor: event.target.value })} className={colorInputClass} />
++                  <ColorSwatchPicker value={settings.balloonBackgroundColor} onChange={(hex) => updateDraft({ balloonBackgroundColor: hex })} />
+                 </label>
+                 <label className="space-y-2">
+                   <span className={labelClass}>Balloon Text</span>
+-                  <input type="color" value={settings.balloonTextColor} onChange={(event) => updateDraft({ balloonTextColor: event.target.value })} className={colorInputClass} />
++                  <ColorSwatchPicker value={settings.balloonTextColor} onChange={(hex) => updateDraft({ balloonTextColor: hex })} />
+                 </label>
+                 <label className="space-y-2">
+                   <span className={labelClass}>Balloon Border</span>
+-                  <input type="color" value={settings.balloonBorderColor} onChange={(event) => updateDraft({ balloonBorderColor: event.target.value })} className={colorInputClass} />
++                  <ColorSwatchPicker value={settings.balloonBorderColor} onChange={(hex) => updateDraft({ balloonBorderColor: hex })} />
+                 </label>
+               </div>
+             </div>
+diff --git a/frontend/components/appearance/AppearanceEditor.tsx b/frontend/components/appearance/AppearanceEditor.tsx
+index 2d49b25..f1a4cc5 100644
+--- a/frontend/components/appearance/AppearanceEditor.tsx
++++ b/frontend/components/appearance/AppearanceEditor.tsx
+@@ -11,6 +11,8 @@ import {
+   type ReactNode,
+ } from "react";
+ 
++import ColorSwatchPicker from "@/components/appearance/ColorSwatchPicker";
++
+ import type {
+   AppearanceSettings,
+   ThreeDEffectLevel,
+@@ -1727,85 +1729,34 @@ function AppearanceEditorInner() {
+     <label className="block">
+       <span className={fieldLabelClass}>Selected Tile Color</span>
+ 
+-      <div className="mt-1 flex items-center gap-2">
+-        <input
+-          type="color"
+-          value={selectedTileColor}
+-          onChange={(event) =>
+-            updateTileOverride(selectedTileIndex, {
+-              backgroundColor: event.target.value,
+-            })
+-          }
+-          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
+-        />
+-
+-        <input
+-          type="text"
+-          value={selectedTileColor}
+-          onChange={(event) =>
+-            updateTileOverride(selectedTileIndex, {
+-              backgroundColor: event.target.value,
+-            })
+-          }
+-          className={inputClass}
+-        />
+-      </div>
++      <ColorSwatchPicker
++        value={selectedTileColor}
++        onChange={(hex) =>
++          updateTileOverride(selectedTileIndex, { backgroundColor: hex })
++        }
++      />
+     </label>
+ 
+     <label className="block">
+       <span className={fieldLabelClass}>Selected Tile Border</span>
+ 
+-      <div className="mt-1 flex items-center gap-2">
+-        <input
+-          type="color"
+-          value={selectedTileBorderColor}
+-          onChange={(event) =>
+-            updateTileOverride(selectedTileIndex, {
+-              borderColor: event.target.value,
+-            })
+-          }
+-          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
+-        />
+-
+-        <input
+-          type="text"
+-          value={selectedTileBorderColor}
+-          onChange={(event) =>
+-            updateTileOverride(selectedTileIndex, {
+-              borderColor: event.target.value,
+-            })
+-          }
+-          className={inputClass}
+-        />
+-      </div>
++      <ColorSwatchPicker
++        value={selectedTileBorderColor}
++        onChange={(hex) =>
++          updateTileOverride(selectedTileIndex, { borderColor: hex })
++        }
++      />
+     </label>
+ 
+     <label className="block">
+       <span className={fieldLabelClass}>Selected Tile Text</span>
+ 
+-      <div className="mt-1 flex items-center gap-2">
+-        <input
+-          type="color"
+-          value={selectedTileTextColor}
+-          onChange={(event) =>
+-            updateTileOverride(selectedTileIndex, {
+-              textColor: event.target.value,
+-            })
+-          }
+-          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
+-        />
+-
+-        <input
+-          type="text"
+-          value={selectedTileTextColor}
+-          onChange={(event) =>
+-            updateTileOverride(selectedTileIndex, {
+-              textColor: event.target.value,
+-            })
+-          }
+-          className={inputClass}
+-        />
+-      </div>
++      <ColorSwatchPicker
++        value={selectedTileTextColor}
++        onChange={(hex) =>
++          updateTileOverride(selectedTileIndex, { textColor: hex })
++        }
++      />
+     </label>
+ 
+     <label className="block">
+@@ -1947,113 +1898,47 @@ function AppearanceEditorInner() {
+                     <label className="block">
+                       <span className={fieldLabelClass}>Button Background</span>
+ 
+-                      <div className="mt-1 flex items-center gap-2">
+-                        <input
+-                          type="color"
+-                          value={settings.sidebarItemBackgroundColor}
+-                          onChange={(event) =>
+-                            updateSettings({
+-                              sidebarItemBackgroundColor: event.target.value,
+-                            })
+-                          }
+-                          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
+-                        />
+-
+-                        <input
+-                          type="text"
+-                          value={settings.sidebarItemBackgroundColor}
+-                          onChange={(event) =>
+-                            updateSettings({
+-                              sidebarItemBackgroundColor: event.target.value,
+-                            })
+-                          }
+-                          className={inputClass}
+-                        />
+-                      </div>
++                      <ColorSwatchPicker
++                        value={settings.sidebarItemBackgroundColor}
++                        onChange={(hex) =>
++                          updateSettings({ sidebarItemBackgroundColor: hex })
++                        }
++                      />
+                     </label>
+ 
+                     <label className="block">
+                       <span className={fieldLabelClass}>Button Text</span>
+ 
+-                      <div className="mt-1 flex items-center gap-2">
+-                        <input
+-                          type="color"
+-                          value={settings.sidebarItemTextColor}
+-                          onChange={(event) =>
+-                            updateSettings({
+-                              sidebarItemTextColor: event.target.value,
+-                            })
+-                          }
+-                          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
+-                        />
+-
+-                        <input
+-                          type="text"
+-                          value={settings.sidebarItemTextColor}
+-                          onChange={(event) =>
+-                            updateSettings({
+-                              sidebarItemTextColor: event.target.value,
+-                            })
+-                          }
+-                          className={inputClass}
+-                        />
+-                      </div>
++                      <ColorSwatchPicker
++                        value={settings.sidebarItemTextColor}
++                        onChange={(hex) =>
++                          updateSettings({ sidebarItemTextColor: hex })
++                        }
++                      />
+                     </label>
+ 
+                     <label className="block">
+                       <span className={fieldLabelClass}>Active Button Background</span>
+ 
+-                      <div className="mt-1 flex items-center gap-2">
+-                        <input
+-                          type="color"
+-                          value={settings.sidebarItemActiveBackgroundColor}
+-                          onChange={(event) =>
+-                            updateSettings({
+-                              sidebarItemActiveBackgroundColor: event.target.value,
+-                            })
+-                          }
+-                          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
+-                        />
+-
+-                        <input
+-                          type="text"
+-                          value={settings.sidebarItemActiveBackgroundColor}
+-                          onChange={(event) =>
+-                            updateSettings({
+-                              sidebarItemActiveBackgroundColor: event.target.value,
+-                            })
+-                          }
+-                          className={inputClass}
+-                        />
+-                      </div>
++                      <ColorSwatchPicker
++                        value={settings.sidebarItemActiveBackgroundColor}
++                        onChange={(hex) =>
++                          updateSettings({
++                            sidebarItemActiveBackgroundColor: hex,
++                          })
++                        }
++                      />
+                     </label>
+ 
+                     <label className="block">
+                       <span className={fieldLabelClass}>Active Button Text</span>
+ 
+-                      <div className="mt-1 flex items-center gap-2">
+-                        <input
+-                          type="color"
+-                          value={settings.sidebarItemActiveTextColor}
+-                          onChange={(event) =>
+-                            updateSettings({
+-                              sidebarItemActiveTextColor: event.target.value,
+-                            })
+-                          }
+-                          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
+-                        />
+-
+-                        <input
+-                          type="text"
+-                          value={settings.sidebarItemActiveTextColor}
+-                          onChange={(event) =>
+-                            updateSettings({
+-                              sidebarItemActiveTextColor: event.target.value,
+-                            })
+-                          }
+-                          className={inputClass}
+-                        />
+-                      </div>
++                      <ColorSwatchPicker
++                        value={settings.sidebarItemActiveTextColor}
++                        onChange={(hex) =>
++                          updateSettings({ sidebarItemActiveTextColor: hex })
++                        }
++                      />
+                     </label>
+                   </>
+                 )}
+@@ -2074,29 +1959,12 @@ function AppearanceEditorInner() {
+                     <label className="block">
+                       <span className={fieldLabelClass}>Sidebar Color</span>
+ 
+-                      <div className="mt-1 flex items-center gap-2">
+-                        <input
+-                          type="color"
+-                          value={settings.sidebarBackgroundColor}
+-                          onChange={(event) =>
+-                            updateSettings({
+-                              sidebarBackgroundColor: event.target.value,
+-                            })
+-                          }
+-                          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
+-                        />
+-
+-                        <input
+-                          type="text"
+-                          value={settings.sidebarBackgroundColor}
+-                          onChange={(event) =>
+-                            updateSettings({
+-                              sidebarBackgroundColor: event.target.value,
+-                            })
+-                          }
+-                          className={inputClass}
+-                        />
+-                      </div>
++                      <ColorSwatchPicker
++                        value={settings.sidebarBackgroundColor}
++                        onChange={(hex) =>
++                          updateSettings({ sidebarBackgroundColor: hex })
++                        }
++                      />
+                     </label>
+ 
+                     <label className="block">
+@@ -2127,77 +1995,32 @@ function AppearanceEditorInner() {
+                     <label className="block">
+                       <span className={fieldLabelClass}>Background Color</span>
+ 
+-                      <div className="mt-1 flex items-center gap-2">
+-                        <input
+-                          type="color"
+-                          value={settings.pageBackgroundColor}
+-                          onChange={(event) =>
+-                            updateSettings({
+-                              pageBackgroundColor: event.target.value,
+-                            })
+-                          }
+-                          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
+-                        />
+-
+-                        <input
+-                          type="text"
+-                          value={settings.pageBackgroundColor}
+-                          onChange={(event) =>
+-                            updateSettings({
+-                              pageBackgroundColor: event.target.value,
+-                            })
+-                          }
+-                          className={inputClass}
+-                        />
+-                      </div>
++                      <ColorSwatchPicker
++                        value={settings.pageBackgroundColor}
++                        onChange={(hex) =>
++                          updateSettings({ pageBackgroundColor: hex })
++                        }
++                      />
+                     </label>
+ 
+                     <label className="block">
+                       <span className={fieldLabelClass}>Accent Color</span>
+ 
+-                      <div className="mt-1 flex items-center gap-2">
+-                        <input
+-                          type="color"
+-                          value={settings.accentColor}
+-                          onChange={(event) =>
+-                            updateSettings({ accentColor: event.target.value })
+-                          }
+-                          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
+-                        />
+-
+-                        <input
+-                          type="text"
+-                          value={settings.accentColor}
+-                          onChange={(event) =>
+-                            updateSettings({ accentColor: event.target.value })
+-                          }
+-                          className={inputClass}
+-                        />
+-                      </div>
++                      <ColorSwatchPicker
++                        value={settings.accentColor}
++                        onChange={(hex) =>
++                          updateSettings({ accentColor: hex })
++                        }
++                      />
+                     </label>
+ 
+                     <label className="block">
+                       <span className={fieldLabelClass}>Text Color</span>
+ 
+-                      <div className="mt-1 flex items-center gap-2">
+-                        <input
+-                          type="color"
+-                          value={globalTextColor}
+-                          onChange={(event) =>
+-                            updateGlobalTextColor(event.target.value)
+-                          }
+-                          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
+-                        />
+-
+-                        <input
+-                          type="text"
+-                          value={globalTextColor}
+-                          onChange={(event) =>
+-                            updateGlobalTextColor(event.target.value)
+-                          }
+-                          className={inputClass}
+-                        />
+-                      </div>
++                      <ColorSwatchPicker
++                        value={globalTextColor}
++                        onChange={(hex) => updateGlobalTextColor(hex)}
++                      />
+                     </label>
+ 
+                     <label className="block">

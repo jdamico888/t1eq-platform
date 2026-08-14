@@ -1,13 +1,17 @@
 ﻿"use client";
 
 import {
+  Component,
   useEffect,
   useRef,
   useState,
   type ChangeEvent,
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
+  type ReactNode,
 } from "react";
+
+import ColorSwatchPicker from "@/components/appearance/ColorSwatchPicker";
 
 import type {
   AppearanceSettings,
@@ -654,7 +658,7 @@ function ActiveQBitGraphic() {
   );
 }
 
-export default function AppearanceEditor() {
+function AppearanceEditorInner() {
   const dockButtonRef = useRef<HTMLButtonElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const dockPointerStartRef = useRef<PointerStart | null>(null);
@@ -926,9 +930,18 @@ export default function AppearanceEditor() {
         return;
       }
 
+      // TEMP-DEBUG: remove once the Page Button panel-visibility issue is confirmed fixed.
+      console.log("[QBIT DEBUG] click captured", {
+        tag: target.tagName,
+        id: target.id || null,
+        classes: target.className || null,
+      });
+
       const pageButtonElement = target.closest("[data-t1eq-page-button='true']");
 
       if (pageButtonElement instanceof HTMLElement) {
+        // TEMP-DEBUG: remove once the Page Button panel-visibility issue is confirmed fixed.
+        console.log("[QBIT DEBUG] resolved target: Page Button", pageButtonElement);
         openLockedEditorSession("Page Button", null, pageButtonElement);
         return;
       }
@@ -967,6 +980,15 @@ export default function AppearanceEditor() {
         return;
       }
 
+      const backgroundElement = target.closest(
+        "[data-t1eq-page-background='true']"
+      );
+
+      if (backgroundElement instanceof HTMLElement) {
+        openLockedEditorSession("Background", null, backgroundElement);
+        return;
+      }
+
       return;
     }
 
@@ -976,6 +998,15 @@ export default function AppearanceEditor() {
       document.removeEventListener("click", handleDocumentClick, true);
     };
   }, [editorActive]);
+
+  // TEMP-DEBUG: remove once the Page Button panel-visibility issue is confirmed fixed.
+  useEffect(() => {
+    console.log("[QBIT DEBUG] editorOpen/editSession changed", {
+      editorOpen,
+      editTarget,
+      editSession,
+    });
+  }, [editorOpen, editSession, editTarget]);
 
   function updateGlobalTextColor(textColor: string) {
     setGlobalTextColor(textColor);
@@ -1463,7 +1494,6 @@ export default function AppearanceEditor() {
       {editorOpen && (
         <div
           ref={panelRef}
-          data-t1eq-page-card="true"
           data-t1eq-appearance-editor="true"
           className={panelBaseClass}
           style={panelStyle}
@@ -1699,85 +1729,34 @@ export default function AppearanceEditor() {
     <label className="block">
       <span className={fieldLabelClass}>Selected Tile Color</span>
 
-      <div className="mt-1 flex items-center gap-2">
-        <input
-          type="color"
-          value={selectedTileColor}
-          onChange={(event) =>
-            updateTileOverride(selectedTileIndex, {
-              backgroundColor: event.target.value,
-            })
-          }
-          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
-        />
-
-        <input
-          type="text"
-          value={selectedTileColor}
-          onChange={(event) =>
-            updateTileOverride(selectedTileIndex, {
-              backgroundColor: event.target.value,
-            })
-          }
-          className={inputClass}
-        />
-      </div>
+      <ColorSwatchPicker
+        value={selectedTileColor}
+        onChange={(hex) =>
+          updateTileOverride(selectedTileIndex, { backgroundColor: hex })
+        }
+      />
     </label>
 
     <label className="block">
       <span className={fieldLabelClass}>Selected Tile Border</span>
 
-      <div className="mt-1 flex items-center gap-2">
-        <input
-          type="color"
-          value={selectedTileBorderColor}
-          onChange={(event) =>
-            updateTileOverride(selectedTileIndex, {
-              borderColor: event.target.value,
-            })
-          }
-          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
-        />
-
-        <input
-          type="text"
-          value={selectedTileBorderColor}
-          onChange={(event) =>
-            updateTileOverride(selectedTileIndex, {
-              borderColor: event.target.value,
-            })
-          }
-          className={inputClass}
-        />
-      </div>
+      <ColorSwatchPicker
+        value={selectedTileBorderColor}
+        onChange={(hex) =>
+          updateTileOverride(selectedTileIndex, { borderColor: hex })
+        }
+      />
     </label>
 
     <label className="block">
       <span className={fieldLabelClass}>Selected Tile Text</span>
 
-      <div className="mt-1 flex items-center gap-2">
-        <input
-          type="color"
-          value={selectedTileTextColor}
-          onChange={(event) =>
-            updateTileOverride(selectedTileIndex, {
-              textColor: event.target.value,
-            })
-          }
-          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
-        />
-
-        <input
-          type="text"
-          value={selectedTileTextColor}
-          onChange={(event) =>
-            updateTileOverride(selectedTileIndex, {
-              textColor: event.target.value,
-            })
-          }
-          className={inputClass}
-        />
-      </div>
+      <ColorSwatchPicker
+        value={selectedTileTextColor}
+        onChange={(hex) =>
+          updateTileOverride(selectedTileIndex, { textColor: hex })
+        }
+      />
     </label>
 
     <label className="block">
@@ -1919,113 +1898,47 @@ export default function AppearanceEditor() {
                     <label className="block">
                       <span className={fieldLabelClass}>Button Background</span>
 
-                      <div className="mt-1 flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={settings.sidebarItemBackgroundColor}
-                          onChange={(event) =>
-                            updateSettings({
-                              sidebarItemBackgroundColor: event.target.value,
-                            })
-                          }
-                          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
-                        />
-
-                        <input
-                          type="text"
-                          value={settings.sidebarItemBackgroundColor}
-                          onChange={(event) =>
-                            updateSettings({
-                              sidebarItemBackgroundColor: event.target.value,
-                            })
-                          }
-                          className={inputClass}
-                        />
-                      </div>
+                      <ColorSwatchPicker
+                        value={settings.sidebarItemBackgroundColor}
+                        onChange={(hex) =>
+                          updateSettings({ sidebarItemBackgroundColor: hex })
+                        }
+                      />
                     </label>
 
                     <label className="block">
                       <span className={fieldLabelClass}>Button Text</span>
 
-                      <div className="mt-1 flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={settings.sidebarItemTextColor}
-                          onChange={(event) =>
-                            updateSettings({
-                              sidebarItemTextColor: event.target.value,
-                            })
-                          }
-                          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
-                        />
-
-                        <input
-                          type="text"
-                          value={settings.sidebarItemTextColor}
-                          onChange={(event) =>
-                            updateSettings({
-                              sidebarItemTextColor: event.target.value,
-                            })
-                          }
-                          className={inputClass}
-                        />
-                      </div>
+                      <ColorSwatchPicker
+                        value={settings.sidebarItemTextColor}
+                        onChange={(hex) =>
+                          updateSettings({ sidebarItemTextColor: hex })
+                        }
+                      />
                     </label>
 
                     <label className="block">
                       <span className={fieldLabelClass}>Active Button Background</span>
 
-                      <div className="mt-1 flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={settings.sidebarItemActiveBackgroundColor}
-                          onChange={(event) =>
-                            updateSettings({
-                              sidebarItemActiveBackgroundColor: event.target.value,
-                            })
-                          }
-                          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
-                        />
-
-                        <input
-                          type="text"
-                          value={settings.sidebarItemActiveBackgroundColor}
-                          onChange={(event) =>
-                            updateSettings({
-                              sidebarItemActiveBackgroundColor: event.target.value,
-                            })
-                          }
-                          className={inputClass}
-                        />
-                      </div>
+                      <ColorSwatchPicker
+                        value={settings.sidebarItemActiveBackgroundColor}
+                        onChange={(hex) =>
+                          updateSettings({
+                            sidebarItemActiveBackgroundColor: hex,
+                          })
+                        }
+                      />
                     </label>
 
                     <label className="block">
                       <span className={fieldLabelClass}>Active Button Text</span>
 
-                      <div className="mt-1 flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={settings.sidebarItemActiveTextColor}
-                          onChange={(event) =>
-                            updateSettings({
-                              sidebarItemActiveTextColor: event.target.value,
-                            })
-                          }
-                          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
-                        />
-
-                        <input
-                          type="text"
-                          value={settings.sidebarItemActiveTextColor}
-                          onChange={(event) =>
-                            updateSettings({
-                              sidebarItemActiveTextColor: event.target.value,
-                            })
-                          }
-                          className={inputClass}
-                        />
-                      </div>
+                      <ColorSwatchPicker
+                        value={settings.sidebarItemActiveTextColor}
+                        onChange={(hex) =>
+                          updateSettings({ sidebarItemActiveTextColor: hex })
+                        }
+                      />
                     </label>
                   </>
                 )}
@@ -2046,29 +1959,12 @@ export default function AppearanceEditor() {
                     <label className="block">
                       <span className={fieldLabelClass}>Sidebar Color</span>
 
-                      <div className="mt-1 flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={settings.sidebarBackgroundColor}
-                          onChange={(event) =>
-                            updateSettings({
-                              sidebarBackgroundColor: event.target.value,
-                            })
-                          }
-                          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
-                        />
-
-                        <input
-                          type="text"
-                          value={settings.sidebarBackgroundColor}
-                          onChange={(event) =>
-                            updateSettings({
-                              sidebarBackgroundColor: event.target.value,
-                            })
-                          }
-                          className={inputClass}
-                        />
-                      </div>
+                      <ColorSwatchPicker
+                        value={settings.sidebarBackgroundColor}
+                        onChange={(hex) =>
+                          updateSettings({ sidebarBackgroundColor: hex })
+                        }
+                      />
                     </label>
 
                     <label className="block">
@@ -2099,77 +1995,32 @@ export default function AppearanceEditor() {
                     <label className="block">
                       <span className={fieldLabelClass}>Background Color</span>
 
-                      <div className="mt-1 flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={settings.pageBackgroundColor}
-                          onChange={(event) =>
-                            updateSettings({
-                              pageBackgroundColor: event.target.value,
-                            })
-                          }
-                          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
-                        />
-
-                        <input
-                          type="text"
-                          value={settings.pageBackgroundColor}
-                          onChange={(event) =>
-                            updateSettings({
-                              pageBackgroundColor: event.target.value,
-                            })
-                          }
-                          className={inputClass}
-                        />
-                      </div>
+                      <ColorSwatchPicker
+                        value={settings.pageBackgroundColor}
+                        onChange={(hex) =>
+                          updateSettings({ pageBackgroundColor: hex })
+                        }
+                      />
                     </label>
 
                     <label className="block">
                       <span className={fieldLabelClass}>Accent Color</span>
 
-                      <div className="mt-1 flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={settings.accentColor}
-                          onChange={(event) =>
-                            updateSettings({ accentColor: event.target.value })
-                          }
-                          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
-                        />
-
-                        <input
-                          type="text"
-                          value={settings.accentColor}
-                          onChange={(event) =>
-                            updateSettings({ accentColor: event.target.value })
-                          }
-                          className={inputClass}
-                        />
-                      </div>
+                      <ColorSwatchPicker
+                        value={settings.accentColor}
+                        onChange={(hex) =>
+                          updateSettings({ accentColor: hex })
+                        }
+                      />
                     </label>
 
                     <label className="block">
                       <span className={fieldLabelClass}>Text Color</span>
 
-                      <div className="mt-1 flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={globalTextColor}
-                          onChange={(event) =>
-                            updateGlobalTextColor(event.target.value)
-                          }
-                          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
-                        />
-
-                        <input
-                          type="text"
-                          value={globalTextColor}
-                          onChange={(event) =>
-                            updateGlobalTextColor(event.target.value)
-                          }
-                          className={inputClass}
-                        />
-                      </div>
+                      <ColorSwatchPicker
+                        value={globalTextColor}
+                        onChange={(hex) => updateGlobalTextColor(hex)}
+                      />
                     </label>
 
                     <label className="block">
@@ -2354,6 +2205,69 @@ export default function AppearanceEditor() {
         </div>
       )}
     </>
+  );
+}
+
+// TEMP-DEBUG: remove once the Page Button panel-visibility issue is confirmed fixed.
+// Catches any render error inside the Q-Bit editor so it shows a visible
+// red banner with the real error message instead of silently rendering nothing.
+type QBitErrorBoundaryState = {
+  error: Error | null;
+};
+
+class QBitErrorBoundary extends Component<
+  { children: ReactNode },
+  QBitErrorBoundaryState
+> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { error: null };
+  }
+
+  static getDerivedStateFromError(error: Error): QBitErrorBoundaryState {
+    return { error };
+  }
+
+  componentDidCatch(error: Error, info: { componentStack?: string | null }) {
+    console.error("[QBIT DEBUG] AppearanceEditor render crashed", error, info);
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <div
+          style={{
+            position: "fixed",
+            top: 16,
+            left: 16,
+            zIndex: 2147483647,
+            maxWidth: 480,
+            background: "#dc2626",
+            color: "#ffffff",
+            padding: "12px 16px",
+            borderRadius: 8,
+            fontFamily: "monospace",
+            fontSize: 12,
+            whiteSpace: "pre-wrap",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.4)",
+          }}
+        >
+          QBIT PANEL CRASHED — see browser console for full details:
+          {"\n"}
+          {String(this.state.error.message || this.state.error)}
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+export default function AppearanceEditor() {
+  return (
+    <QBitErrorBoundary>
+      <AppearanceEditorInner />
+    </QBitErrorBoundary>
   );
 }
 

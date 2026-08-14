@@ -2,6 +2,8 @@
 
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 
+import ColorSwatchPicker from "@/components/appearance/ColorSwatchPicker";
+
 import type {
   AdvertisingBlock,
   AdvertisingBlockPlacement,
@@ -48,8 +50,6 @@ const smallLabelClass =
   "text-xs font-black uppercase tracking-wide text-zinc-500";
 const inputClass =
   "w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-base font-semibold text-black outline-none transition focus:border-black focus:ring-2 focus:ring-black/10";
-const colorInputClass =
-  "h-12 w-full cursor-pointer rounded-xl border border-zinc-300 bg-white p-1 shadow-sm";
 const smallInputClass =
   "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-bold text-black outline-none transition focus:border-black focus:ring-2 focus:ring-black/10";
 const primaryButtonClass =
@@ -669,19 +669,19 @@ export default function AppearanceSettingsPage() {
               <div className="mt-4 grid gap-4 md:grid-cols-2">
                 <label className="space-y-2">
                   <span className={labelClass}>Button Background</span>
-                  <input type="color" value={settings.sidebarItemBackgroundColor} onChange={(event) => updateDraft({ sidebarItemBackgroundColor: event.target.value })} className={colorInputClass} />
+                  <ColorSwatchPicker value={settings.sidebarItemBackgroundColor} onChange={(hex) => updateDraft({ sidebarItemBackgroundColor: hex })} />
                 </label>
                 <label className="space-y-2">
                   <span className={labelClass}>Button Text</span>
-                  <input type="color" value={settings.sidebarItemTextColor} onChange={(event) => updateDraft({ sidebarItemTextColor: event.target.value })} className={colorInputClass} />
+                  <ColorSwatchPicker value={settings.sidebarItemTextColor} onChange={(hex) => updateDraft({ sidebarItemTextColor: hex })} />
                 </label>
                 <label className="space-y-2">
                   <span className={labelClass}>Active Button Background</span>
-                  <input type="color" value={settings.sidebarItemActiveBackgroundColor} onChange={(event) => updateDraft({ sidebarItemActiveBackgroundColor: event.target.value })} className={colorInputClass} />
+                  <ColorSwatchPicker value={settings.sidebarItemActiveBackgroundColor} onChange={(hex) => updateDraft({ sidebarItemActiveBackgroundColor: hex })} />
                 </label>
                 <label className="space-y-2">
                   <span className={labelClass}>Active Button Text</span>
-                  <input type="color" value={settings.sidebarItemActiveTextColor} onChange={(event) => updateDraft({ sidebarItemActiveTextColor: event.target.value })} className={colorInputClass} />
+                  <ColorSwatchPicker value={settings.sidebarItemActiveTextColor} onChange={(hex) => updateDraft({ sidebarItemActiveTextColor: hex })} />
                 </label>
               </div>
             </div>
@@ -691,15 +691,15 @@ export default function AppearanceSettingsPage() {
               <div className="mt-4 grid gap-4 md:grid-cols-3">
                 <label className="space-y-2">
                   <span className={labelClass}>Balloon Background</span>
-                  <input type="color" value={settings.balloonBackgroundColor} onChange={(event) => updateDraft({ balloonBackgroundColor: event.target.value })} className={colorInputClass} />
+                  <ColorSwatchPicker value={settings.balloonBackgroundColor} onChange={(hex) => updateDraft({ balloonBackgroundColor: hex })} />
                 </label>
                 <label className="space-y-2">
                   <span className={labelClass}>Balloon Text</span>
-                  <input type="color" value={settings.balloonTextColor} onChange={(event) => updateDraft({ balloonTextColor: event.target.value })} className={colorInputClass} />
+                  <ColorSwatchPicker value={settings.balloonTextColor} onChange={(hex) => updateDraft({ balloonTextColor: hex })} />
                 </label>
                 <label className="space-y-2">
                   <span className={labelClass}>Balloon Border</span>
-                  <input type="color" value={settings.balloonBorderColor} onChange={(event) => updateDraft({ balloonBorderColor: event.target.value })} className={colorInputClass} />
+                  <ColorSwatchPicker value={settings.balloonBorderColor} onChange={(hex) => updateDraft({ balloonBorderColor: hex })} />
                 </label>
               </div>
             </div>

@@ -340,6 +340,11 @@ body > div {
   z-index: 1;
 }
 
+[data-t1eq-appearance-editor="true"] {
+  position: fixed !important;
+  z-index: 9998 !important;
+}
+
 /* Floating page logo watermark */
 html[data-t1eq-logo-placement="Page Background"] body::after,
 html[data-t1eq-logo-placement="Both"] body::after {

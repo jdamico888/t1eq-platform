@@ -1463,7 +1463,6 @@ export default function AppearanceEditor() {
       {editorOpen && (
         <div
           ref={panelRef}
-          data-t1eq-page-card="true"
           data-t1eq-appearance-editor="true"
           className={panelBaseClass}
           style={panelStyle}

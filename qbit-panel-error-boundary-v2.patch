@@ -1,0 +1,98 @@
+diff --git a/frontend/components/appearance/AppearanceEditor.tsx b/frontend/components/appearance/AppearanceEditor.tsx
+index 57043e6..19f04c9 100644
+--- a/frontend/components/appearance/AppearanceEditor.tsx
++++ b/frontend/components/appearance/AppearanceEditor.tsx
+@@ -1,12 +1,14 @@
+ ﻿"use client";
+ 
+ import {
++  Component,
+   useEffect,
+   useRef,
+   useState,
+   type ChangeEvent,
+   type CSSProperties,
+   type PointerEvent as ReactPointerEvent,
++  type ReactNode,
+ } from "react";
+ 
+ import type {
+@@ -654,7 +656,7 @@ function ActiveQBitGraphic() {
+   );
+ }
+ 
+-export default function AppearanceEditor() {
++function AppearanceEditorInner() {
+   const dockButtonRef = useRef<HTMLButtonElement | null>(null);
+   const panelRef = useRef<HTMLDivElement | null>(null);
+   const dockPointerStartRef = useRef<PointerStart | null>(null);
+@@ -2384,6 +2386,69 @@ export default function AppearanceEditor() {
+   );
+ }
+ 
++// TEMP-DEBUG: remove once the Page Button panel-visibility issue is confirmed fixed.
++// Catches any render error inside the Q-Bit editor so it shows a visible
++// red banner with the real error message instead of silently rendering nothing.
++type QBitErrorBoundaryState = {
++  error: Error | null;
++};
++
++class QBitErrorBoundary extends Component<
++  { children: ReactNode },
++  QBitErrorBoundaryState
++> {
++  constructor(props: { children: ReactNode }) {
++    super(props);
++    this.state = { error: null };
++  }
++
++  static getDerivedStateFromError(error: Error): QBitErrorBoundaryState {
++    return { error };
++  }
++
++  componentDidCatch(error: Error, info: { componentStack?: string | null }) {
++    console.error("[QBIT DEBUG] AppearanceEditor render crashed", error, info);
++  }
++
++  render() {
++    if (this.state.error) {
++      return (
++        <div
++          style={{
++            position: "fixed",
++            top: 16,
++            left: 16,
++            zIndex: 2147483647,
++            maxWidth: 480,
++            background: "#dc2626",
++            color: "#ffffff",
++            padding: "12px 16px",
++            borderRadius: 8,
++            fontFamily: "monospace",
++            fontSize: 12,
++            whiteSpace: "pre-wrap",
++            boxShadow: "0 10px 30px rgba(0,0,0,0.4)",
++          }}
++        >
++          QBIT PANEL CRASHED — see browser console for full details:
++          {"\n"}
++          {String(this.state.error.message || this.state.error)}
++        </div>
++      );
++    }
++
++    return this.props.children;
++  }
++}
++
++export default function AppearanceEditor() {
++  return (
++    <QBitErrorBoundary>
++      <AppearanceEditorInner />
++    </QBitErrorBoundary>
++  );
++}
++
+ 
+ 
+ 

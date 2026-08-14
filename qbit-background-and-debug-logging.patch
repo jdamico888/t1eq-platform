@@ -1,0 +1,55 @@
+diff --git a/frontend/components/appearance/AppearanceEditor.tsx b/frontend/components/appearance/AppearanceEditor.tsx
+index 5b67e0d..57043e6 100644
+--- a/frontend/components/appearance/AppearanceEditor.tsx
++++ b/frontend/components/appearance/AppearanceEditor.tsx
+@@ -926,9 +926,18 @@ export default function AppearanceEditor() {
+         return;
+       }
+ 
++      // TEMP-DEBUG: remove once the Page Button panel-visibility issue is confirmed fixed.
++      console.log("[QBIT DEBUG] click captured", {
++        tag: target.tagName,
++        id: target.id || null,
++        classes: target.className || null,
++      });
++
+       const pageButtonElement = target.closest("[data-t1eq-page-button='true']");
+ 
+       if (pageButtonElement instanceof HTMLElement) {
++        // TEMP-DEBUG: remove once the Page Button panel-visibility issue is confirmed fixed.
++        console.log("[QBIT DEBUG] resolved target: Page Button", pageButtonElement);
+         openLockedEditorSession("Page Button", null, pageButtonElement);
+         return;
+       }
+@@ -967,6 +976,15 @@ export default function AppearanceEditor() {
+         return;
+       }
+ 
++      const backgroundElement = target.closest(
++        "[data-t1eq-page-background='true']"
++      );
++
++      if (backgroundElement instanceof HTMLElement) {
++        openLockedEditorSession("Background", null, backgroundElement);
++        return;
++      }
++
+       return;
+     }
+ 
+@@ -977,6 +995,15 @@ export default function AppearanceEditor() {
+     };
+   }, [editorActive]);
+ 
++  // TEMP-DEBUG: remove once the Page Button panel-visibility issue is confirmed fixed.
++  useEffect(() => {
++    console.log("[QBIT DEBUG] editorOpen/editSession changed", {
++      editorOpen,
++      editTarget,
++      editSession,
++    });
++  }, [editorOpen, editSession, editTarget]);
++
+   function updateGlobalTextColor(textColor: string) {
+     setGlobalTextColor(textColor);
+     saveString(globalTextColorStorageKey, textColor);

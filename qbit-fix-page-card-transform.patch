@@ -1,0 +1,12 @@
+diff --git a/frontend/components/appearance/AppearanceEditor.tsx b/frontend/components/appearance/AppearanceEditor.tsx
+index 19f04c9..2d49b25 100644
+--- a/frontend/components/appearance/AppearanceEditor.tsx
++++ b/frontend/components/appearance/AppearanceEditor.tsx
+@@ -1492,7 +1492,6 @@ function AppearanceEditorInner() {
+       {editorOpen && (
+         <div
+           ref={panelRef}
+-          data-t1eq-page-card="true"
+           data-t1eq-appearance-editor="true"
+           className={panelBaseClass}
+           style={panelStyle}
