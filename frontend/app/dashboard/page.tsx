@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -413,18 +413,6 @@ function readArrayFromStorage(keys: string[]): StoredRecord[] {
   return [];
 }
 
-function readDashboardLogoUrl(): string {
-  if (typeof window === "undefined") {
-    return "";
-  }
-
-  try {
-    const settings = getAppearanceSettings();
-    return typeof settings.logoUrl === "string" ? settings.logoUrl.trim() : "";
-  } catch {
-    return "";
-  }
-}
 
 function getText(record: StoredRecord, keys: string[]): string {
   for (const key of keys) {
@@ -823,8 +811,14 @@ function saveSelectedSubcategories(selectedMap: SelectedSubcategoryMap) {
 
 function InfoBalloon({ description }: { description: string }) {
   return (
-    <div className="pointer-events-none absolute bottom-full left-1/2 z-[9999] mb-4 hidden w-80 -translate-x-1/2 rounded-2xl border border-orange-300/40 bg-slate-950 px-4 py-3 text-left text-sm font-semibold leading-6 text-white shadow-2xl shadow-black/80 group-hover:block group-focus-within:block">
-      <div className="absolute -bottom-2 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 border-b border-r border-orange-300/40 bg-slate-950" />
+    <div
+      data-t1eq-balloon="true"
+      className="pointer-events-auto absolute bottom-full left-1/2 z-[9999] mb-4 hidden w-80 -translate-x-1/2 rounded-2xl border border-orange-300/40 bg-slate-950 px-4 py-3 text-left text-sm font-semibold leading-6 text-white shadow-2xl shadow-black/80 group-hover:block group-focus-within:block"
+    >
+      <div
+        data-t1eq-balloon-arrow="true"
+        className="absolute -bottom-2 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 border-b border-r border-orange-300/40 bg-slate-950"
+      />
       {description}
     </div>
   );
@@ -911,8 +905,6 @@ function ActionTile({
 
 export default function DashboardPage() {
   const [metrics, setMetrics] = useState<DashboardMetrics>(DEFAULT_METRICS);
-  const [dashboardLogoUrl, setDashboardLogoUrl] = useState("");
-  const [logoLoadFailed, setLogoLoadFailed] = useState(false);
   const [subcategoryValues, setSubcategoryValues] =
     useState<SubcategoryValueMap>({});
   const [savedSubcategories, setSavedSubcategories] =
@@ -926,23 +918,17 @@ export default function DashboardPage() {
   useEffect(() => {
     const storedSubcategories = readSelectedSubcategories();
     const dashboardState = calculateDashboardState();
-    const logoUrl = readDashboardLogoUrl();
 
     setMetrics(dashboardState.metrics);
     setSubcategoryValues(dashboardState.subcategoryValues);
     setSavedSubcategories(storedSubcategories);
     setDraftSubcategories(storedSubcategories);
-    setDashboardLogoUrl(logoUrl);
-    setLogoLoadFailed(false);
 
     function refreshDashboard() {
       const refreshedDashboardState = calculateDashboardState();
-      const refreshedLogoUrl = readDashboardLogoUrl();
 
       setMetrics(refreshedDashboardState.metrics);
       setSubcategoryValues(refreshedDashboardState.subcategoryValues);
-      setDashboardLogoUrl(refreshedLogoUrl);
-      setLogoLoadFailed(false);
     }
 
     window.addEventListener("storage", refreshDashboard);
@@ -1072,19 +1058,6 @@ export default function DashboardPage() {
           className="group relative z-0 min-h-[250px] overflow-visible rounded-[32px] border border-slate-700 bg-slate-900 p-8 text-white shadow-2xl shadow-black/40 outline-none transition hover:z-50 hover:border-orange-300 focus-visible:z-50 focus-visible:border-orange-300"
         >
           
-          {dashboardLogoUrl && !logoLoadFailed && (
-            <div className="pointer-events-none absolute inset-y-0 right-0 z-[4] flex w-[58%] items-center justify-end overflow-visible pr-8">
-              <img
-                src={dashboardLogoUrl}
-                alt=""
-                aria-hidden="true"
-                draggable={false}
-                onLoad={() => setLogoLoadFailed(false)}
-                onError={() => setLogoLoadFailed(true)}
-                className="h-64 max-h-[96%] w-auto max-w-full object-contain opacity-100 drop-shadow-[0_0_44px_rgba(251,146,60,0.72)]"
-              />
-            </div>
-          )}
 
           <div className="pointer-events-none absolute inset-y-0 left-0 z-[5] w-[58%] rounded-l-[32px] bg-gradient-to-r from-black/45 via-black/25 to-transparent" />
 
@@ -1104,17 +1077,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {!dashboardLogoUrl && (
-            <div className="pointer-events-none absolute right-8 top-1/2 z-[6] -translate-y-1/2 rounded-2xl border border-orange-300/60 bg-orange-500/20 px-4 py-3 text-xs font-black uppercase tracking-wide text-orange-100 shadow-2xl shadow-black/40">
-              Logo URL Empty
-            </div>
-          )}
 
-          {dashboardLogoUrl && logoLoadFailed && (
-            <div className="pointer-events-none absolute right-8 top-1/2 z-[6] max-w-xs -translate-y-1/2 rounded-2xl border border-red-300/70 bg-red-500/20 px-4 py-3 text-xs font-black uppercase tracking-wide text-red-100 shadow-2xl shadow-black/40">
-              Logo Not Loading
-            </div>
-          )}
         </section>
 
         {isSubcategoryChooserOpen && (
@@ -1235,6 +1198,7 @@ export default function DashboardPage() {
               )}
 
               <button
+                data-t1eq-page-button="true"
                 type="button"
                 onClick={openSubcategoryChooser}
                 className="rounded-2xl border border-slate-600 bg-slate-800 px-4 py-3 text-xs font-black uppercase tracking-wide text-white transition hover:border-orange-300"

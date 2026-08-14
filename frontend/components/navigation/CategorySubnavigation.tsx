@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -57,6 +57,11 @@ function getActiveChildHref(pathname: string, childItems: { href: string }[]) {
 
 export default function CategorySubnavigation() {
   const pathname = usePathname();
+
+  if (pathname === "/settings" || pathname.startsWith("/settings/")) {
+    return null;
+  }
+
   const currentMainCategory = getCurrentMainCategory(pathname);
 
   if (
@@ -111,3 +116,6 @@ export default function CategorySubnavigation() {
     </div>
   );
 }
+
+
+

@@ -1,7 +1,8 @@
-import type {
+﻿import type {
   AdvertisingBlock,
   AdvertisingBlockPlacement,
   AppearanceSettings,
+  LogoPlacement,
   AppFontFamily,
   AppFontSize,
   OutputAdvertisingPlacement,
@@ -227,6 +228,7 @@ export const defaultAdvertisingBlocks: AdvertisingBlock[] = [];
 
 export const defaultAppearanceSettings: AppearanceSettings = {
   logoUrl: "",
+  logoPlacement: "Task Bar",
 
   tileOrientation: "Grid",
   tileSize: "Medium",
@@ -236,6 +238,15 @@ export const defaultAppearanceSettings: AppearanceSettings = {
 
   sidebarThreeDEffect: "Subtle",
   pageThreeDEffect: "Subtle",
+
+  sidebarItemBackgroundColor: "#18181b",
+  sidebarItemTextColor: "#ffffff",
+  sidebarItemActiveBackgroundColor: "#f97316",
+  sidebarItemActiveTextColor: "#ffffff",
+
+  balloonBackgroundColor: "#020617",
+  balloonTextColor: "#ffffff",
+  balloonBorderColor: "#fb923c",
 
   accentHue: 24,
   accentColor: "#e26209",
@@ -274,6 +285,12 @@ export const fontSizeOptions: AppFontSize[] = [
   "Medium",
   "Large",
   "Extra Large",
+];
+
+export const logoPlacementOptions: LogoPlacement[] = [
+  "Task Bar",
+  "Page Background",
+  "Both",
 ];
 
 export const threeDEffectOptions: ThreeDEffectLevel[] = [
@@ -602,6 +619,9 @@ function normalizeAppearanceSettings(
     ...settings,
 
     logoUrl: settings.logoUrl ?? "",
+    logoPlacement: valueIsOneOf(settings.logoPlacement, logoPlacementOptions)
+      ? settings.logoPlacement
+      : defaultAppearanceSettings.logoPlacement,
 
     accentHue: normalizedAccentHue,
 
@@ -628,6 +648,36 @@ function normalizeAppearanceSettings(
     pageBackgroundColor: normalizeColor(
       settings.pageBackgroundColor,
       defaultAppearanceSettings.pageBackgroundColor
+    ),
+
+    sidebarItemBackgroundColor: normalizeColor(
+      settings.sidebarItemBackgroundColor,
+      defaultAppearanceSettings.sidebarItemBackgroundColor
+    ),
+    sidebarItemTextColor: normalizeColor(
+      settings.sidebarItemTextColor,
+      defaultAppearanceSettings.sidebarItemTextColor
+    ),
+    sidebarItemActiveBackgroundColor: normalizeColor(
+      settings.sidebarItemActiveBackgroundColor,
+      defaultAppearanceSettings.sidebarItemActiveBackgroundColor
+    ),
+    sidebarItemActiveTextColor: normalizeColor(
+      settings.sidebarItemActiveTextColor,
+      defaultAppearanceSettings.sidebarItemActiveTextColor
+    ),
+
+    balloonBackgroundColor: normalizeColor(
+      settings.balloonBackgroundColor,
+      defaultAppearanceSettings.balloonBackgroundColor
+    ),
+    balloonTextColor: normalizeColor(
+      settings.balloonTextColor,
+      defaultAppearanceSettings.balloonTextColor
+    ),
+    balloonBorderColor: normalizeColor(
+      settings.balloonBorderColor,
+      defaultAppearanceSettings.balloonBorderColor
     ),
 
     qBitScopes: normalizeQBitScopes(settings.qBitScopes),
@@ -780,3 +830,7 @@ export function deleteAdvertisingBlock(blockId: string): void {
     })),
   });
 }
+
+
+
+

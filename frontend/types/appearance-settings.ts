@@ -1,4 +1,4 @@
-export type TileOrientation = "Grid" | "List" | "Compact";
+﻿export type TileOrientation = "Grid" | "List" | "Compact";
 export type TileSize = "Small" | "Medium" | "Large";
 export type AppFontFamily =
   | "System"
@@ -8,6 +8,7 @@ export type AppFontFamily =
   | "Courier New";
 export type AppFontSize = "Small" | "Medium" | "Large" | "Extra Large";
 export type ThreeDEffectLevel = "Off" | "Subtle" | "Medium" | "Strong";
+export type LogoPlacement = "Task Bar" | "Page Background" | "Both";
 
 export type QBitPageScope =
   | "Dashboard"
@@ -96,6 +97,7 @@ export type AdvertisingBlock = {
 
 export type AppearanceSettings = {
   logoUrl: string;
+  logoPlacement: LogoPlacement;
 
   tileOrientation: TileOrientation;
   tileSize: TileSize;
@@ -105,6 +107,15 @@ export type AppearanceSettings = {
 
   sidebarThreeDEffect: ThreeDEffectLevel;
   pageThreeDEffect: ThreeDEffectLevel;
+
+  sidebarItemBackgroundColor: string;
+  sidebarItemTextColor: string;
+  sidebarItemActiveBackgroundColor: string;
+  sidebarItemActiveTextColor: string;
+
+  balloonBackgroundColor: string;
+  balloonTextColor: string;
+  balloonBorderColor: string;
 
   /**
    * Kept for backward compatibility with older saved appearance settings.
@@ -143,3 +154,5 @@ export type AppearanceSettings = {
 
   updatedDate: string;
 };
+
+

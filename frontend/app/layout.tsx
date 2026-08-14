@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import Link from "next/link";
 
 import "./globals.css";
@@ -31,23 +31,27 @@ export default function RootLayout({
             className="sticky top-0 hidden h-screen w-72 shrink-0 overflow-y-auto border-r border-zinc-800 bg-zinc-950 p-5 text-white lg:block"
           >
             <div
-              data-t1eq-business-card="true"
-              className="mb-6 rounded-2xl border border-white/10 bg-white/5 bg-cover bg-center p-4"
+              data-t1eq-sidebar-brand="true"
+              className="mb-6 flex min-h-36 flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/5 p-4 text-center"
             >
-              <div className="flex items-center gap-3">
-                <div
-                  data-t1eq-logo-box="true"
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white bg-contain bg-center bg-no-repeat text-sm font-bold text-black"
+              <div
+                data-t1eq-logo-box="true"
+                className="flex h-20 w-full max-w-[190px] items-center justify-center rounded-xl bg-white/5 bg-contain bg-center bg-no-repeat"
+              >
+                <span
+                  data-t1eq-logo-fallback="true"
+                  className="text-xl font-black text-white"
                 >
-                  <span data-t1eq-logo-fallback="true">T1</span>
-                </div>
+                  T1
+                </span>
+              </div>
 
-                <div>
-                  <div className="text-lg font-bold">Tier One Equipment</div>
-                  <div className="text-xs font-semibold uppercase tracking-wide text-white/50">
-                    Operations Platform
-                  </div>
-                </div>
+              <div className="mt-3 max-w-full truncate text-lg font-black leading-tight text-white">
+                Tier One Equipment
+              </div>
+
+              <div className="mt-1 text-xs font-black uppercase tracking-[0.22em] text-white/60">
+                Operations Platform
               </div>
             </div>
 
@@ -70,7 +74,7 @@ export default function RootLayout({
 
             <CategorySubnavigation />
 
-            <main className="min-w-0 flex-1">{children}</main>
+            <main data-t1eq-page-background="true" className="min-w-0 flex-1">{children}</main>
           </div>
         </div>
 
@@ -79,3 +83,5 @@ export default function RootLayout({
     </html>
   );
 }
+
+

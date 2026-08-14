@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -58,6 +58,8 @@ export default function SidebarNav() {
           <Link
             key={item.href}
             href={item.href}
+            data-t1eq-sidebar-item="true"
+            data-t1eq-sidebar-item-active={isActive ? "true" : "false"}
             className={isActive ? activeLinkClass : linkClass}
           >
             {item.label}

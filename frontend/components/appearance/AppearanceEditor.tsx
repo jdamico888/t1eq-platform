@@ -51,7 +51,7 @@ type ResizePointerStart = PointerStart & {
   originalHeight: number;
 };
 
-type EditTarget = "Tile" | "Sidebar" | "Background";
+type EditTarget = "Tile" | "Sidebar" | "Sidebar Item" | "Page Button" | "Balloon" | "Background" | "Page Card";
 
 type TileOverride = {
   tileIndex: number;
@@ -67,6 +67,10 @@ type QBitEditSession = {
 };
 
 const editableSelector = [
+  "[data-t1eq-page-background='true']",
+  "[data-t1eq-page-button='true']",
+  "[data-t1eq-sidebar-item='true']",
+  "[data-t1eq-balloon='true']",
   "[data-t1eq-tile='true']",
   "[data-t1eq-sidebar='true']",
   "[data-t1eq-page-card='true']",
@@ -670,7 +674,7 @@ export default function AppearanceEditor() {
   const [panelSize, setPanelSize] = useState<Size | null>(null);
   const [panelRadius, setPanelRadius] = useState(18);
   const [panelBoxSelected, setPanelBoxSelected] = useState(false);
-  const [globalTextColor, setGlobalTextColor] = useState("#ffffff");
+  const [globalTextColor, setGlobalTextColor] = useState("#000000");
   const [settings, setSettings] = useState<AppearanceSettings>(
     getAppearanceSettings()
   );
@@ -710,7 +714,7 @@ export default function AppearanceEditor() {
     function refreshSettings() {
       setSettings(getAppearanceSettings());
       applyGlobalTextColor(
-        safeReadString(globalTextColorStorageKey, "#ffffff")
+        safeReadString(globalTextColorStorageKey, "#000000")
       );
       window.requestAnimationFrame(applySavedTileOverrides);
     }
@@ -721,7 +725,7 @@ export default function AppearanceEditor() {
 
     const overrideReplayInterval = window.setInterval(() => {
       applyGlobalTextColor(
-        safeReadString(globalTextColorStorageKey, "#ffffff")
+        safeReadString(globalTextColorStorageKey, "#000000")
       );
       applySavedTileOverrides();
     }, 500);
@@ -821,14 +825,26 @@ export default function AppearanceEditor() {
 
         resetQBitEditableElement(element);
 
-        if (activeElement && element === activeElement) {
+        const elementIsActiveTarget =
+          activeElement &&
+          (element === activeElement ||
+            element.contains(activeElement) ||
+            activeElement.contains(element));
+
+        if (elementIsActiveTarget) {
           element.setAttribute("data-t1eq-qbit-active", "true");
           element.style.opacity = "1";
           element.style.filter = "none";
           element.style.pointerEvents = "auto";
-          element.style.outline = "3px solid rgb(251 146 60 / 0.95)";
-          element.style.outlineOffset = "4px";
-          element.style.boxShadow = "0 0 0 8px rgb(251 146 60 / 0.16)";
+          element.style.outline =
+            element === activeElement
+              ? "3px solid rgb(251 146 60 / 0.95)"
+              : "";
+          element.style.outlineOffset = element === activeElement ? "4px" : "";
+          element.style.boxShadow =
+            element === activeElement
+              ? "0 0 0 8px rgb(251 146 60 / 0.16)"
+              : "";
           element.style.transition =
             "opacity 160ms ease, filter 160ms ease, outline 160ms ease, box-shadow 160ms ease";
           return;
@@ -906,31 +922,52 @@ export default function AppearanceEditor() {
       event.preventDefault();
       event.stopPropagation();
 
-      const editableElement = target.closest(editableSelector);
-
-      if (!(editableElement instanceof HTMLElement)) {
+      if (target.closest("[data-t1eq-appearance-editor='true']")) {
         return;
       }
 
-      if (editableElement.closest("[data-t1eq-appearance-editor='true']")) {
+      const pageButtonElement = target.closest("[data-t1eq-page-button='true']");
+
+      if (pageButtonElement instanceof HTMLElement) {
+        openLockedEditorSession("Page Button", null, pageButtonElement);
         return;
       }
 
-      if (editableElement.hasAttribute("data-t1eq-tile")) {
-        openLockedEditorSession(
-          "Tile",
-          getTileIndex(editableElement),
-          editableElement
-        );
+      const sidebarItemElement = target.closest("[data-t1eq-sidebar-item='true']");
+
+      if (sidebarItemElement instanceof HTMLElement) {
+        openLockedEditorSession("Sidebar Item", null, sidebarItemElement);
         return;
       }
 
-      if (editableElement.hasAttribute("data-t1eq-sidebar")) {
-        openLockedEditorSession("Sidebar", null, editableElement);
+      const balloonElement = target.closest("[data-t1eq-balloon='true']");
+
+      if (balloonElement instanceof HTMLElement) {
+        openLockedEditorSession("Balloon", null, balloonElement);
         return;
       }
 
-      openLockedEditorSession("Background", null, editableElement);
+      const tileElement = target.closest("[data-t1eq-tile='true']");
+
+      if (tileElement instanceof HTMLElement) {
+        openLockedEditorSession("Tile", getTileIndex(tileElement), tileElement);
+        return;
+      }
+
+      const sidebarElement = target.closest("[data-t1eq-sidebar='true']");
+
+      if (sidebarElement instanceof HTMLElement) {
+        openLockedEditorSession("Sidebar", null, sidebarElement);
+        return;
+      }
+
+      const pageCardElement = target.closest("[data-t1eq-page-card='true']");
+
+      if (pageCardElement instanceof HTMLElement) {
+        return;
+      }
+
+      return;
     }
 
     document.addEventListener("click", handleDocumentClick, true);
@@ -1009,9 +1046,9 @@ export default function AppearanceEditor() {
   function handleReset() {
     const resetSettings = resetAppearanceSettings();
     setSettings(resetSettings);
-    setGlobalTextColor("#ffffff");
-    saveString(globalTextColorStorageKey, "#ffffff");
-    applyGlobalTextColor("#ffffff");
+    setGlobalTextColor("#000000");
+    saveString(globalTextColorStorageKey, "#000000");
+    applyGlobalTextColor("#000000");
     saveTileOverrides([]);
     window.requestAnimationFrame(applySavedTileOverrides);
   }
@@ -1506,6 +1543,14 @@ export default function AppearanceEditor() {
                 <p className="mt-0.5 text-[11px] font-semibold text-zinc-600">
                   Drag header to move. Drag edge to resize.
                 </p>
+
+                <a
+                  href="/settings/appearance"
+                  onClick={(event) => event.stopPropagation()}
+                  className="mt-2 inline-flex rounded-md border border-zinc-300 bg-white px-2 py-1 text-[11px] font-black uppercase tracking-wide text-black shadow-sm transition hover:bg-zinc-50"
+                >
+                  Advanced Settings
+                </a>
               </div>
 
               <button
@@ -1869,6 +1914,133 @@ export default function AppearanceEditor() {
     </label>
   </>
 )}
+                {(editTarget === "Sidebar Item" || editTarget === "Page Button") && (
+                  <>
+                    <label className="block">
+                      <span className={fieldLabelClass}>Button Background</span>
+
+                      <div className="mt-1 flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={settings.sidebarItemBackgroundColor}
+                          onChange={(event) =>
+                            updateSettings({
+                              sidebarItemBackgroundColor: event.target.value,
+                            })
+                          }
+                          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
+                        />
+
+                        <input
+                          type="text"
+                          value={settings.sidebarItemBackgroundColor}
+                          onChange={(event) =>
+                            updateSettings({
+                              sidebarItemBackgroundColor: event.target.value,
+                            })
+                          }
+                          className={inputClass}
+                        />
+                      </div>
+                    </label>
+
+                    <label className="block">
+                      <span className={fieldLabelClass}>Button Text</span>
+
+                      <div className="mt-1 flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={settings.sidebarItemTextColor}
+                          onChange={(event) =>
+                            updateSettings({
+                              sidebarItemTextColor: event.target.value,
+                            })
+                          }
+                          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
+                        />
+
+                        <input
+                          type="text"
+                          value={settings.sidebarItemTextColor}
+                          onChange={(event) =>
+                            updateSettings({
+                              sidebarItemTextColor: event.target.value,
+                            })
+                          }
+                          className={inputClass}
+                        />
+                      </div>
+                    </label>
+
+                    <label className="block">
+                      <span className={fieldLabelClass}>Active Button Background</span>
+
+                      <div className="mt-1 flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={settings.sidebarItemActiveBackgroundColor}
+                          onChange={(event) =>
+                            updateSettings({
+                              sidebarItemActiveBackgroundColor: event.target.value,
+                            })
+                          }
+                          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
+                        />
+
+                        <input
+                          type="text"
+                          value={settings.sidebarItemActiveBackgroundColor}
+                          onChange={(event) =>
+                            updateSettings({
+                              sidebarItemActiveBackgroundColor: event.target.value,
+                            })
+                          }
+                          className={inputClass}
+                        />
+                      </div>
+                    </label>
+
+                    <label className="block">
+                      <span className={fieldLabelClass}>Active Button Text</span>
+
+                      <div className="mt-1 flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={settings.sidebarItemActiveTextColor}
+                          onChange={(event) =>
+                            updateSettings({
+                              sidebarItemActiveTextColor: event.target.value,
+                            })
+                          }
+                          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
+                        />
+
+                        <input
+                          type="text"
+                          value={settings.sidebarItemActiveTextColor}
+                          onChange={(event) =>
+                            updateSettings({
+                              sidebarItemActiveTextColor: event.target.value,
+                            })
+                          }
+                          className={inputClass}
+                        />
+                      </div>
+                    </label>
+                  </>
+                )}
+
+                {editTarget === "Balloon" && (
+                  <div className="rounded-xl border border-orange-200 bg-orange-50 p-3">
+                    <p className="text-xs font-black uppercase tracking-wide text-orange-700">
+                      Balloon Selected
+                    </p>
+                    <p className="mt-1 text-[11px] font-semibold leading-5 text-orange-700/80">
+                      Balloon styling controls are next.
+                    </p>
+                  </div>
+                )}
+
                 {editTarget === "Sidebar" && (
                   <>
                     <label className="block">
@@ -2184,4 +2356,14 @@ export default function AppearanceEditor() {
     </>
   );
 }
+
+
+
+
+
+
+
+
+
+
 

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 
@@ -6,6 +6,7 @@ import type {
   AdvertisingBlock,
   AdvertisingBlockPlacement,
   AppearanceSettings,
+  LogoPlacement,
   AppFontFamily,
   AppFontSize,
   OutputAdvertisingPlacement,
@@ -25,6 +26,7 @@ import {
   fontFamilyOptions,
   fontSizeOptions,
   getAppearanceSettings,
+  logoPlacementOptions,
   outputAdvertisingPlacementOptions,
   outputFooterLayoutOptions,
   outputHeaderLayoutOptions,
@@ -46,12 +48,14 @@ const smallLabelClass =
   "text-xs font-black uppercase tracking-wide text-zinc-500";
 const inputClass =
   "w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-base font-semibold text-black outline-none transition focus:border-black focus:ring-2 focus:ring-black/10";
+const colorInputClass =
+  "h-12 w-full cursor-pointer rounded-xl border border-zinc-300 bg-white p-1 shadow-sm";
 const smallInputClass =
   "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-bold text-black outline-none transition focus:border-black focus:ring-2 focus:ring-black/10";
 const primaryButtonClass =
-  "rounded-xl bg-black px-5 py-3 text-sm font-black text-white shadow-sm transition hover:bg-zinc-800";
+  "rounded-xl bg-[var(--t1eq-sidebar-item-active-background-color)] px-5 py-3 text-sm font-black text-[var(--t1eq-sidebar-item-active-text-color)] shadow-sm transition hover:brightness-110";
 const secondaryButtonClass =
-  "rounded-xl border border-zinc-300 bg-white px-5 py-3 text-sm font-black text-black shadow-sm transition hover:bg-zinc-50";
+  "rounded-xl border border-[var(--t1eq-sidebar-item-active-background-color)] bg-[var(--t1eq-sidebar-item-background-color)] px-5 py-3 text-sm font-black text-[var(--t1eq-sidebar-item-text-color)] shadow-sm transition hover:brightness-110";
 const dangerButtonClass =
   "rounded-xl border border-red-300 bg-red-50 px-5 py-3 text-sm font-black text-red-700 shadow-sm transition hover:bg-red-100";
 
@@ -418,6 +422,25 @@ export default function AppearanceSettingsPage() {
               />
             </label>
 
+            <label className="space-y-2">
+              <span className={labelClass}>Logo Placement</span>
+              <select
+                value={settings.logoPlacement}
+                onChange={(event) =>
+                  updateDraft({
+                    logoPlacement: event.target.value as LogoPlacement,
+                  })
+                }
+                className={inputClass}
+              >
+                {logoPlacementOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
+
             <div className="flex flex-wrap gap-3">
               <button
                 type="button"
@@ -440,44 +463,76 @@ export default function AppearanceSettingsPage() {
 
         <aside data-t1eq-page-card="true" className={sectionClass}>
           <h2 className="text-2xl font-black text-black">Logo Preview</h2>
+          <p className="mt-1 text-sm font-semibold text-zinc-600">
+            Preview where the saved logo will appear based on the selected
+            placement.
+          </p>
 
-          <div className="mt-5 rounded-3xl border border-zinc-200 bg-zinc-950 p-5 text-white">
-            <div
-              data-t1eq-business-card="true"
-              className="rounded-2xl border border-white/10 bg-white/5 bg-cover bg-center p-4"
-              style={
-                settings.logoUrl
-                  ? {
-                      backgroundImage: `linear-gradient(rgb(0 0 0 / 0.45), rgb(0 0 0 / 0.45)), url("${settings.logoUrl}")`,
-                    }
-                  : undefined
-              }
-            >
-              <div className="flex items-center gap-3">
+          <div className="mt-5 space-y-4 rounded-3xl border border-zinc-200 bg-zinc-950 p-5 text-white">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <p className="text-xs font-black uppercase tracking-wide text-white/50">
+                Task Bar
+              </p>
+
+              <div className="mt-4 flex flex-col items-center text-center">
                 <div
-                  className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white bg-contain bg-center bg-no-repeat text-sm font-black text-black"
+                  className="flex h-20 w-full max-w-[190px] items-center justify-center rounded-xl border border-white/10 bg-white/5 bg-contain bg-center bg-no-repeat text-xl font-black text-white"
                   style={
-                    settings.logoUrl
+                    settings.logoUrl &&
+                    (settings.logoPlacement === "Task Bar" ||
+                      settings.logoPlacement === "Both")
                       ? {
                           backgroundImage: `url("${settings.logoUrl}")`,
                         }
                       : undefined
                   }
                 >
-                  {!settings.logoUrl && "T1"}
+                  {(!settings.logoUrl ||
+                    settings.logoPlacement === "Page Background") &&
+                    "T1"}
                 </div>
 
-                <div>
-                  <div className="text-lg font-black">Tier One Equipment</div>
-                  <div className="text-xs font-bold uppercase tracking-wide text-white/60">
-                    Operations Platform
-                  </div>
+                <div className="mt-3 max-w-full truncate text-lg font-black leading-tight">
+                  Tier One Equipment
                 </div>
+
+                <div className="mt-1 text-xs font-black uppercase tracking-[0.22em] text-white/60">
+                  Operations Platform
+                </div>
+              </div>
+            </div>
+
+            <div
+              className="min-h-36 rounded-2xl border border-white/10 bg-zinc-100 p-4 text-black"
+              style={
+                settings.logoUrl &&
+                (settings.logoPlacement === "Page Background" ||
+                  settings.logoPlacement === "Both")
+                  ? {
+                      backgroundImage: `linear-gradient(rgb(244 244 245 / 0.9), rgb(244 244 245 / 0.9)), url("${settings.logoUrl}")`,
+                      backgroundPosition: "center",
+                      backgroundRepeat: "no-repeat",
+                      backgroundSize: "cover, min(80%, 260px) auto",
+                    }
+                  : undefined
+              }
+            >
+              <p className="text-xs font-black uppercase tracking-wide text-zinc-500">
+                Page Background
+              </p>
+
+              <div className="mt-8 rounded-xl border border-zinc-300 bg-white/85 p-4 shadow-sm">
+                <p className="text-sm font-black text-black">
+                  Current placement: {settings.logoPlacement}
+                </p>
+                <p className="mt-1 text-xs font-semibold text-zinc-600">
+                  Page background placement uses the logo as a muted watermark,
+                  not as text behind the sidebar brand.
+                </p>
               </div>
             </div>
           </div>
         </aside>
-
         <section data-t1eq-page-card="true" className={sectionClass}>
           <h2 className="text-2xl font-black text-black">Dashboard Tiles</h2>
 
@@ -608,6 +663,46 @@ export default function AppearanceSettingsPage() {
                 ))}
               </select>
             </label>
+
+            <div className="md:col-span-2 rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+              <h3 className="text-lg font-black text-black">Sidebar Button Edit</h3>
+              <div className="mt-4 grid gap-4 md:grid-cols-2">
+                <label className="space-y-2">
+                  <span className={labelClass}>Button Background</span>
+                  <input type="color" value={settings.sidebarItemBackgroundColor} onChange={(event) => updateDraft({ sidebarItemBackgroundColor: event.target.value })} className={colorInputClass} />
+                </label>
+                <label className="space-y-2">
+                  <span className={labelClass}>Button Text</span>
+                  <input type="color" value={settings.sidebarItemTextColor} onChange={(event) => updateDraft({ sidebarItemTextColor: event.target.value })} className={colorInputClass} />
+                </label>
+                <label className="space-y-2">
+                  <span className={labelClass}>Active Button Background</span>
+                  <input type="color" value={settings.sidebarItemActiveBackgroundColor} onChange={(event) => updateDraft({ sidebarItemActiveBackgroundColor: event.target.value })} className={colorInputClass} />
+                </label>
+                <label className="space-y-2">
+                  <span className={labelClass}>Active Button Text</span>
+                  <input type="color" value={settings.sidebarItemActiveTextColor} onChange={(event) => updateDraft({ sidebarItemActiveTextColor: event.target.value })} className={colorInputClass} />
+                </label>
+              </div>
+            </div>
+
+            <div className="md:col-span-2 rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+              <h3 className="text-lg font-black text-black">Balloon Edit</h3>
+              <div className="mt-4 grid gap-4 md:grid-cols-3">
+                <label className="space-y-2">
+                  <span className={labelClass}>Balloon Background</span>
+                  <input type="color" value={settings.balloonBackgroundColor} onChange={(event) => updateDraft({ balloonBackgroundColor: event.target.value })} className={colorInputClass} />
+                </label>
+                <label className="space-y-2">
+                  <span className={labelClass}>Balloon Text</span>
+                  <input type="color" value={settings.balloonTextColor} onChange={(event) => updateDraft({ balloonTextColor: event.target.value })} className={colorInputClass} />
+                </label>
+                <label className="space-y-2">
+                  <span className={labelClass}>Balloon Border</span>
+                  <input type="color" value={settings.balloonBorderColor} onChange={(event) => updateDraft({ balloonBorderColor: event.target.value })} className={colorInputClass} />
+                </label>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -986,7 +1081,7 @@ export default function AppearanceSettingsPage() {
                         {block.title || "Untitled Advertising Block"}
                       </h3>
                       <p className="mt-1 text-sm font-semibold text-zinc-600">
-                        {block.placement} ·{" "}
+                        {block.placement} Â·{" "}
                         {block.isActive ? "Active" : "Inactive"}
                       </p>
                     </div>
@@ -1158,3 +1253,6 @@ export default function AppearanceSettingsPage() {
     </div>
   );
 }
+
+
+

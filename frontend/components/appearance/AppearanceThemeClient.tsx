@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect } from "react";
 
@@ -38,6 +38,7 @@ function applyAppearanceSettings() {
   root.dataset.t1eqTileSize = settings.tileSize;
   root.dataset.t1eqSidebarDepth = settings.sidebarThreeDEffect;
   root.dataset.t1eqPageDepth = settings.pageThreeDEffect;
+  root.dataset.t1eqLogoPlacement = settings.logoPlacement;
 
   root.style.setProperty("--t1eq-accent-color", settings.accentColor);
   root.style.setProperty(
@@ -63,6 +64,36 @@ function applyAppearanceSettings() {
   root.style.setProperty(
     "--t1eq-page-background-color",
     settings.pageBackgroundColor
+  );
+
+  root.style.setProperty(
+    "--t1eq-sidebar-item-background-color",
+    settings.sidebarItemBackgroundColor
+  );
+  root.style.setProperty(
+    "--t1eq-sidebar-item-text-color",
+    settings.sidebarItemTextColor
+  );
+  root.style.setProperty(
+    "--t1eq-sidebar-item-active-background-color",
+    settings.sidebarItemActiveBackgroundColor
+  );
+  root.style.setProperty(
+    "--t1eq-sidebar-item-active-text-color",
+    settings.sidebarItemActiveTextColor
+  );
+
+  root.style.setProperty(
+    "--t1eq-balloon-background-color",
+    settings.balloonBackgroundColor
+  );
+  root.style.setProperty(
+    "--t1eq-balloon-text-color",
+    settings.balloonTextColor
+  );
+  root.style.setProperty(
+    "--t1eq-balloon-border-color",
+    settings.balloonBorderColor
   );
 
   if (settings.logoUrl.trim().length > 0) {
@@ -103,3 +134,5 @@ export default function AppearanceThemeClient() {
 
   return null;
 }
+
+
