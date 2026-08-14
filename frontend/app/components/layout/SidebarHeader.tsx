@@ -1,12 +1,6 @@
 "use client";
 
-import Image from "next/image";
-
-import {
-  useEffect,
-  useState,
-} from "react";
-
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import {
@@ -15,117 +9,71 @@ import {
 } from "../../../services/app-settings";
 
 export default function SidebarHeader() {
-  const [companyName, setCompanyName] =
-    useState("Tier One Equipment");
-
-  const [logoPath, setLogoPath] =
-    useState("");
+  const [companyName, setCompanyName] = useState("Tier One Equipment");
 
   useEffect(() => {
     function loadSettings() {
-      const settings =
-        getAppSettings();
+      const settings = getAppSettings();
 
-      setCompanyName(
-        settings.companyName ||
-          "Tier One Equipment"
-      );
-
-      setLogoPath(
-        settings.logoPath || ""
-      );
+      setCompanyName(settings.companyName || "Tier One Equipment");
     }
 
     loadSettings();
 
-    window.addEventListener(
-      APP_SETTINGS_UPDATED_EVENT,
-      loadSettings
-    );
+    window.addEventListener(APP_SETTINGS_UPDATED_EVENT, loadSettings);
 
     return () => {
-      window.removeEventListener(
-        APP_SETTINGS_UPDATED_EVENT,
-        loadSettings
-      );
+      window.removeEventListener(APP_SETTINGS_UPDATED_EVENT, loadSettings);
     };
   }, []);
 
   return (
     <Link
       href="/dashboard"
+      data-t1eq-business-card="true"
       className="
         flex
+        min-h-28
+        flex-col
         items-center
-        gap-4
+        justify-center
         rounded-2xl
-        bg-white/20
         border
         border-black/10
+        bg-white/20
+        bg-contain
+        bg-center
+        bg-no-repeat
         p-4
-        hover:bg-white/30
+        text-center
         transition
+        hover:bg-white/30
       "
     >
       <div
         className="
-          relative
-          h-14
-          w-14
-          shrink-0
-          overflow-hidden
-          rounded-xl
-          bg-black/5
-          border
-          border-black/10
+          max-w-full
+          truncate
+          text-lg
+          font-black
+          leading-tight
+          text-black
         "
       >
-        {logoPath ? (
-          <Image
-            src={logoPath}
-            alt={companyName}
-            fill
-            className="object-contain p-1"
-          />
-        ) : (
-          <div
-            className="
-              flex
-              h-full
-              w-full
-              items-center
-              justify-center
-              text-xl
-              font-black
-              text-black
-            "
-          >
-            T1
-          </div>
-        )}
+        {companyName}
       </div>
 
-      <div className="min-w-0">
-        <div
-          className="
-            truncate
-            text-lg
-            font-black
-            text-black
-            leading-tight
-          "
-        >
-          {companyName}
-        </div>
-
-        <div
-          className="
-            text-sm
-            text-black/60
-          "
-        >
-          Operational Platform
-        </div>
+      <div
+        className="
+          mt-1
+          text-xs
+          font-black
+          uppercase
+          tracking-[0.22em]
+          text-black/60
+        "
+      >
+        Operations Platform
       </div>
     </Link>
   );
