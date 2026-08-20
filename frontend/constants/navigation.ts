@@ -95,6 +95,10 @@ export const navigationItems: NavigationItem[] = [
         label: "Appearance",
         href: "/settings/appearance",
       },
+      {
+        label: "Roles & Permissions",
+        href: "/settings/roles-permissions",
+      },
     ],
   },
 ];
