@@ -33,7 +33,7 @@ export default function KpiCard({
   subtitle,
 }: KpiCardProps) {
   return (
-    <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-6 backdrop-blur-xl">
+    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-6 backdrop-blur-xl">
       <div className="text-xs uppercase tracking-wide text-slate-400">
         {label}
       </div>

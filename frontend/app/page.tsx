@@ -249,7 +249,7 @@ function DashboardCategoryCard({
           <h2 className="mt-2 text-2xl font-black text-black">{title}</h2>
         </div>
 
-        <div className="rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs font-black uppercase tracking-wide text-zinc-600">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs font-black uppercase tracking-wide text-zinc-600">
           Open
         </div>
       </div>
@@ -273,7 +273,7 @@ function DashboardCategoryCard({
       </p>
 
       <div className="mt-auto pt-5">
-        <div className="rounded-xl border border-zinc-300 bg-white px-4 py-2 text-center text-sm font-black text-black shadow-sm">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-zinc-300 bg-white px-4 py-2 text-center text-sm font-black text-black shadow-sm">
           Open {title}
         </div>
       </div>

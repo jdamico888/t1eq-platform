@@ -17,8 +17,12 @@ const EQUIPMENT_CATEGORIES = [
 type EquipmentCategorySelectorProps = {
   value: string;
   onChange: (value: string) => void;
+
   label?: string;
   placeholder?: string;
+
+  qbitId?: string;
+  qbitScope?: string;
 };
 
 export default function EquipmentCategorySelector({
@@ -26,6 +30,8 @@ export default function EquipmentCategorySelector({
   onChange,
   label = "Equipment Category",
   placeholder = "Select or enter equipment category",
+  qbitId,
+  qbitScope = "global",
 }: EquipmentCategorySelectorProps) {
   return (
     <FormAutocomplete
@@ -34,6 +40,8 @@ export default function EquipmentCategorySelector({
       onChange={onChange}
       options={[...EQUIPMENT_CATEGORIES]}
       placeholder={placeholder}
+      qbitId={qbitId}
+      qbitScope={qbitScope}
     />
   );
 }

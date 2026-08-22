@@ -298,7 +298,7 @@ export default function OperationalDashboardChartsSettingsPage() {
               Open Dashboard
             </a>
 
-            <button
+            <button data-t1eq-action-button="true"
               type="button"
               onClick={beginCreateChart}
               className={primaryButtonClass}
@@ -306,7 +306,7 @@ export default function OperationalDashboardChartsSettingsPage() {
               Add Chart
             </button>
 
-            <button
+            <button data-t1eq-action-button="true"
               type="button"
               onClick={handleResetCharts}
               className={secondaryButtonClass}
@@ -317,7 +317,7 @@ export default function OperationalDashboardChartsSettingsPage() {
         </div>
 
         {statusMessage && (
-          <div className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm font-bold text-zinc-700">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm font-bold text-zinc-700">
             {statusMessage}
           </div>
         )}
@@ -339,7 +339,7 @@ export default function OperationalDashboardChartsSettingsPage() {
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <label className="space-y-2 md:col-span-2">
               <span className={labelClass}>Chart Title</span>
-              <input
+              <input data-t1eq-field="true"
                 value={formState.title}
                 onChange={(event) =>
                   updateFormState({
@@ -353,7 +353,7 @@ export default function OperationalDashboardChartsSettingsPage() {
 
             <label className="space-y-2">
               <span className={labelClass}>Chart Type</span>
-              <select
+              <select data-t1eq-field="true"
                 value={formState.chartType}
                 onChange={(event) =>
                   updateFormState({
@@ -372,7 +372,7 @@ export default function OperationalDashboardChartsSettingsPage() {
 
             <label className="space-y-2">
               <span className={labelClass}>Size</span>
-              <select
+              <select data-t1eq-field="true"
                 value={formState.size}
                 onChange={(event) =>
                   updateFormState({
@@ -391,7 +391,7 @@ export default function OperationalDashboardChartsSettingsPage() {
 
             <label className="space-y-2 md:col-span-2">
               <span className={labelClass}>Metric</span>
-              <select
+              <select data-t1eq-field="true"
                 value={formState.metric}
                 onChange={(event) =>
                   updateFormState({
@@ -411,7 +411,7 @@ export default function OperationalDashboardChartsSettingsPage() {
 
             <label className="space-y-2">
               <span className={labelClass}>Time Range</span>
-              <select
+              <select data-t1eq-field="true"
                 value={formState.timeRange}
                 onChange={(event) =>
                   updateFormState({
@@ -431,7 +431,7 @@ export default function OperationalDashboardChartsSettingsPage() {
 
             <label className="space-y-2">
               <span className={labelClass}>Group By</span>
-              <select
+              <select data-t1eq-field="true"
                 value={formState.groupBy}
                 onChange={(event) =>
                   updateFormState({
@@ -450,7 +450,7 @@ export default function OperationalDashboardChartsSettingsPage() {
 
             <label className="space-y-2">
               <span className={labelClass}>Sort Order</span>
-              <input
+              <input data-t1eq-field="true"
                 type="number"
                 value={formState.sortOrder}
                 onChange={(event) =>
@@ -464,7 +464,7 @@ export default function OperationalDashboardChartsSettingsPage() {
 
             <label className="space-y-2 md:col-span-2 xl:col-span-4">
               <span className={labelClass}>Description</span>
-              <textarea
+              <textarea data-t1eq-field="true"
                 value={formState.description}
                 onChange={(event) =>
                   updateFormState({
@@ -477,8 +477,8 @@ export default function OperationalDashboardChartsSettingsPage() {
               />
             </label>
 
-            <label className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-4 md:col-span-2 xl:col-span-4">
-              <input
+            <label data-t1eq-tile="true" data-t1eq-page-card="true" className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-4 md:col-span-2 xl:col-span-4">
+              <input data-t1eq-field="true"
                 type="checkbox"
                 checked={formState.showOnOperationsDashboard}
                 onChange={(event) =>
@@ -496,7 +496,7 @@ export default function OperationalDashboardChartsSettingsPage() {
           </div>
 
           <div className="mt-5 flex flex-wrap gap-3">
-            <button
+            <button data-t1eq-action-button="true"
               type="button"
               onClick={handleSaveChart}
               className={primaryButtonClass}
@@ -504,7 +504,7 @@ export default function OperationalDashboardChartsSettingsPage() {
               {editingChart ? "Save Chart" : "Create Chart"}
             </button>
 
-            <button
+            <button data-t1eq-action-button="true"
               type="button"
               onClick={cancelForm}
               className={secondaryButtonClass}
@@ -530,7 +530,7 @@ export default function OperationalDashboardChartsSettingsPage() {
 
           <label className="w-full space-y-2 md:w-96">
             <span className={labelClass}>Search Charts</span>
-            <input
+            <input data-t1eq-field="true"
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               className={inputClass}
@@ -540,11 +540,11 @@ export default function OperationalDashboardChartsSettingsPage() {
         </div>
 
         {filteredCharts.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-8 text-center text-sm font-bold text-zinc-500">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-8 text-center text-sm font-bold text-zinc-500">
             No dashboard charts found.
           </div>
         ) : (
-          <div className="overflow-hidden rounded-2xl border border-zinc-200">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="overflow-hidden rounded-2xl border border-zinc-200">
             <table className="w-full border-collapse bg-white">
               <thead>
                 <tr>
@@ -601,7 +601,7 @@ export default function OperationalDashboardChartsSettingsPage() {
 
                     <td className={tableCellClass}>
                       <div className="flex flex-wrap gap-2">
-                        <button
+                        <button data-t1eq-action-button="true"
                           type="button"
                           onClick={() => beginEditChart(chart)}
                           className={secondaryButtonClass}
@@ -609,7 +609,7 @@ export default function OperationalDashboardChartsSettingsPage() {
                           Edit
                         </button>
 
-                        <button
+                        <button data-t1eq-action-button="true"
                           type="button"
                           onClick={() =>
                             handleToggleDashboardVisibility(chart)
@@ -619,7 +619,7 @@ export default function OperationalDashboardChartsSettingsPage() {
                           {chart.showOnOperationsDashboard ? "Hide" : "Show"}
                         </button>
 
-                        <button
+                        <button data-t1eq-action-button="true"
                           type="button"
                           onClick={() => handleDeleteChart(chart)}
                           className={dangerButtonClass}

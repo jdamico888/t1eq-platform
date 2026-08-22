@@ -30,6 +30,8 @@ import {
   type EquipmentInput,
 } from "@/services/equipment";
 
+const QBIT_SCOPE = "equipment";
+
 const emptyForm: EquipmentInput = {
   customerId: "",
   customerName: "",
@@ -46,11 +48,15 @@ const emptyForm: EquipmentInput = {
 
 export default function EquipmentPage() {
   const [equipment, setEquipment] = useState<Equipment[]>([]);
-  const [editingEquipmentId, setEditingEquipmentId] = useState<string | null>(
-    null
-  );
+
+  const [editingEquipmentId, setEditingEquipmentId] = useState<
+    string | null
+  >(null);
+
   const [search, setSearch] = useState("");
-  const [formData, setFormData] = useState<EquipmentInput>(emptyForm);
+
+  const [formData, setFormData] =
+    useState<EquipmentInput>(emptyForm);
 
   useEffect(() => {
     loadEquipment();
@@ -76,7 +82,9 @@ export default function EquipmentPage() {
     }));
   }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  function handleSubmit(
+    event: React.FormEvent<HTMLFormElement>
+  ) {
     event.preventDefault();
 
     if (!formData.customerName.trim()) {
@@ -95,7 +103,10 @@ export default function EquipmentPage() {
     }
 
     if (editingEquipmentId) {
-      updateEquipment(editingEquipmentId, formData);
+      updateEquipment(
+        editingEquipmentId,
+        formData
+      );
     } else {
       createEquipment(formData);
     }
@@ -110,26 +121,36 @@ export default function EquipmentPage() {
     setFormData({
       customerId: item.customerId,
       customerName: item.customerName,
-      siteId: item.siteId || "",
-      siteName: item.siteName || "",
+
+      siteId: item.siteId ?? "",
+      siteName: item.siteName ?? "",
+
       category: item.category,
       manufacturer: item.manufacturer,
-      model: item.model || "",
-      serialNumber: item.serialNumber || "",
-      location: item.location || "",
+
+      model: item.model ?? "",
+      serialNumber: item.serialNumber ?? "",
+      location: item.location ?? "",
+
       status: item.status,
-      notes: item.notes || "",
+
+      notes: item.notes ?? "",
     });
   }
 
   function handleDelete(item: Equipment) {
     const confirmed = window.confirm(
-      `Delete ${item.manufacturer} ${item.model || item.category}?`
+      `Delete ${item.manufacturer} ${
+        item.model || item.category
+      }?`
     );
 
-    if (!confirmed) return;
+    if (!confirmed) {
+      return;
+    }
 
     deleteEquipment(item.id);
+
     loadEquipment();
 
     if (editingEquipmentId === item.id) {
@@ -138,49 +159,99 @@ export default function EquipmentPage() {
   }
 
   const filteredEquipment = useMemo(() => {
-    const normalizedSearch = search.trim().toLowerCase();
+    const normalizedSearch =
+      search.trim().toLowerCase();
 
-    if (!normalizedSearch) return equipment;
+    if (!normalizedSearch) {
+      return equipment;
+    }
 
     return equipment.filter((item) => {
       return (
-        item.customerName.toLowerCase().includes(normalizedSearch) ||
-        Boolean(item.siteName?.toLowerCase().includes(normalizedSearch)) ||
-        item.category.toLowerCase().includes(normalizedSearch) ||
-        item.manufacturer.toLowerCase().includes(normalizedSearch) ||
-        Boolean(item.model?.toLowerCase().includes(normalizedSearch)) ||
-        Boolean(item.serialNumber?.toLowerCase().includes(normalizedSearch)) ||
-        Boolean(item.location?.toLowerCase().includes(normalizedSearch)) ||
-        item.status.toLowerCase().includes(normalizedSearch)
+        item.customerName
+          .toLowerCase()
+          .includes(normalizedSearch) ||
+        Boolean(
+          item.siteName
+            ?.toLowerCase()
+            .includes(normalizedSearch)
+        ) ||
+        item.category
+          .toLowerCase()
+          .includes(normalizedSearch) ||
+        item.manufacturer
+          .toLowerCase()
+          .includes(normalizedSearch) ||
+        Boolean(
+          item.model
+            ?.toLowerCase()
+            .includes(normalizedSearch)
+        ) ||
+        Boolean(
+          item.serialNumber
+            ?.toLowerCase()
+            .includes(normalizedSearch)
+        ) ||
+        Boolean(
+          item.location
+            ?.toLowerCase()
+            .includes(normalizedSearch)
+        ) ||
+        item.status
+          .toLowerCase()
+          .includes(normalizedSearch)
       );
     });
   }, [equipment, search]);
 
   return (
     <ListPageLayout
+      qbitId="equipment"
+      qbitScope={QBIT_SCOPE}
       title="Equipment"
       description="Manage customer equipment assets, manufacturers, serial numbers, locations, and service status."
     >
       <TwoColumnLayout
+        qbitId="equipment-workspace"
+        qbitScope={QBIT_SCOPE}
         left={
           <FormCard
-            title={editingEquipmentId ? "Edit Equipment" : "Add Equipment"}
+            qbitId="equipment-form"
+            qbitScope={QBIT_SCOPE}
+            title={
+              editingEquipmentId
+                ? "Edit Equipment"
+                : "Add Equipment"
+            }
             description="Register and maintain customer equipment records."
           >
-            <form className="space-y-4" onSubmit={handleSubmit}>
+            <form
+              data-t1eq-qbit-type="section"
+              data-t1eq-qbit-id="equipment-form-fields"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="space-y-4"
+              onSubmit={handleSubmit}
+            >
               <CustomerSelector
+                qbitId="equipment-customer"
+                qbitScope={QBIT_SCOPE}
                 value={formData.customerName}
                 onChange={(value) =>
                   setFormData((previous) => ({
                     ...previous,
+
                     customerName: value,
+
+                    siteId: "",
                     siteName: "",
                   }))
                 }
               />
 
               <SiteSelector
-                value={formData.siteName}
+                qbitId="equipment-site"
+                qbitScope={QBIT_SCOPE}
+                value={formData.siteName ?? ""}
                 customerName={formData.customerName}
                 onChange={(value) =>
                   setFormData((previous) => ({
@@ -191,6 +262,8 @@ export default function EquipmentPage() {
               />
 
               <EquipmentCategorySelector
+                qbitId="equipment-category"
+                qbitScope={QBIT_SCOPE}
                 value={formData.category}
                 onChange={(value) =>
                   setFormData((previous) => ({
@@ -201,6 +274,8 @@ export default function EquipmentPage() {
               />
 
               <ManufacturerSelector
+                qbitId="equipment-manufacturer"
+                qbitScope={QBIT_SCOPE}
                 value={formData.manufacturer}
                 onChange={(value) =>
                   setFormData((previous) => ({
@@ -211,27 +286,35 @@ export default function EquipmentPage() {
               />
 
               <FormInput
+                qbitId="equipment-model"
+                qbitScope={QBIT_SCOPE}
                 name="model"
                 label="Model"
-                value={formData.model}
+                value={formData.model ?? ""}
                 onChange={handleTextChange}
               />
 
               <FormInput
+                qbitId="equipment-serial-number"
+                qbitScope={QBIT_SCOPE}
                 name="serialNumber"
                 label="Serial Number"
-                value={formData.serialNumber}
+                value={formData.serialNumber ?? ""}
                 onChange={handleTextChange}
               />
 
               <FormInput
+                qbitId="equipment-location"
+                qbitScope={QBIT_SCOPE}
                 name="location"
                 label="Location"
-                value={formData.location}
+                value={formData.location ?? ""}
                 onChange={handleTextChange}
               />
 
               <FormSelect
+                qbitId="equipment-status"
+                qbitScope={QBIT_SCOPE}
                 name="status"
                 label="Status"
                 value={formData.status}
@@ -242,20 +325,28 @@ export default function EquipmentPage() {
                 onChange={(event) =>
                   setFormData((previous) => ({
                     ...previous,
-                    status: event.target.value as EquipmentInput["status"],
+                    status:
+                      event.target
+                        .value as EquipmentInput["status"],
                   }))
                 }
               />
 
               <FormTextarea
+                qbitId="equipment-notes"
+                qbitScope={QBIT_SCOPE}
                 name="notes"
                 label="Notes"
-                value={formData.notes}
+                value={formData.notes ?? ""}
                 onChange={handleTextChange}
               />
 
               <FormActions
-                isEditing={Boolean(editingEquipmentId)}
+                qbitId="equipment-form"
+                qbitScope={QBIT_SCOPE}
+                isEditing={Boolean(
+                  editingEquipmentId
+                )}
                 submitLabel="Save Equipment"
                 updateLabel="Update Equipment"
                 onCancel={resetForm}
@@ -265,21 +356,31 @@ export default function EquipmentPage() {
         }
         right={
           <TableCard
+            qbitId="equipment-registry"
+            qbitScope={QBIT_SCOPE}
             title="Equipment Registry"
             description="Search and manage customer equipment assets."
             actions={
               <SearchInput
+                qbitId="equipment-search"
+                qbitScope={QBIT_SCOPE}
                 value={search}
                 onChange={setSearch}
                 placeholder="Search equipment..."
               />
             }
           >
-            <EquipmentTable
-              equipment={filteredEquipment}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
+            <div
+              data-t1eq-qbit-type="section"
+              data-t1eq-qbit-id="equipment-table-container"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+            >
+              <EquipmentTable
+                equipment={filteredEquipment}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            </div>
           </TableCard>
         }
       />

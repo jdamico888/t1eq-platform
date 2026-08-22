@@ -22,8 +22,12 @@ const MANUFACTURERS = [
 type ManufacturerSelectorProps = {
   value: string;
   onChange: (value: string) => void;
+
   label?: string;
   placeholder?: string;
+
+  qbitId?: string;
+  qbitScope?: string;
 };
 
 export default function ManufacturerSelector({
@@ -31,6 +35,8 @@ export default function ManufacturerSelector({
   onChange,
   label = "Manufacturer",
   placeholder = "Select or enter manufacturer",
+  qbitId,
+  qbitScope = "global",
 }: ManufacturerSelectorProps) {
   return (
     <FormAutocomplete
@@ -39,6 +45,8 @@ export default function ManufacturerSelector({
       onChange={onChange}
       options={[...MANUFACTURERS]}
       placeholder={placeholder}
+      qbitId={qbitId}
+      qbitScope={qbitScope}
     />
   );
 }

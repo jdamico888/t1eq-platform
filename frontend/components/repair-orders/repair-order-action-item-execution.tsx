@@ -28,13 +28,13 @@ export default function RepairOrderActionItemExecution({
   }
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-white/5 p-6">
       <h3 className="text-xl font-bold text-white">
         Technician Execution
       </h3>
 
       <div className="mt-6 grid gap-4 md:grid-cols-2">
-        <div className="rounded-xl border border-white/10 p-4">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-white/10 p-4">
           <div className="text-xs uppercase text-white/50">
             Serial Plate Photo
           </div>
@@ -46,7 +46,7 @@ export default function RepairOrderActionItemExecution({
           </div>
         </div>
 
-        <div className="rounded-xl border border-white/10 p-4">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-white/10 p-4">
           <div className="text-xs uppercase text-white/50">
             Assigned Technician
           </div>
@@ -57,7 +57,7 @@ export default function RepairOrderActionItemExecution({
           </div>
         </div>
 
-        <div className="rounded-xl border border-white/10 p-4">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-white/10 p-4">
           <div className="text-xs uppercase text-white/50">
             Clock In
           </div>
@@ -68,7 +68,7 @@ export default function RepairOrderActionItemExecution({
           </div>
         </div>
 
-        <div className="rounded-xl border border-white/10 p-4">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-white/10 p-4">
           <div className="text-xs uppercase text-white/50">
             Clock Out
           </div>
@@ -79,7 +79,7 @@ export default function RepairOrderActionItemExecution({
           </div>
         </div>
 
-        <div className="rounded-xl border border-white/10 p-4">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-white/10 p-4">
           <div className="text-xs uppercase text-white/50">
             Before Photos
           </div>
@@ -89,7 +89,7 @@ export default function RepairOrderActionItemExecution({
           </div>
         </div>
 
-        <div className="rounded-xl border border-white/10 p-4">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-white/10 p-4">
           <div className="text-xs uppercase text-white/50">
             After Photos
           </div>
@@ -99,7 +99,7 @@ export default function RepairOrderActionItemExecution({
           </div>
         </div>
 
-        <div className="rounded-xl border border-white/10 p-4 md:col-span-2">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-white/10 p-4 md:col-span-2">
           <div className="text-xs uppercase text-white/50">
             Completion Notes
           </div>
@@ -110,7 +110,7 @@ export default function RepairOrderActionItemExecution({
           </div>
         </div>
 
-        <div className="rounded-xl border border-white/10 p-4 md:col-span-2">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-white/10 p-4 md:col-span-2">
           <div className="text-xs uppercase text-white/50">
             Customer Signature
           </div>
@@ -124,7 +124,7 @@ export default function RepairOrderActionItemExecution({
       </div>
 
       <div className="mt-6 flex gap-3">
-        <button
+        <button data-t1eq-action-button="true"
           type="button"
           onClick={handleStartWork}
           className="rounded-xl bg-green-600 px-4 py-2 font-semibold text-white"
@@ -132,7 +132,7 @@ export default function RepairOrderActionItemExecution({
           Start Work
         </button>
 
-        <button
+        <button data-t1eq-action-button="true"
           type="button"
           onClick={handleStopWork}
           className="rounded-xl bg-blue-600 px-4 py-2 font-semibold text-white"

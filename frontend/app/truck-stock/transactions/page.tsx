@@ -77,7 +77,7 @@ export default function TruckStockTransactionsPage() {
   return (
     <main className="min-h-screen bg-slate-950 p-6 text-white">
       <div className="mx-auto max-w-7xl space-y-6">
-        <section className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
             <div>
               <div className="text-sm font-semibold uppercase tracking-[0.25em] text-white/50">
@@ -105,7 +105,7 @@ export default function TruckStockTransactionsPage() {
         </section>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-          <div className="rounded-2xl border border-white/10 bg-white/10 p-5">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-white/10 p-5">
             <div className="text-xs uppercase tracking-wide text-white/50">
               Transactions
             </div>
@@ -115,7 +115,7 @@ export default function TruckStockTransactionsPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/10 p-5">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-white/10 p-5">
             <div className="text-xs uppercase tracking-wide text-white/50">
               Loads
             </div>
@@ -125,7 +125,7 @@ export default function TruckStockTransactionsPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/10 p-5">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-white/10 p-5">
             <div className="text-xs uppercase tracking-wide text-white/50">
               Consumption
             </div>
@@ -135,7 +135,7 @@ export default function TruckStockTransactionsPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/10 p-5">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-white/10 p-5">
             <div className="text-xs uppercase tracking-wide text-white/50">
               Adjustments
             </div>
@@ -145,7 +145,7 @@ export default function TruckStockTransactionsPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/10 p-5">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-white/10 p-5">
             <div className="text-xs uppercase tracking-wide text-white/50">
               Qty Moved
             </div>
@@ -156,7 +156,7 @@ export default function TruckStockTransactionsPage() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
           <div className="mb-5 flex flex-col justify-between gap-4 md:flex-row md:items-center">
             <div>
               <h2 className="text-2xl font-bold text-white">
@@ -168,7 +168,7 @@ export default function TruckStockTransactionsPage() {
               </p>
             </div>
 
-            <input
+            <input data-t1eq-field="true"
               value={searchText}
               onChange={(event) => setSearchText(event.target.value)}
               className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-white md:max-w-md"
@@ -177,11 +177,11 @@ export default function TruckStockTransactionsPage() {
           </div>
 
           {filteredTransactions.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-white/10 bg-white/5 p-10 text-center text-white/60">
+            <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-dashed border-white/10 bg-white/5 p-10 text-center text-white/60">
               No truck stock transactions found.
             </div>
           ) : (
-            <div className="overflow-hidden rounded-2xl border border-white/10">
+            <div data-t1eq-tile="true" data-t1eq-page-card="true" className="overflow-hidden rounded-2xl border border-white/10">
               <div className="grid grid-cols-7 gap-3 border-b border-white/10 bg-white/5 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-white/50">
                 <div>Type</div>
                 <div>Truck</div>

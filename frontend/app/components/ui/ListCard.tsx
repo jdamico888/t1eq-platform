@@ -15,6 +15,8 @@ export default function ListCard({
 }: ListCardProps) {
   return (
     <div
+      data-t1eq-tile="true"
+      data-t1eq-page-card="true"
       className={`
         rounded-xl
         border

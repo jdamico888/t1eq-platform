@@ -2,6 +2,7 @@
 
 import {
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ChangeEvent,
@@ -9,14 +10,19 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 
+import ColorSwatchPicker from "@/components/appearance/ColorSwatchPicker";
+
 import type {
   AppearanceSettings,
+  LogoPlacement,
   ThreeDEffectLevel,
 } from "@/types/appearance-settings";
+
 import {
   fontFamilyOptions,
   fontSizeOptions,
   getAppearanceSettings,
+  logoPlacementOptions,
   resetAppearanceSettings,
   saveAppearanceSettings,
   threeDEffectOptions,
@@ -24,111 +30,167 @@ import {
   tileSizeOptions,
 } from "@/services/appearance-settings";
 
+import {
+  applyAllQBitOverrides,
+  applyQBitOverride,
+  clearQBitOverrideStyles,
+  getQBitDescriptor,
+  getQBitElement,
+  getQBitOverride,
+  getQBitOverrides,
+  removeQBitOverride,
+  saveQBitOverrides,
+  updateQBitOverride,
+  type QBitDescriptor,
+  type QBitElementType,
+  type QBitOverride,
+} from "@/services/qbit-appearance";
+
 type Position = {
   x: number;
   y: number;
 };
 
-type Size = {
-  width: number;
-  height: number;
-};
+type ResizeDirection =
+  | "top"
+  | "right"
+  | "bottom"
+  | "left"
+  | "top-left"
+  | "top-right"
+  | "bottom-left"
+  | "bottom-right";
 
-type PointerStart = {
+type DragStart = {
   pointerId: number;
+
   startX: number;
   startY: number;
+
+  originalOffsetX: number;
+  originalOffsetY: number;
+
+  latestOffsetX: number;
+  latestOffsetY: number;
+
+  moved: boolean;
+
+  element: HTMLElement;
+  descriptor: QBitDescriptor;
+
+  originalTransition: string;
+};
+
+type ResizeStart = {
+  pointerId: number;
+
+  direction: ResizeDirection;
+
+  startX: number;
+  startY: number;
+
+  originalWidth: number;
+  originalHeight: number;
+
+  originalOffsetX: number;
+  originalOffsetY: number;
+
+  latestWidth: number;
+  latestHeight: number;
+
+  latestOffsetX: number;
+  latestOffsetY: number;
+
+  element: HTMLElement;
+  descriptor: QBitDescriptor;
+
+  originalTransition: string;
+};
+
+type PanelDragStart = {
+  pointerId: number;
+
+  startX: number;
+  startY: number;
+
   originalX: number;
   originalY: number;
+};
+
+type DockDragStart = {
+  pointerId: number;
+
+  startX: number;
+  startY: number;
+
+  originalX: number;
+  originalY: number;
+
   moved: boolean;
 };
 
-type ResizeDirection = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
-
-type ResizePointerStart = PointerStart & {
-  direction: ResizeDirection;
-  originalWidth: number;
-  originalHeight: number;
+type QBitSessionSnapshot = {
+  descriptor: QBitDescriptor;
+  override: QBitOverride | null;
 };
 
-type EditTarget = "Tile" | "Sidebar" | "Background";
+const globalTextColorStorageKey =
+  "t1eq-appearance-global-text-color";
 
-type TileOverride = {
-  tileIndex: number;
-  backgroundColor?: string;
-  borderColor?: string;
-  textColor?: string;
-  depth?: ThreeDEffectLevel;
-};
-type QBitEditSession = {
-  target: EditTarget;
-  tileIndex: number | null;
-  startedDate: string;
-};
+const panelPositionStorageKey =
+  "t1eq-qbit-panel-position-v3";
 
-const editableSelector = [
-  "[data-t1eq-tile='true']",
-  "[data-t1eq-sidebar='true']",
-  "[data-t1eq-page-card='true']",
-].join(",");
+const dockPositionStorageKey =
+  "t1eq-qbit-dock-position-v3";
 
-const dockPositionStorageKey = "t1eq-appearance-editor-dock-position";
-const panelPositionStorageKey = "t1eq-appearance-editor-panel-position";
-const panelSizeStorageKey = "t1eq-appearance-editor-panel-size";
-const panelRadiusStorageKey = "t1eq-appearance-editor-panel-radius";
-const globalTextColorStorageKey = "t1eq-appearance-global-text-color";
-const tileOverridesStorageKey = "t1eq-appearance-tile-overrides";
+const editableSelector =
+  "[data-t1eq-qbit-id][data-t1eq-qbit-type]";
 
-const qBitSize = 160;
-const panelMinWidth = 320;
-const panelMinHeight = 420;
-const panelDefaultWidth = 360;
-const panelDefaultHeight = 760;
+const panelWidth = 380;
+const panelHeight = 760;
 
-const dockButtonBaseClass =
-  "fixed z-[9999] flex h-40 w-40 touch-none select-none items-center justify-center bg-transparent p-0 transition hover:scale-105";
+const dockSize = 160;
 
-const panelBaseClass =
-  "fixed z-[9998] border border-zinc-300 bg-white text-black shadow-2xl";
-
-const panelHeaderClass =
-  "flex cursor-grab touch-none select-none items-start justify-between gap-2 border-b border-zinc-200 bg-white/95 px-3 py-3 active:cursor-grabbing";
-
-const panelBodyClass = "flex-1 overflow-y-auto p-3";
-
-const hoverLabelClass =
-  "fixed z-[9999] rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs font-black uppercase tracking-wide text-black shadow-xl";
-
-const bannerClass =
-  "fixed left-1/2 top-6 z-[9999] -translate-x-1/2 rounded-2xl border border-orange-400 bg-orange-50 px-5 py-3 text-sm font-black uppercase tracking-wide text-orange-700 shadow-xl";
+const objectMinWidth = 32;
+const objectMinHeight = 32;
 
 const fieldLabelClass =
-  "text-[10px] font-black uppercase tracking-wide text-zinc-500";
+  "block text-[10px] font-black uppercase tracking-wide text-zinc-700";
 
 const inputClass =
-  "mt-1 w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-xs font-bold text-black outline-none transition focus:border-black focus:ring-2 focus:ring-black/10";
+  "mt-1 w-full rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-xs font-bold text-black outline-none transition focus:border-black focus:ring-2 focus:ring-black/10";
 
-const buttonClass =
-  "rounded-md border border-zinc-300 bg-white px-2 py-1 text-[11px] font-black text-black shadow-sm transition hover:bg-zinc-50";
+const secondaryButtonClass =
+  "rounded-md border border-zinc-300 bg-white px-3 py-2 text-[11px] font-black text-black shadow-sm transition hover:bg-zinc-50";
 
 const primaryButtonClass =
-  "rounded-md bg-black px-2 py-1 text-[11px] font-black text-white shadow-sm transition hover:bg-zinc-800";
+  "rounded-md bg-black px-3 py-2 text-[11px] font-black text-white shadow-sm transition hover:bg-zinc-800";
 
-function safeReadPosition(storageKey: string) {
-  if (typeof window === "undefined") return null;
-
-  const storedValue = localStorage.getItem(storageKey);
-
-  if (!storedValue) return null;
+function safeReadPosition(
+  storageKey: string,
+  fallback: Position
+): Position {
+  if (typeof window === "undefined") {
+    return fallback;
+  }
 
   try {
-    const parsedValue = JSON.parse(storedValue) as Partial<Position>;
+    const storedValue =
+      localStorage.getItem(storageKey);
+
+    if (!storedValue) {
+      return fallback;
+    }
+
+    const parsedValue = JSON.parse(
+      storedValue
+    ) as Partial<Position>;
 
     if (
       typeof parsedValue.x !== "number" ||
       typeof parsedValue.y !== "number"
     ) {
-      return null;
+      return fallback;
     }
 
     return {
@@ -136,129 +198,22 @@ function safeReadPosition(storageKey: string) {
       y: parsedValue.y,
     };
   } catch {
-    return null;
+    return fallback;
   }
 }
 
-function safeReadSize(storageKey: string) {
-  if (typeof window === "undefined") return null;
-
-  const storedValue = localStorage.getItem(storageKey);
-
-  if (!storedValue) return null;
-
-  try {
-    const parsedValue = JSON.parse(storedValue) as Partial<Size>;
-
-    if (
-      typeof parsedValue.width !== "number" ||
-      typeof parsedValue.height !== "number"
-    ) {
-      return null;
-    }
-
-    return {
-      width: parsedValue.width,
-      height: parsedValue.height,
-    };
-  } catch {
-    return null;
+function savePosition(
+  storageKey: string,
+  position: Position
+): void {
+  if (typeof window === "undefined") {
+    return;
   }
-}
 
-function safeReadNumber(storageKey: string, fallback: number) {
-  if (typeof window === "undefined") return fallback;
-
-  const storedValue = localStorage.getItem(storageKey);
-  const parsedValue = Number(storedValue);
-
-  return Number.isFinite(parsedValue) ? parsedValue : fallback;
-}
-
-function safeReadString(storageKey: string, fallback: string) {
-  if (typeof window === "undefined") return fallback;
-
-  const storedValue = localStorage.getItem(storageKey);
-
-  return storedValue && storedValue.trim() ? storedValue : fallback;
-}
-
-function savePosition(storageKey: string, position: Position) {
-  if (typeof window === "undefined") return;
-
-  localStorage.setItem(storageKey, JSON.stringify(position));
-}
-
-function saveSize(storageKey: string, size: Size) {
-  if (typeof window === "undefined") return;
-
-  localStorage.setItem(storageKey, JSON.stringify(size));
-}
-
-function saveNumber(storageKey: string, value: number) {
-  if (typeof window === "undefined") return;
-
-  localStorage.setItem(storageKey, String(value));
-}
-
-function saveString(storageKey: string, value: string) {
-  if (typeof window === "undefined") return;
-
-  localStorage.setItem(storageKey, value);
-}
-
-function applyGlobalTextColor(textColor: string) {
-  if (typeof document === "undefined") return;
-
-  document.documentElement.style.setProperty(
-    "--t1eq-global-text-color",
-    textColor
+  localStorage.setItem(
+    storageKey,
+    JSON.stringify(position)
   );
-
-  document.body.style.setProperty("color", textColor, "important");
-
-  document
-    .querySelectorAll<HTMLElement>(
-      "main, section, article, div, p, span, h1, h2, h3, h4, h5, h6, a, button, label, small, strong"
-    )
-    .forEach((element) => {
-      const isAppearanceEditor = element.closest(
-        "[data-t1eq-appearance-editor='true']"
-      );
-
-      if (!isAppearanceEditor) {
-        element.style.setProperty("color", textColor, "important");
-      }
-    });
-}
-
-function safeReadTileOverrides(): TileOverride[] {
-  if (typeof window === "undefined") return [];
-
-  const storedValue = localStorage.getItem(tileOverridesStorageKey);
-
-  if (!storedValue) return [];
-
-  try {
-    const parsedValue = JSON.parse(storedValue);
-
-    if (!Array.isArray(parsedValue)) return [];
-
-    return parsedValue.filter(
-      (entry): entry is TileOverride =>
-        entry &&
-        typeof entry.tileIndex === "number" &&
-        entry.tileIndex >= 0
-    );
-  } catch {
-    return [];
-  }
-}
-
-function saveTileOverrides(overrides: TileOverride[]) {
-  if (typeof window === "undefined") return;
-
-  localStorage.setItem(tileOverridesStorageKey, JSON.stringify(overrides));
 }
 
 function getDefaultDockPosition(): Position {
@@ -270,27 +225,14 @@ function getDefaultDockPosition(): Position {
   }
 
   return {
-    x: Math.max(16, window.innerWidth - qBitSize - 24),
-    y: Math.max(16, window.innerHeight - qBitSize - 24),
-  };
-}
-
-function getDefaultPanelSize(): Size {
-  if (typeof window === "undefined") {
-    return {
-      width: panelDefaultWidth,
-      height: panelDefaultHeight,
-    };
-  }
-
-  return {
-    width: Math.min(
-      panelDefaultWidth,
-      Math.max(panelMinWidth, window.innerWidth - 24)
+    x: Math.max(
+      16,
+      window.innerWidth - dockSize - 24
     ),
-    height: Math.min(
-      panelDefaultHeight,
-      Math.max(panelMinHeight, window.innerHeight - 96)
+
+    y: Math.max(
+      16,
+      window.innerHeight - dockSize - 24
     ),
   };
 }
@@ -299,291 +241,130 @@ function getDefaultPanelPosition(): Position {
   if (typeof window === "undefined") {
     return {
       x: 24,
-      y: 96,
+      y: 80,
     };
   }
 
-  const panelSize = getDefaultPanelSize();
-
   return {
-    x: Math.max(16, window.innerWidth - panelSize.width - 24),
+    x: Math.max(
+      16,
+      window.innerWidth - panelWidth - 24
+    ),
+
     y: 80,
   };
 }
 
-function clampDockPosition(position: Position): Position {
-  if (typeof window === "undefined") return position;
+function clampDockPosition(
+  position: Position
+): Position {
+  if (typeof window === "undefined") {
+    return position;
+  }
 
   return {
     x: Math.min(
       Math.max(8, position.x),
-      Math.max(8, window.innerWidth - qBitSize - 8)
-    ),
-    y: Math.min(
-      Math.max(8, position.y),
-      Math.max(8, window.innerHeight - qBitSize - 8)
-    ),
-  };
-}
-
-function clampPanelSize(size: Size): Size {
-  if (typeof window === "undefined") return size;
-
-  return {
-    width: Math.min(
-      Math.max(panelMinWidth, size.width),
-      Math.max(panelMinWidth, window.innerWidth - 16)
-    ),
-    height: Math.min(
-      Math.max(panelMinHeight, size.height),
-      Math.max(panelMinHeight, window.innerHeight - 16)
-    ),
-  };
-}
-
-function clampPanelPosition(position: Position, size?: Size): Position {
-  if (typeof window === "undefined") return position;
-
-  const panelSize = size ?? getDefaultPanelSize();
-
-  return {
-    x: Math.min(
-      Math.max(8, position.x),
-      Math.max(8, window.innerWidth - panelSize.width - 8)
-    ),
-    y: Math.min(
-      Math.max(8, position.y),
-      Math.max(8, window.innerHeight - panelSize.height - 8)
-    ),
-  };
-}
-
-function targetIsInteractiveElement(target: EventTarget) {
-  if (!(target instanceof HTMLElement)) return false;
-
-  return Boolean(
-    target.closest("button, input, select, textarea, a, label, option")
-  );
-}
-
-function getTileIndex(tileElement: Element) {
-  const allTiles = Array.from(
-    document.querySelectorAll("[data-t1eq-tile='true']")
-  );
-
-  return allTiles.indexOf(tileElement);
-}
-
-function getTileByIndex(tileIndex: number) {
-  return document.querySelectorAll<HTMLElement>("[data-t1eq-tile='true']")[
-    tileIndex
-  ];
-}
-
-function buildTileGradient(baseColor: string) {
-  return `linear-gradient(145deg, rgb(255 255 255 / 0.55) 0%, rgb(255 255 255 / 0.18) 28%, rgb(0 0 0 / 0.05) 100%), ${baseColor}`;
-}
-
-function applyTextColorToElement(rootElement: HTMLElement, textColor: string) {
-  rootElement.style.setProperty("color", textColor, "important");
-
-  rootElement
-    .querySelectorAll<HTMLElement>(
-      "p, span, div, h1, h2, h3, h4, h5, h6, a, button, strong, small"
-    )
-    .forEach((childElement) => {
-      childElement.style.setProperty("color", textColor, "important");
-    });
-}
-
-function applyTileDepth(
-  tileElement: HTMLElement,
-  depth: ThreeDEffectLevel,
-  baseColor?: string
-) {
-  tileElement.style.setProperty(
-    "transform-origin",
-    "center center",
-    "important"
-  );
-  tileElement.style.setProperty(
-    "transition",
-    "transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background-color 180ms ease, border-radius 180ms ease",
-    "important"
-  );
-
-  if (baseColor) {
-    tileElement.style.setProperty(
-      "background",
-      buildTileGradient(baseColor),
-      "important"
-    );
-    tileElement.style.setProperty("background-color", baseColor, "important");
-  }
-
-  if (depth === "Off") {
-    tileElement.style.setProperty("box-shadow", "none", "important");
-    tileElement.style.setProperty("transform", "none", "important");
-    tileElement.style.setProperty("border-radius", "0.75rem", "important");
-    return;
-  }
-
-  if (depth === "Subtle") {
-    tileElement.style.setProperty("border-radius", "1rem", "important");
-    tileElement.style.setProperty(
-      "box-shadow",
-      "0 12px 24px rgb(0 0 0 / 0.16), inset 0 1px 0 rgb(255 255 255 / 0.45)",
-      "important"
-    );
-    tileElement.style.setProperty(
-      "transform",
-      "perspective(900px) rotateX(1deg) translateY(-2px) scale(1.005)",
-      "important"
-    );
-    return;
-  }
-
-  if (depth === "Medium") {
-    tileElement.style.setProperty("border-radius", "1.35rem", "important");
-    tileElement.style.setProperty(
-      "box-shadow",
-      "0 18px 38px rgb(0 0 0 / 0.22), 0 6px 14px rgb(0 0 0 / 0.16), inset 0 1px 0 rgb(255 255 255 / 0.55)",
-      "important"
-    );
-    tileElement.style.setProperty(
-      "transform",
-      "perspective(900px) rotateX(2.5deg) translateY(-5px) scale(1.018)",
-      "important"
-    );
-    return;
-  }
-
-  tileElement.style.setProperty("border-radius", "1.85rem", "important");
-  tileElement.style.setProperty(
-    "box-shadow",
-    "0 42px 95px rgb(0 0 0 / 0.42), 0 18px 38px rgb(0 0 0 / 0.28), inset 0 2px 0 rgb(255 255 255 / 0.65), inset 0 -18px 32px rgb(0 0 0 / 0.08)",
-    "important"
-  );
-  tileElement.style.setProperty(
-    "transform",
-    "perspective(850px) rotateX(7deg) rotateY(-1deg) translateY(-14px) scale(1.055)",
-    "important"
-  );
-}
-
-function applyTileOverrideToElement(
-  tileElement: HTMLElement,
-  override: TileOverride
-) {
-  const baseColor = override.backgroundColor;
-
-  if (baseColor) {
-    tileElement.style.setProperty("background-color", baseColor, "important");
-    tileElement.style.setProperty(
-      "background",
-      buildTileGradient(baseColor),
-      "important"
-    );
-  }
-
-  if (override.borderColor) {
-    tileElement.style.setProperty(
-      "border-color",
-      override.borderColor,
-      "important"
-    );
-  }
-
-  if (override.textColor) {
-    applyTextColorToElement(tileElement, override.textColor);
-  }
-
-  if (override.depth) {
-    applyTileDepth(tileElement, override.depth, baseColor);
-  }
-}
-
-function applySavedTileOverrides() {
-  const overrides = safeReadTileOverrides();
-
-  overrides.forEach((override) => {
-    const tileElement = getTileByIndex(override.tileIndex);
-
-    if (tileElement) {
-      applyTileOverrideToElement(tileElement, override);
-    }
-  });
-}
-
-function updateTileOverride(
-  tileIndex: number,
-  updates: Omit<Partial<TileOverride>, "tileIndex">
-) {
-  const currentOverrides = safeReadTileOverrides();
-  const existingOverride = currentOverrides.find(
-    (override) => override.tileIndex === tileIndex
-  );
-
-  const nextOverride: TileOverride = {
-    tileIndex,
-    ...(existingOverride ?? {}),
-    ...updates,
-  };
-
-  const nextOverrides = existingOverride
-    ? currentOverrides.map((override) =>
-        override.tileIndex === tileIndex ? nextOverride : override
+      Math.max(
+        8,
+        window.innerWidth - dockSize - 8
       )
-    : [...currentOverrides, nextOverride];
+    ),
 
-  saveTileOverrides(nextOverrides);
-
-  const tileElement = getTileByIndex(tileIndex);
-
-  if (tileElement) {
-    applyTileOverrideToElement(tileElement, nextOverride);
-  }
+    y: Math.min(
+      Math.max(8, position.y),
+      Math.max(
+        8,
+        window.innerHeight - dockSize - 8
+      )
+    ),
+  };
 }
 
-function getTileOverrideValue(
-  tileIndex: number | null,
-  key: keyof Omit<TileOverride, "tileIndex">,
-  fallback: string
-) {
-  if (tileIndex === null) return fallback;
+function clampPanelPosition(
+  position: Position
+): Position {
+  if (typeof window === "undefined") {
+    return position;
+  }
 
-  const override = safeReadTileOverrides().find(
-    (entry) => entry.tileIndex === tileIndex
+  const effectiveHeight = Math.min(
+    panelHeight,
+    window.innerHeight - 16
   );
 
-  const value = override?.[key];
+  return {
+    x: Math.min(
+      Math.max(8, position.x),
+      Math.max(
+        8,
+        window.innerWidth - panelWidth - 8
+      )
+    ),
 
-  return typeof value === "string" ? value : fallback;
+    y: Math.min(
+      Math.max(8, position.y),
+      Math.max(
+        8,
+        window.innerHeight -
+          effectiveHeight -
+          8
+      )
+    ),
+  };
 }
 
-function readFileAsDataUrl(file: File): Promise<string> {
+function applyGlobalTextColor(
+  textColor: string
+): void {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  document.documentElement.style.setProperty(
+    "--t1eq-global-text-color",
+    textColor
+  );
+}
+
+function readFileAsDataUrl(
+  file: File
+): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
     reader.onload = () => {
-      if (typeof reader.result === "string") {
+      if (
+        typeof reader.result === "string"
+      ) {
         resolve(reader.result);
         return;
       }
 
-      reject(new Error("Unable to read image file."));
+      reject(
+        new Error(
+          "Unable to read image file."
+        )
+      );
     };
 
     reader.onerror = () => {
-      reject(new Error("Unable to read image file."));
+      reject(
+        new Error(
+          "Unable to read image file."
+        )
+      );
     };
 
     reader.readAsDataURL(file);
   });
 }
 
-async function normalizeUploadedLogo(file: File): Promise<string> {
-  const rawDataUrl = await readFileAsDataUrl(file);
+async function normalizeUploadedLogo(
+  file: File
+): Promise<string> {
+  const rawDataUrl =
+    await readFileAsDataUrl(file);
 
   if (file.type === "image/svg+xml") {
     return rawDataUrl;
@@ -594,24 +375,62 @@ async function normalizeUploadedLogo(file: File): Promise<string> {
 
     image.onload = () => {
       const maxDimension = 1400;
-      const largestSide = Math.max(image.width, image.height);
-      const scale = largestSide > maxDimension ? maxDimension / largestSide : 1;
 
-      const canvas = document.createElement("canvas");
-      canvas.width = Math.max(1, Math.round(image.width * scale));
-      canvas.height = Math.max(1, Math.round(image.height * scale));
+      const largestSide = Math.max(
+        image.width,
+        image.height
+      );
 
-      const context = canvas.getContext("2d");
+      const scale =
+        largestSide > maxDimension
+          ? maxDimension / largestSide
+          : 1;
+
+      const canvas =
+        document.createElement(
+          "canvas"
+        );
+
+      canvas.width = Math.max(
+        1,
+        Math.round(
+          image.width * scale
+        )
+      );
+
+      canvas.height = Math.max(
+        1,
+        Math.round(
+          image.height * scale
+        )
+      );
+
+      const context =
+        canvas.getContext("2d");
 
       if (!context) {
         resolve(rawDataUrl);
         return;
       }
 
-      context.clearRect(0, 0, canvas.width, canvas.height);
-      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      context.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      );
 
-      resolve(canvas.toDataURL("image/png"));
+      context.drawImage(
+        image,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      );
+
+      resolve(
+        canvas.toDataURL("image/png")
+      );
     };
 
     image.onerror = () => {
@@ -622,8 +441,40 @@ async function normalizeUploadedLogo(file: File): Promise<string> {
   });
 }
 
-function logoIsUploadedImage(logoUrl: string) {
-  return logoUrl.startsWith("data:image/");
+function logoIsUploadedImage(
+  logoUrl: string
+): boolean {
+  return logoUrl.startsWith(
+    "data:image/"
+  );
+}
+
+function friendlyTypeName(
+  type: QBitElementType
+): string {
+  switch (type) {
+    case "information-balloon":
+      return "Information Balloon";
+
+    case "sidebar-button":
+      return "Sidebar Button";
+
+    case "action-button":
+      return "Action Button";
+
+    case "page-card":
+      return "Page Card";
+
+    default:
+      return type
+        .split("-")
+        .map(
+          (word) =>
+            word.charAt(0).toUpperCase() +
+            word.slice(1)
+        )
+        .join(" ");
+  }
 }
 
 function InactiveQBitGraphic() {
@@ -651,1537 +502,2914 @@ function ActiveQBitGraphic() {
 }
 
 export default function AppearanceEditor() {
-  const dockButtonRef = useRef<HTMLButtonElement | null>(null);
-  const panelRef = useRef<HTMLDivElement | null>(null);
-  const dockPointerStartRef = useRef<PointerStart | null>(null);
-  const panelPointerStartRef = useRef<PointerStart | null>(null);
-  const panelResizePointerStartRef = useRef<ResizePointerStart | null>(null);
-  const activeEditableElementRef = useRef<HTMLElement | null>(null);
-
-  const [editorOpen, setEditorOpen] = useState(false);
-  const [editorActive, setEditorActive] = useState(false);
-  const [hoveringDock, setHoveringDock] = useState(false);
-  const [editTarget, setEditTarget] = useState<EditTarget>("Background");
-  const [selectedTileIndex, setSelectedTileIndex] = useState<number | null>(
-    null
-  );
-  const [dockPosition, setDockPosition] = useState<Position | null>(null);
-  const [panelPosition, setPanelPosition] = useState<Position | null>(null);
-  const [panelSize, setPanelSize] = useState<Size | null>(null);
-  const [panelRadius, setPanelRadius] = useState(18);
-  const [panelBoxSelected, setPanelBoxSelected] = useState(false);
-  const [globalTextColor, setGlobalTextColor] = useState("#ffffff");
-  const [settings, setSettings] = useState<AppearanceSettings>(
-    getAppearanceSettings()
-  );
-  const [logoUploadMessage, setLogoUploadMessage] = useState("");
-  const [logoUploadError, setLogoUploadError] = useState("");
-  const [editSession, setEditSession] = useState<QBitEditSession | null>(null);
-
-  useEffect(() => {
-    const storedPanelSize = safeReadSize(panelSizeStorageKey);
-    const nextPanelSize = clampPanelSize(
-      storedPanelSize ?? getDefaultPanelSize()
+  const dockButtonRef =
+    useRef<HTMLButtonElement | null>(
+      null
     );
 
-    const storedDockPosition = safeReadPosition(dockPositionStorageKey);
-    const storedPanelPosition = safeReadPosition(panelPositionStorageKey);
-
-    setPanelSize(nextPanelSize);
-    setDockPosition(
-      clampDockPosition(storedDockPosition ?? getDefaultDockPosition())
+  const panelRef =
+    useRef<HTMLDivElement | null>(
+      null
     );
-    setPanelPosition(
-      clampPanelPosition(
-        storedPanelPosition ?? getDefaultPanelPosition(),
-        nextPanelSize
+
+  const activeElementRef =
+    useRef<HTMLElement | null>(
+      null
+    );
+
+  const sessionSnapshotRef =
+    useRef<QBitSessionSnapshot | null>(
+      null
+    );
+
+  const dragStartRef =
+    useRef<DragStart | null>(
+      null
+    );
+
+  const resizeStartRef =
+    useRef<ResizeStart | null>(
+      null
+    );
+
+  const panelDragStartRef =
+    useRef<PanelDragStart | null>(
+      null
+    );
+
+  const dockDragStartRef =
+    useRef<DockDragStart | null>(
+      null
+    );
+
+  const [
+    settings,
+    setSettings,
+  ] =
+    useState<AppearanceSettings>(
+      getAppearanceSettings()
+    );
+
+  const [
+    globalTextColor,
+    setGlobalTextColor,
+  ] = useState("#ffffff");
+
+  const [
+    editorActive,
+    setEditorActive,
+  ] = useState(false);
+
+  const [
+    editorOpen,
+    setEditorOpen,
+  ] = useState(false);
+
+  const [
+    selectedDescriptor,
+    setSelectedDescriptor,
+  ] =
+    useState<QBitDescriptor | null>(
+      null
+    );
+
+  const [
+    selectedOverride,
+    setSelectedOverride,
+  ] =
+    useState<QBitOverride | null>(
+      null
+    );
+
+  const [
+    activeRect,
+    setActiveRect,
+  ] =
+    useState<DOMRect | null>(
+      null
+    );
+
+  const [
+    dockPosition,
+    setDockPosition,
+  ] =
+    useState<Position | null>(
+      null
+    );
+
+  const [
+    panelPosition,
+    setPanelPosition,
+  ] =
+    useState<Position | null>(
+      null
+    );
+
+  const [
+    logoUploadMessage,
+    setLogoUploadMessage,
+  ] = useState("");
+
+  const [
+    logoUploadError,
+    setLogoUploadError,
+  ] = useState("");
+
+  const selectedElement =
+    useMemo(() => {
+      if (!selectedDescriptor) {
+        return null;
+      }
+
+      const current =
+        activeElementRef.current;
+
+      if (
+        current &&
+        current.isConnected
+      ) {
+        const currentDescriptor =
+          getQBitDescriptor(current);
+
+        if (
+          currentDescriptor &&
+          currentDescriptor.id ===
+            selectedDescriptor.id &&
+          currentDescriptor.scope ===
+            selectedDescriptor.scope
+        ) {
+          return current;
+        }
+      }
+
+      const fresh =
+        getQBitElement(
+          selectedDescriptor
+        );
+
+      if (fresh) {
+        activeElementRef.current =
+          fresh;
+      }
+
+      return fresh;
+    }, [selectedDescriptor]);
+
+  /* =========================================================
+     Q-BIT LOCK STATE
+     ========================================================= */
+
+  function resetQBitLockElement(
+    element: HTMLElement
+  ): void {
+    element.removeAttribute(
+      "data-t1eq-qbit-active"
+    );
+
+    element.removeAttribute(
+      "data-t1eq-qbit-locked"
+    );
+
+    element.style.removeProperty(
+      "pointer-events"
+    );
+  }
+
+  function clearQBitLockState(): void {
+    if (
+      typeof document === "undefined"
+    ) {
+      return;
+    }
+
+    document
+      .querySelectorAll<HTMLElement>(
+        editableSelector
       )
-    );
-    setPanelRadius(safeReadNumber(panelRadiusStorageKey, 18));
-
-    const savedGlobalTextColor = safeReadString(
-      globalTextColorStorageKey,
-      "#ffffff"
-    );
-
-    setGlobalTextColor(savedGlobalTextColor);
-    applyGlobalTextColor(savedGlobalTextColor);
-
-    function refreshSettings() {
-      setSettings(getAppearanceSettings());
-      applyGlobalTextColor(
-        safeReadString(globalTextColorStorageKey, "#ffffff")
-      );
-      window.requestAnimationFrame(applySavedTileOverrides);
-    }
-
-    refreshSettings();
-
-    window.addEventListener("t1eq-appearance-settings-changed", refreshSettings);
-
-    const overrideReplayInterval = window.setInterval(() => {
-      applyGlobalTextColor(
-        safeReadString(globalTextColorStorageKey, "#ffffff")
-      );
-      applySavedTileOverrides();
-    }, 500);
-
-    return () => {
-      window.removeEventListener(
-        "t1eq-appearance-settings-changed",
-        refreshSettings
-      );
-
-      window.clearInterval(overrideReplayInterval);
-    };
-  }, []);
-
-  useEffect(() => {
-    function handleResize() {
-      setPanelSize((currentSize) => {
-        if (!currentSize) return currentSize;
-
-        const nextSize = clampPanelSize(currentSize);
-        saveSize(panelSizeStorageKey, nextSize);
-
-        setPanelPosition((currentPosition) => {
-          if (!currentPosition) return currentPosition;
-
-          const nextPosition = clampPanelPosition(currentPosition, nextSize);
-          savePosition(panelPositionStorageKey, nextPosition);
-
-          return nextPosition;
-        });
-
-        return nextSize;
-      });
-
-      setDockPosition((currentPosition) => {
-        if (!currentPosition) return currentPosition;
-
-        const nextPosition = clampDockPosition(currentPosition);
-        savePosition(dockPositionStorageKey, nextPosition);
-
-        return nextPosition;
-      });
-    }
-
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
-
-
-  function resetQBitEditableElement(element: HTMLElement) {
-    element.removeAttribute("data-t1eq-qbit-active");
-    element.removeAttribute("data-t1eq-qbit-locked");
-
-    element.style.opacity = "";
-    element.style.filter = "";
-    element.style.pointerEvents = "";
-    element.style.outline = "";
-    element.style.outlineOffset = "";
-    element.style.boxShadow = "";
-    element.style.transition = "";
-  }
-
-  function clearQBitEditLockVisualState() {
-    if (typeof document === "undefined") {
-      return;
-    }
-
-    document
-      .querySelectorAll<HTMLElement>(editableSelector)
       .forEach((element) => {
-        resetQBitEditableElement(element);
+        resetQBitLockElement(
+          element
+        );
       });
   }
 
-  function applyQBitEditLockVisualState(activeElement: HTMLElement | null) {
-    if (typeof document === "undefined") {
-      return;
-    }
-
-    document
-      .querySelectorAll<HTMLElement>(editableSelector)
-      .forEach((element) => {
-        if (panelRef.current?.contains(element)) {
-          return;
-        }
-
-        if (dockButtonRef.current?.contains(element)) {
-          return;
-        }
-
-        if (element.closest("[data-t1eq-appearance-editor='true']")) {
-          return;
-        }
-
-        resetQBitEditableElement(element);
-
-        if (activeElement && element === activeElement) {
-          element.setAttribute("data-t1eq-qbit-active", "true");
-          element.style.opacity = "1";
-          element.style.filter = "none";
-          element.style.pointerEvents = "auto";
-          element.style.outline = "3px solid rgb(251 146 60 / 0.95)";
-          element.style.outlineOffset = "4px";
-          element.style.boxShadow = "0 0 0 8px rgb(251 146 60 / 0.16)";
-          element.style.transition =
-            "opacity 160ms ease, filter 160ms ease, outline 160ms ease, box-shadow 160ms ease";
-          return;
-        }
-
-        element.setAttribute("data-t1eq-qbit-locked", "true");
-        element.style.opacity = "0.32";
-        element.style.filter = "grayscale(1)";
-        element.style.pointerEvents = "none";
-        element.style.transition = "opacity 160ms ease, filter 160ms ease";
-      });
-  }
-
-  function clearEditSession() {
-    setEditSession(null);
-    activeEditableElementRef.current = null;
-    clearQBitEditLockVisualState();
-  }
-
-  function openLockedEditorSession(
-    target: EditTarget,
-    tileIndex: number | null,
+  function applyQBitLockState(
     activeElement: HTMLElement | null
-  ) {
-    clearQBitEditLockVisualState();
+  ): void {
+    if (
+      typeof document === "undefined"
+    ) {
+      return;
+    }
 
-    activeEditableElementRef.current = activeElement;
+    clearQBitLockState();
 
-    setEditTarget(target);
-    setSelectedTileIndex(tileIndex);
-    setPanelBoxSelected(false);
-    setEditSession({
-      target,
-      tileIndex,
-      startedDate: new Date().toISOString(),
-    });
+    if (!activeElement) {
+      return;
+    }
+
+    document
+      .querySelectorAll<HTMLElement>(
+        editableSelector
+      )
+      .forEach((element) => {
+        if (
+          element.closest(
+            "[data-t1eq-appearance-editor='true']"
+          )
+        ) {
+          return;
+        }
+
+        const isActiveFamily =
+          element === activeElement ||
+          element.contains(
+            activeElement
+          ) ||
+          activeElement.contains(
+            element
+          );
+
+        if (isActiveFamily) {
+          if (
+            element === activeElement
+          ) {
+            element.setAttribute(
+              "data-t1eq-qbit-active",
+              "true"
+            );
+          }
+
+          return;
+        }
+
+        element.setAttribute(
+          "data-t1eq-qbit-locked",
+          "true"
+        );
+
+        element.style.setProperty(
+          "pointer-events",
+          "none",
+          "important"
+        );
+      });
+  }
+
+  /* =========================================================
+     ACTIVE OBJECT
+     ========================================================= */
+
+  function refreshActiveRect(): void {
+    const element =
+      activeElementRef.current;
+
+    if (
+      !element ||
+      !element.isConnected
+    ) {
+      setActiveRect(null);
+      return;
+    }
+
+    setActiveRect(
+      element.getBoundingClientRect()
+    );
+  }
+
+  function openEditSession(
+    element: HTMLElement
+  ): void {
+    const descriptor =
+      getQBitDescriptor(element);
+
+    if (!descriptor) {
+      return;
+    }
+
+    const existingOverride =
+      getQBitOverride(descriptor);
+
+    sessionSnapshotRef.current = {
+      descriptor,
+      override: existingOverride
+        ? { ...existingOverride }
+        : null,
+    };
+
+    activeElementRef.current =
+      element;
+
+    setSelectedDescriptor(
+      descriptor
+    );
+
+    setSelectedOverride(
+      existingOverride
+    );
+
+    setActiveRect(
+      element.getBoundingClientRect()
+    );
+
     setEditorActive(false);
     setEditorOpen(true);
 
-    window.requestAnimationFrame(() => {
-      applyQBitEditLockVisualState(activeElement);
-    });
+    window.requestAnimationFrame(
+      () => {
+        applyQBitLockState(
+          element
+        );
+
+        refreshActiveRect();
+      }
+    );
   }
 
-  useEffect(() => {
-    if (!editorOpen || !editSession) {
-      clearQBitEditLockVisualState();
+  function clearEditSession(): void {
+    clearQBitLockState();
+
+    activeElementRef.current =
+      null;
+
+    sessionSnapshotRef.current =
+      null;
+
+    setSelectedDescriptor(null);
+    setSelectedOverride(null);
+    setActiveRect(null);
+  }
+
+  /* =========================================================
+     OBJECT MOVE
+     ========================================================= */
+
+  function startObjectDrag(
+    event: ReactPointerEvent<HTMLDivElement>
+  ): void {
+    if (
+      !selectedDescriptor ||
+      !selectedElement
+    ) {
       return;
     }
 
-    applyQBitEditLockVisualState(activeEditableElementRef.current);
+    event.preventDefault();
+    event.stopPropagation();
 
-    return () => {
-      clearQBitEditLockVisualState();
+    const currentOverride =
+      getQBitOverride(
+        selectedDescriptor
+      );
+
+    const originalOffsetX =
+      currentOverride?.offsetX ??
+      0;
+
+    const originalOffsetY =
+      currentOverride?.offsetY ??
+      0;
+
+    dragStartRef.current = {
+      pointerId:
+        event.pointerId,
+
+      startX:
+        event.clientX,
+
+      startY:
+        event.clientY,
+
+      originalOffsetX,
+      originalOffsetY,
+
+      latestOffsetX:
+        originalOffsetX,
+
+      latestOffsetY:
+        originalOffsetY,
+
+      moved: false,
+
+      element:
+        selectedElement,
+
+      descriptor:
+        selectedDescriptor,
+
+      originalTransition:
+        selectedElement.style.getPropertyValue(
+          "transition"
+        ),
     };
-  }, [editorOpen, editSession]);
 
-  useEffect(() => {
-    return () => {
-      clearQBitEditLockVisualState();
-    };
-  }, []);
-  useEffect(() => {
-    function handleDocumentClick(event: MouseEvent) {
-      if (!editorActive) return;
+    selectedElement.style.setProperty(
+      "transition",
+      "none",
+      "important"
+    );
+  }
 
-      const target = event.target;
+  /* =========================================================
+     OBJECT RESIZE
+     ========================================================= */
 
-      if (!(target instanceof HTMLElement)) return;
-
-      if (dockButtonRef.current?.contains(target)) return;
-
-      if (panelRef.current?.contains(target)) return;
-
-      event.preventDefault();
-      event.stopPropagation();
-
-      const editableElement = target.closest(editableSelector);
-
-      if (!(editableElement instanceof HTMLElement)) {
-        return;
-      }
-
-      if (editableElement.closest("[data-t1eq-appearance-editor='true']")) {
-        return;
-      }
-
-      if (editableElement.hasAttribute("data-t1eq-tile")) {
-        openLockedEditorSession(
-          "Tile",
-          getTileIndex(editableElement),
-          editableElement
-        );
-        return;
-      }
-
-      if (editableElement.hasAttribute("data-t1eq-sidebar")) {
-        openLockedEditorSession("Sidebar", null, editableElement);
-        return;
-      }
-
-      openLockedEditorSession("Background", null, editableElement);
+  function startObjectResize(
+    event: ReactPointerEvent<HTMLDivElement>,
+    direction: ResizeDirection
+  ): void {
+    if (
+      !selectedDescriptor ||
+      !selectedElement
+    ) {
+      return;
     }
 
-    document.addEventListener("click", handleDocumentClick, true);
+    event.preventDefault();
+    event.stopPropagation();
 
-    return () => {
-      document.removeEventListener("click", handleDocumentClick, true);
+    const rect =
+      selectedElement.getBoundingClientRect();
+
+    const currentOverride =
+      getQBitOverride(
+        selectedDescriptor
+      );
+
+    const originalOffsetX =
+      currentOverride?.offsetX ??
+      0;
+
+    const originalOffsetY =
+      currentOverride?.offsetY ??
+      0;
+
+    resizeStartRef.current = {
+      pointerId:
+        event.pointerId,
+
+      direction,
+
+      startX:
+        event.clientX,
+
+      startY:
+        event.clientY,
+
+      originalWidth:
+        rect.width,
+
+      originalHeight:
+        rect.height,
+
+      originalOffsetX,
+      originalOffsetY,
+
+      latestWidth:
+        rect.width,
+
+      latestHeight:
+        rect.height,
+
+      latestOffsetX:
+        originalOffsetX,
+
+      latestOffsetY:
+        originalOffsetY,
+
+      element:
+        selectedElement,
+
+      descriptor:
+        selectedDescriptor,
+
+      originalTransition:
+        selectedElement.style.getPropertyValue(
+          "transition"
+        ),
     };
-  }, [editorActive]);
 
-  function updateGlobalTextColor(textColor: string) {
-    setGlobalTextColor(textColor);
-    saveString(globalTextColorStorageKey, textColor);
-    applyGlobalTextColor(textColor);
-    window.requestAnimationFrame(applySavedTileOverrides);
+    selectedElement.style.setProperty(
+      "transition",
+      "none",
+      "important"
+    );
   }
 
-  function updateSettings(updates: Partial<AppearanceSettings>) {
-    const updatedSettings = saveAppearanceSettings({
-      ...settings,
-      ...updates,
+  /* =========================================================
+     POINTER PREVIEW
+     ========================================================= */
+
+  function handleObjectPointerMove(
+    event: globalThis.PointerEvent
+  ): void {
+    const dragStart =
+      dragStartRef.current;
+
+    if (
+      dragStart &&
+      dragStart.pointerId ===
+        event.pointerId
+    ) {
+      const deltaX =
+        event.clientX -
+        dragStart.startX;
+
+      const deltaY =
+        event.clientY -
+        dragStart.startY;
+
+      if (
+        Math.abs(deltaX) > 3 ||
+        Math.abs(deltaY) > 3
+      ) {
+        dragStart.moved = true;
+      }
+
+      const offsetX =
+        dragStart.originalOffsetX +
+        deltaX;
+
+      const offsetY =
+        dragStart.originalOffsetY +
+        deltaY;
+
+      dragStart.latestOffsetX =
+        offsetX;
+
+      dragStart.latestOffsetY =
+        offsetY;
+
+      const currentOverride =
+        getQBitOverride(
+          dragStart.descriptor
+        );
+
+      const previewOverride: QBitOverride = {
+        id:
+          dragStart.descriptor.id,
+
+        type:
+          dragStart.descriptor.type,
+
+        scope:
+          dragStart.descriptor.scope,
+
+        ...(currentOverride ?? {}),
+
+        offsetX,
+        offsetY,
+      };
+
+      clearQBitOverrideStyles(
+        dragStart.element
+      );
+
+      applyQBitOverride(
+        dragStart.element,
+        previewOverride
+      );
+
+      setActiveRect(
+        dragStart.element.getBoundingClientRect()
+      );
+
+      return;
+    }
+
+    const resizeStart =
+      resizeStartRef.current;
+
+    if (
+      !resizeStart ||
+      resizeStart.pointerId !==
+        event.pointerId
+    ) {
+      return;
+    }
+
+    const deltaX =
+      event.clientX -
+      resizeStart.startX;
+
+    const deltaY =
+      event.clientY -
+      resizeStart.startY;
+
+    let nextWidth =
+      resizeStart.originalWidth;
+
+    let nextHeight =
+      resizeStart.originalHeight;
+
+    let nextOffsetX =
+      resizeStart.originalOffsetX;
+
+    let nextOffsetY =
+      resizeStart.originalOffsetY;
+
+    const direction =
+      resizeStart.direction;
+
+    const resizingLeft =
+      direction === "left" ||
+      direction === "top-left" ||
+      direction === "bottom-left";
+
+    const resizingRight =
+      direction === "right" ||
+      direction === "top-right" ||
+      direction === "bottom-right";
+
+    const resizingTop =
+      direction === "top" ||
+      direction === "top-left" ||
+      direction === "top-right";
+
+    const resizingBottom =
+      direction === "bottom" ||
+      direction === "bottom-left" ||
+      direction === "bottom-right";
+
+    if (resizingRight) {
+      nextWidth = Math.max(
+        objectMinWidth,
+        resizeStart.originalWidth +
+          deltaX
+      );
+    }
+
+    if (resizingLeft) {
+      const proposedWidth =
+        resizeStart.originalWidth -
+        deltaX;
+
+      if (
+        proposedWidth >=
+        objectMinWidth
+      ) {
+        nextWidth =
+          proposedWidth;
+
+        nextOffsetX =
+          resizeStart.originalOffsetX +
+          deltaX;
+      }
+    }
+
+    if (resizingBottom) {
+      nextHeight = Math.max(
+        objectMinHeight,
+        resizeStart.originalHeight +
+          deltaY
+      );
+    }
+
+    if (resizingTop) {
+      const proposedHeight =
+        resizeStart.originalHeight -
+        deltaY;
+
+      if (
+        proposedHeight >=
+        objectMinHeight
+      ) {
+        nextHeight =
+          proposedHeight;
+
+        nextOffsetY =
+          resizeStart.originalOffsetY +
+          deltaY;
+      }
+    }
+
+    resizeStart.latestWidth =
+      nextWidth;
+
+    resizeStart.latestHeight =
+      nextHeight;
+
+    resizeStart.latestOffsetX =
+      nextOffsetX;
+
+    resizeStart.latestOffsetY =
+      nextOffsetY;
+
+    const currentOverride =
+      getQBitOverride(
+        resizeStart.descriptor
+      );
+
+    const previewOverride: QBitOverride = {
+      id:
+        resizeStart.descriptor.id,
+
+      type:
+        resizeStart.descriptor.type,
+
+      scope:
+        resizeStart.descriptor.scope,
+
+      ...(currentOverride ?? {}),
+
+      width:
+        nextWidth,
+
+      height:
+        nextHeight,
+
+      offsetX:
+        nextOffsetX,
+
+      offsetY:
+        nextOffsetY,
+    };
+
+    clearQBitOverrideStyles(
+      resizeStart.element
+    );
+
+    applyQBitOverride(
+      resizeStart.element,
+      previewOverride
+    );
+
+    setActiveRect(
+      resizeStart.element.getBoundingClientRect()
+    );
+  }
+
+  /* =========================================================
+     FINISH MOVE / RESIZE
+     ========================================================= */
+
+  function finishObjectGesture(): void {
+    const dragStart =
+      dragStartRef.current;
+
+    if (dragStart) {
+      if (
+        dragStart.originalTransition
+      ) {
+        dragStart.element.style.setProperty(
+          "transition",
+          dragStart.originalTransition,
+          "important"
+        );
+      } else {
+        dragStart.element.style.removeProperty(
+          "transition"
+        );
+      }
+
+      if (dragStart.moved) {
+        const nextOverride =
+          updateQBitOverride(
+            dragStart.descriptor,
+            {
+              offsetX:
+                Math.round(
+                  dragStart.latestOffsetX
+                ),
+
+              offsetY:
+                Math.round(
+                  dragStart.latestOffsetY
+                ),
+            }
+          );
+
+        setSelectedOverride(
+          nextOverride
+        );
+      }
+
+      dragStartRef.current =
+        null;
+    }
+
+    const resizeStart =
+      resizeStartRef.current;
+
+    if (resizeStart) {
+      if (
+        resizeStart.originalTransition
+      ) {
+        resizeStart.element.style.setProperty(
+          "transition",
+          resizeStart.originalTransition,
+          "important"
+        );
+      } else {
+        resizeStart.element.style.removeProperty(
+          "transition"
+        );
+      }
+
+      const nextOverride =
+        updateQBitOverride(
+          resizeStart.descriptor,
+          {
+            width:
+              Math.round(
+                resizeStart.latestWidth
+              ),
+
+            height:
+              Math.round(
+                resizeStart.latestHeight
+              ),
+
+            offsetX:
+              Math.round(
+                resizeStart.latestOffsetX
+              ),
+
+            offsetY:
+              Math.round(
+                resizeStart.latestOffsetY
+              ),
+          }
+        );
+
+      setSelectedOverride(
+        nextOverride
+      );
+
+      resizeStartRef.current =
+        null;
+    }
+
+    window.requestAnimationFrame(
+      refreshActiveRect
+    );
+  }
+
+  /* =========================================================
+     SAVE / CANCEL
+     ========================================================= */
+
+  function closeEditor(): void {
+    finishObjectGesture();
+
+    setEditorOpen(false);
+    setEditorActive(false);
+
+    clearEditSession();
+  }
+
+  function cancelEditor(): void {
+    finishObjectGesture();
+
+    const snapshot =
+      sessionSnapshotRef.current;
+
+    if (snapshot) {
+      const element =
+        getQBitElement(
+          snapshot.descriptor
+        );
+
+      removeQBitOverride(
+        snapshot.descriptor
+      );
+
+      if (element) {
+        clearQBitOverrideStyles(
+          element
+        );
+      }
+
+      if (snapshot.override) {
+        const overrides =
+          getQBitOverrides();
+
+        saveQBitOverrides([
+          ...overrides.filter(
+            (override) =>
+              !(
+                override.id ===
+                  snapshot.descriptor.id &&
+                override.scope ===
+                  snapshot.descriptor.scope
+              )
+          ),
+
+          snapshot.override,
+        ]);
+
+        if (element) {
+          applyQBitOverride(
+            element,
+            snapshot.override
+          );
+        }
+      }
+    }
+
+    setEditorOpen(false);
+    setEditorActive(false);
+
+    clearEditSession();
+  }
+
+  /* =========================================================
+     APPEARANCE OVERRIDES
+     ========================================================= */
+
+  function updateSelectedOverride(
+    updates: Partial<
+      Omit<
+        QBitOverride,
+        "id" | "type" | "scope"
+      >
+    >
+  ): void {
+    if (!selectedDescriptor) {
+      return;
+    }
+
+    const nextOverride =
+      updateQBitOverride(
+        selectedDescriptor,
+        updates
+      );
+
+    const element =
+      activeElementRef.current &&
+      activeElementRef.current.isConnected
+        ? activeElementRef.current
+        : getQBitElement(
+            selectedDescriptor
+          );
+
+    if (element) {
+      clearQBitOverrideStyles(
+        element
+      );
+
+      applyQBitOverride(
+        element,
+        nextOverride
+      );
+
+      activeElementRef.current =
+        element;
+
+      applyQBitLockState(
+        element
+      );
+    }
+
+    setSelectedOverride(
+      nextOverride
+    );
+
+    window.requestAnimationFrame(
+      refreshActiveRect
+    );
+  }
+
+  function resetSelectedObject(): void {
+    if (!selectedDescriptor) {
+      return;
+    }
+
+    removeQBitOverride(
+      selectedDescriptor
+    );
+
+    const element =
+      activeElementRef.current &&
+      activeElementRef.current.isConnected
+        ? activeElementRef.current
+        : getQBitElement(
+            selectedDescriptor
+          );
+
+    if (element) {
+      clearQBitOverrideStyles(
+        element
+      );
+
+      activeElementRef.current =
+        element;
+
+      applyQBitLockState(
+        element
+      );
+    }
+
+    setSelectedOverride(null);
+
+    window.requestAnimationFrame(
+      refreshActiveRect
+    );
+  }
+
+  /* =========================================================
+     GLOBAL SETTINGS
+     ========================================================= */
+
+  function updateSettings(
+    updates: Partial<AppearanceSettings>
+  ): void {
+    const nextSettings =
+      saveAppearanceSettings({
+        ...settings,
+        ...updates,
+      });
+
+    setSettings(nextSettings);
+
+    window.requestAnimationFrame(
+      applyAllQBitOverrides
+    );
+  }
+
+  function updateGlobalTextColor(
+    value: string
+  ): void {
+    setGlobalTextColor(value);
+
+    localStorage.setItem(
+      globalTextColorStorageKey,
+      value
+    );
+
+    applyGlobalTextColor(value);
+  }
+
+  function handleResetAll(): void {
+    const resetSettings =
+      resetAppearanceSettings();
+
+    setSettings(resetSettings);
+
+    const overrides =
+      getQBitOverrides();
+
+    overrides.forEach((override) => {
+      const element =
+        getQBitElement(override);
+
+      if (element) {
+        clearQBitOverrideStyles(
+          element
+        );
+      }
     });
 
-    setSettings(updatedSettings);
-    applyGlobalTextColor(globalTextColor);
-    window.requestAnimationFrame(applySavedTileOverrides);
+    saveQBitOverrides([]);
+
+    updateGlobalTextColor(
+      "#ffffff"
+    );
+
+    setSelectedOverride(null);
+
+    window.requestAnimationFrame(
+      refreshActiveRect
+    );
   }
 
-  async function handleLogoFileUpload(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
+  /* =========================================================
+     LOGO
+     ========================================================= */
 
-    if (!file) return;
+  async function handleLogoFileUpload(
+    event: ChangeEvent<HTMLInputElement>
+  ) {
+    const file =
+      event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
 
     setLogoUploadMessage("");
     setLogoUploadError("");
 
-    if (!file.type.startsWith("image/")) {
-      setLogoUploadError("Choose an image file.");
+    if (
+      !file.type.startsWith("image/")
+    ) {
+      setLogoUploadError(
+        "Choose an image file."
+      );
+
       event.target.value = "";
+
       return;
     }
 
     try {
-      setLogoUploadMessage("Preparing logo...");
+      setLogoUploadMessage(
+        "Preparing logo..."
+      );
 
-      const logoDataUrl = await normalizeUploadedLogo(file);
+      const logoDataUrl =
+        await normalizeUploadedLogo(
+          file
+        );
 
       updateSettings({
-        logoUrl: logoDataUrl,
+        logoUrl:
+          logoDataUrl,
       });
 
-      setLogoUploadMessage("Logo uploaded and saved.");
-      setLogoUploadError("");
+      setLogoUploadMessage(
+        "Logo uploaded and saved."
+      );
     } catch {
       setLogoUploadMessage("");
-      setLogoUploadError("Logo upload failed.");
+
+      setLogoUploadError(
+        "Logo upload failed."
+      );
     } finally {
       event.target.value = "";
     }
   }
 
-  function clearLogo() {
-    updateSettings({
-      logoUrl: "",
-    });
+  function renderLogoControls() {
+    const logoUrlInputValue =
+      logoIsUploadedImage(
+        settings.logoUrl
+      )
+        ? ""
+        : settings.logoUrl;
 
-    setLogoUploadMessage("Logo cleared.");
-    setLogoUploadError("");
+    return (
+      <>
+        <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-2">
+          <label className="block">
+            <span
+              className={
+                fieldLabelClass
+              }
+            >
+              Upload Logo
+            </span>
+
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(event) => {
+                void handleLogoFileUpload(
+                  event
+                );
+              }}
+              className="mt-1 w-full rounded-md border border-dashed border-zinc-300 bg-white px-2 py-2 text-[11px] font-bold text-black file:mr-2 file:rounded-md file:border-0 file:bg-black file:px-2 file:py-1 file:text-[10px] file:font-black file:text-white"
+            />
+          </label>
+
+          {logoUploadMessage && (
+            <p className="mt-1 text-[10px] font-black uppercase tracking-wide text-emerald-700">
+              {logoUploadMessage}
+            </p>
+          )}
+
+          {logoUploadError && (
+            <p className="mt-1 text-[10px] font-black uppercase tracking-wide text-red-700">
+              {logoUploadError}
+            </p>
+          )}
+        </div>
+
+        <label className="block">
+          <span
+            className={
+              fieldLabelClass
+            }
+          >
+            Logo Placement
+          </span>
+
+          <select
+            value={
+              settings.logoPlacement
+            }
+            onChange={(event) =>
+              updateSettings({
+                logoPlacement:
+                  event.target
+                    .value as LogoPlacement,
+              })
+            }
+            className={
+              inputClass
+            }
+          >
+            {logoPlacementOptions.map(
+              (option) => (
+                <option
+                  key={option}
+                  value={option}
+                >
+                  {option}
+                </option>
+              )
+            )}
+          </select>
+        </label>
+
+        <label className="block">
+          <span
+            className={
+              fieldLabelClass
+            }
+          >
+            Advanced Logo Path
+          </span>
+
+          <input
+            value={
+              logoUrlInputValue
+            }
+            onChange={(event) =>
+              updateSettings({
+                logoUrl:
+                  event.target.value,
+              })
+            }
+            className={
+              inputClass
+            }
+            placeholder="/appearance/tier-one-logo.png"
+          />
+        </label>
+      </>
+    );
   }
 
-  function closeEditor() {
-    setEditorOpen(false);
-    setEditorActive(false);
-    clearEditSession();
-  }
+  /* =========================================================
+     INITIALIZATION
+     ========================================================= */
 
-  function handleReset() {
-    const resetSettings = resetAppearanceSettings();
-    setSettings(resetSettings);
-    setGlobalTextColor("#ffffff");
-    saveString(globalTextColorStorageKey, "#ffffff");
-    applyGlobalTextColor("#ffffff");
-    saveTileOverrides([]);
-    window.requestAnimationFrame(applySavedTileOverrides);
-  }
+  useEffect(() => {
+    const initialDockPosition =
+      clampDockPosition(
+        safeReadPosition(
+          dockPositionStorageKey,
+          getDefaultDockPosition()
+        )
+      );
 
-  function resetPanelBox() {
-    const nextSize = getDefaultPanelSize();
-    const nextPosition = getDefaultPanelPosition();
-    const nextRadius = 18;
+    const initialPanelPosition =
+      clampPanelPosition(
+        safeReadPosition(
+          panelPositionStorageKey,
+          getDefaultPanelPosition()
+        )
+      );
 
-    setPanelSize(nextSize);
-    setPanelPosition(nextPosition);
-    setPanelRadius(nextRadius);
-
-    saveSize(panelSizeStorageKey, nextSize);
-    savePosition(panelPositionStorageKey, nextPosition);
-    saveNumber(panelRadiusStorageKey, nextRadius);
-  }
-
-  function updatePanelSize(updates: Partial<Size>) {
-    const currentSize = panelSize ?? getDefaultPanelSize();
-
-    const nextSize = clampPanelSize({
-      ...currentSize,
-      ...updates,
-    });
-
-    setPanelSize(nextSize);
-    saveSize(panelSizeStorageKey, nextSize);
-
-    setPanelPosition((currentPosition) => {
-      if (!currentPosition) return currentPosition;
-
-      const nextPosition = clampPanelPosition(currentPosition, nextSize);
-      savePosition(panelPositionStorageKey, nextPosition);
-
-      return nextPosition;
-    });
-  }
-
-  function updatePanelRadius(value: number) {
-    const nextRadius = Math.min(Math.max(0, value), 48);
-
-    setPanelRadius(nextRadius);
-    saveNumber(panelRadiusStorageKey, nextRadius);
-  }
-
-  function handleDockPointerDown(event: ReactPointerEvent<HTMLButtonElement>) {
-    if (!dockPosition) return;
-
-    dockPointerStartRef.current = {
-      pointerId: event.pointerId,
-      startX: event.clientX,
-      startY: event.clientY,
-      originalX: dockPosition.x,
-      originalY: dockPosition.y,
-      moved: false,
-    };
-
-    event.currentTarget.setPointerCapture(event.pointerId);
-  }
-
-  function handleDockPointerMove(event: ReactPointerEvent<HTMLButtonElement>) {
-    const pointerStart = dockPointerStartRef.current;
-
-    if (!pointerStart || pointerStart.pointerId !== event.pointerId) return;
-
-    const deltaX = event.clientX - pointerStart.startX;
-    const deltaY = event.clientY - pointerStart.startY;
-
-    if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
-      pointerStart.moved = true;
-    }
-
-    const nextPosition = clampDockPosition({
-      x: pointerStart.originalX + deltaX,
-      y: pointerStart.originalY + deltaY,
-    });
-
-    setDockPosition(nextPosition);
-  }
-
-  function handleDockPointerUp(event: ReactPointerEvent<HTMLButtonElement>) {
-    const pointerStart = dockPointerStartRef.current;
-
-    if (!pointerStart || pointerStart.pointerId !== event.pointerId) return;
-
-    event.currentTarget.releasePointerCapture(event.pointerId);
-
-    if (dockPosition) {
-      savePosition(dockPositionStorageKey, dockPosition);
-    }
-
-    if (!pointerStart.moved) {
-      if (editSession) {
-        setEditorOpen(true);
-        setEditorActive(false);
-      } else {
-        setEditorOpen(false);
-        setEditorActive((currentValue) => !currentValue);
-      }
-    }
-
-    dockPointerStartRef.current = null;
-  }
-
-  function handlePanelPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
-    if (!panelPosition || targetIsInteractiveElement(event.target)) return;
-
-    panelPointerStartRef.current = {
-      pointerId: event.pointerId,
-      startX: event.clientX,
-      startY: event.clientY,
-      originalX: panelPosition.x,
-      originalY: panelPosition.y,
-      moved: false,
-    };
-
-    event.currentTarget.setPointerCapture(event.pointerId);
-  }
-
-  function handlePanelPointerMove(event: ReactPointerEvent<HTMLDivElement>) {
-    const pointerStart = panelPointerStartRef.current;
-
-    if (!pointerStart || pointerStart.pointerId !== event.pointerId) return;
-
-    const deltaX = event.clientX - pointerStart.startX;
-    const deltaY = event.clientY - pointerStart.startY;
-
-    if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
-      pointerStart.moved = true;
-    }
-
-    const nextPosition = clampPanelPosition(
-      {
-        x: pointerStart.originalX + deltaX,
-        y: pointerStart.originalY + deltaY,
-      },
-      panelSize ?? undefined
+    setDockPosition(
+      initialDockPosition
     );
 
-    setPanelPosition(nextPosition);
-  }
-
-  function handlePanelPointerUp(event: ReactPointerEvent<HTMLDivElement>) {
-    const pointerStart = panelPointerStartRef.current;
-
-    if (!pointerStart || pointerStart.pointerId !== event.pointerId) return;
-
-    event.currentTarget.releasePointerCapture(event.pointerId);
-
-    if (panelPosition) {
-      savePosition(panelPositionStorageKey, panelPosition);
-    }
-
-    panelPointerStartRef.current = null;
-  }
-
-  function handleResizePointerDown(
-    event: ReactPointerEvent<HTMLDivElement>,
-    direction: ResizeDirection
-  ) {
-    if (!panelPosition || !panelSize) return;
-
-    event.preventDefault();
-    event.stopPropagation();
-
-    setPanelBoxSelected(true);
-
-    panelResizePointerStartRef.current = {
-      pointerId: event.pointerId,
-      direction,
-      startX: event.clientX,
-      startY: event.clientY,
-      originalX: panelPosition.x,
-      originalY: panelPosition.y,
-      originalWidth: panelSize.width,
-      originalHeight: panelSize.height,
-      moved: false,
-    };
-
-    event.currentTarget.setPointerCapture(event.pointerId);
-  }
-
-  function handleResizePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
-    const pointerStart = panelResizePointerStartRef.current;
-
-    if (!pointerStart || pointerStart.pointerId !== event.pointerId) return;
-
-    const deltaX = event.clientX - pointerStart.startX;
-    const deltaY = event.clientY - pointerStart.startY;
-
-    if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
-      pointerStart.moved = true;
-    }
-
-    let nextX = pointerStart.originalX;
-    let nextY = pointerStart.originalY;
-    let nextWidth = pointerStart.originalWidth;
-    let nextHeight = pointerStart.originalHeight;
-
-    if (pointerStart.direction.includes("e")) {
-      nextWidth = pointerStart.originalWidth + deltaX;
-    }
-
-    if (pointerStart.direction.includes("s")) {
-      nextHeight = pointerStart.originalHeight + deltaY;
-    }
-
-    if (pointerStart.direction.includes("w")) {
-      nextWidth = pointerStart.originalWidth - deltaX;
-      nextX = pointerStart.originalX + deltaX;
-
-      if (nextWidth < panelMinWidth) {
-        nextWidth = panelMinWidth;
-        nextX =
-          pointerStart.originalX + pointerStart.originalWidth - panelMinWidth;
-      }
-    }
-
-    if (pointerStart.direction.includes("n")) {
-      nextHeight = pointerStart.originalHeight - deltaY;
-      nextY = pointerStart.originalY + deltaY;
-
-      if (nextHeight < panelMinHeight) {
-        nextHeight = panelMinHeight;
-        nextY =
-          pointerStart.originalY + pointerStart.originalHeight - panelMinHeight;
-      }
-    }
-
-    const nextSize = clampPanelSize({
-      width: nextWidth,
-      height: nextHeight,
-    });
-
-    const nextPosition = clampPanelPosition(
-      {
-        x: nextX,
-        y: nextY,
-      },
-      nextSize
+    setPanelPosition(
+      initialPanelPosition
     );
 
-    setPanelSize(nextSize);
-    setPanelPosition(nextPosition);
-  }
+    const savedGlobalTextColor =
+      localStorage.getItem(
+        globalTextColorStorageKey
+      ) || "#ffffff";
 
-  function handleResizePointerUp(event: ReactPointerEvent<HTMLDivElement>) {
-    const pointerStart = panelResizePointerStartRef.current;
+    setGlobalTextColor(
+      savedGlobalTextColor
+    );
 
-    if (!pointerStart || pointerStart.pointerId !== event.pointerId) return;
+    applyGlobalTextColor(
+      savedGlobalTextColor
+    );
 
-    event.currentTarget.releasePointerCapture(event.pointerId);
+    window.requestAnimationFrame(
+      applyAllQBitOverrides
+    );
 
-    if (panelSize) {
-      saveSize(panelSizeStorageKey, panelSize);
+    function handleAppearanceChanged() {
+      setSettings(
+        getAppearanceSettings()
+      );
+
+      window.requestAnimationFrame(
+        applyAllQBitOverrides
+      );
     }
 
-    if (panelPosition) {
-      savePosition(panelPositionStorageKey, panelPosition);
+    function handleQBitOverridesChanged() {
+      window.requestAnimationFrame(
+        applyAllQBitOverrides
+      );
     }
 
-    panelResizePointerStartRef.current = null;
-  }
+    function handleResize() {
+      setDockPosition(
+        (current) => {
+          if (!current) {
+            return current;
+          }
 
-  function openPanelDirectly() {
-    if (editSession) {
-      setEditorActive(false);
-      setEditorOpen(true);
+          const next =
+            clampDockPosition(
+              current
+            );
+
+          savePosition(
+            dockPositionStorageKey,
+            next
+          );
+
+          return next;
+        }
+      );
+
+      setPanelPosition(
+        (current) => {
+          if (!current) {
+            return current;
+          }
+
+          const next =
+            clampPanelPosition(
+              current
+            );
+
+          savePosition(
+            panelPositionStorageKey,
+            next
+          );
+
+          return next;
+        }
+      );
+
+      refreshActiveRect();
+    }
+
+    window.addEventListener(
+      "t1eq-appearance-settings-changed",
+      handleAppearanceChanged
+    );
+
+    window.addEventListener(
+      "t1eq-qbit-overrides-changed",
+      handleQBitOverridesChanged
+    );
+
+    window.addEventListener(
+      "resize",
+      handleResize
+    );
+
+    return () => {
+      window.removeEventListener(
+        "t1eq-appearance-settings-changed",
+        handleAppearanceChanged
+      );
+
+      window.removeEventListener(
+        "t1eq-qbit-overrides-changed",
+        handleQBitOverridesChanged
+      );
+
+      window.removeEventListener(
+        "resize",
+        handleResize
+      );
+
+      clearQBitLockState();
+    };
+  }, []);
+
+  /* =========================================================
+     SESSION LOCK
+     ========================================================= */
+
+  useEffect(() => {
+    if (
+      !editorOpen ||
+      !selectedDescriptor
+    ) {
+      clearQBitLockState();
       return;
     }
 
-    clearEditSession();
-    setEditorActive(false);
-    setEditTarget("Background");
-    setSelectedTileIndex(null);
-    setPanelBoxSelected(false);
-    setEditorOpen(true);
+    let element =
+      activeElementRef.current;
+
+    if (
+      !element ||
+      !element.isConnected
+    ) {
+      element =
+        getQBitElement(
+          selectedDescriptor
+        );
+
+      activeElementRef.current =
+        element;
+    }
+
+    if (!element) {
+      clearQBitLockState();
+
+      setActiveRect(
+        null
+      );
+
+      return;
+    }
+
+    applyQBitLockState(
+      element
+    );
+
+    setActiveRect(
+      element.getBoundingClientRect()
+    );
+
+    return () => {
+      clearQBitLockState();
+    };
+  }, [
+    editorOpen,
+    selectedDescriptor,
+  ]);
+
+  /* =========================================================
+     BALLOON CLICK-THROUGH
+
+     Information balloons are pointer-events: none by default (see
+     appearance-theme.css) so a decorative tooltip never blocks a
+     normal click-through to the tile underneath it. That means they
+     are otherwise impossible to click-select in Q-Bit. While Q-Bit
+     is actively in click-to-select mode, flag <html> so the CSS can
+     turn pointer-events back on for balloons specifically.
+     ========================================================= */
+
+  useEffect(() => {
+    if (typeof document === "undefined") {
+      return;
+    }
+
+    document.documentElement.dataset.t1eqQbitEditing =
+      editorActive ? "true" : "false";
+
+    return () => {
+      document.documentElement.dataset.t1eqQbitEditing =
+        "false";
+    };
+  }, [editorActive]);
+
+  /* =========================================================
+     Q-BIT SELECTION
+     ========================================================= */
+
+  useEffect(() => {
+    function handleDocumentClick(
+      event: MouseEvent
+    ) {
+      if (!editorActive) {
+        return;
+      }
+
+      const target =
+        event.target;
+
+      if (
+        !(target instanceof HTMLElement)
+      ) {
+        return;
+      }
+
+      if (
+        dockButtonRef.current?.contains(
+          target
+        )
+      ) {
+        return;
+      }
+
+      if (
+        panelRef.current?.contains(
+          target
+        )
+      ) {
+        return;
+      }
+
+      if (
+        target.closest(
+          "[data-t1eq-appearance-editor='true']"
+        )
+      ) {
+        return;
+      }
+
+      const editableElement =
+        target.closest<HTMLElement>(
+          editableSelector
+        );
+
+      if (!editableElement) {
+        return;
+      }
+
+      const descriptor =
+        getQBitDescriptor(
+          editableElement
+        );
+
+      if (!descriptor) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      openEditSession(
+        editableElement
+      );
+    }
+
+    document.addEventListener(
+      "click",
+      handleDocumentClick,
+      true
+    );
+
+    return () => {
+      document.removeEventListener(
+        "click",
+        handleDocumentClick,
+        true
+      );
+    };
+  }, [
+    editorActive,
+  ]);
+
+  /* =========================================================
+     GLOBAL POINTER EVENTS
+     ========================================================= */
+
+  useEffect(() => {
+    function handleScroll() {
+      refreshActiveRect();
+    }
+
+    window.addEventListener(
+      "scroll",
+      handleScroll,
+      true
+    );
+
+    window.addEventListener(
+      "pointermove",
+      handleObjectPointerMove
+    );
+
+    window.addEventListener(
+      "pointerup",
+      finishObjectGesture
+    );
+
+    window.addEventListener(
+      "pointercancel",
+      finishObjectGesture
+    );
+
+    window.addEventListener(
+      "blur",
+      finishObjectGesture
+    );
+
+    return () => {
+      window.removeEventListener(
+        "scroll",
+        handleScroll,
+        true
+      );
+
+      window.removeEventListener(
+        "pointermove",
+        handleObjectPointerMove
+      );
+
+      window.removeEventListener(
+        "pointerup",
+        finishObjectGesture
+      );
+
+      window.removeEventListener(
+        "pointercancel",
+        finishObjectGesture
+      );
+
+      window.removeEventListener(
+        "blur",
+        finishObjectGesture
+      );
+    };
+  }, []);
+
+  /* =========================================================
+     Q-BIT DOCK
+     ========================================================= */
+
+  function handleDockPointerDown(
+    event: ReactPointerEvent<HTMLButtonElement>
+  ): void {
+    if (!dockPosition) {
+      return;
+    }
+
+    dockDragStartRef.current = {
+      pointerId:
+        event.pointerId,
+
+      startX:
+        event.clientX,
+
+      startY:
+        event.clientY,
+
+      originalX:
+        dockPosition.x,
+
+      originalY:
+        dockPosition.y,
+
+      moved: false,
+    };
   }
 
-  function renderResizeHandle(
-    direction: ResizeDirection,
-    className: string,
-    cursorClass: string
-  ) {
-    return (
-      <div
-        key={direction}
-        aria-hidden="true"
-        title="Drag to resize editor box"
-        onClick={(event) => {
-          event.stopPropagation();
-          setPanelBoxSelected(true);
-        }}
-        onPointerDown={(event) => handleResizePointerDown(event, direction)}
-        onPointerMove={handleResizePointerMove}
-        onPointerUp={handleResizePointerUp}
-        onPointerCancel={() => {
-          panelResizePointerStartRef.current = null;
-        }}
-        className={`absolute z-[3] bg-transparent ${cursorClass} ${className}`}
-      />
+  function handleDockPointerMove(
+    event: ReactPointerEvent<HTMLButtonElement>
+  ): void {
+    const start =
+      dockDragStartRef.current;
+
+    if (
+      !start ||
+      start.pointerId !==
+        event.pointerId
+    ) {
+      return;
+    }
+
+    const deltaX =
+      event.clientX -
+      start.startX;
+
+    const deltaY =
+      event.clientY -
+      start.startY;
+
+    if (
+      Math.abs(deltaX) > 3 ||
+      Math.abs(deltaY) > 3
+    ) {
+      start.moved = true;
+    }
+
+    setDockPosition(
+      clampDockPosition({
+        x:
+          start.originalX +
+          deltaX,
+
+        y:
+          start.originalY +
+          deltaY,
+      })
     );
   }
 
-  const dockStyle: CSSProperties = dockPosition
-    ? {
-        left: dockPosition.x,
-        top: dockPosition.y,
+  function handleDockPointerUp(
+    event: ReactPointerEvent<HTMLButtonElement>
+  ): void {
+    const start =
+      dockDragStartRef.current;
+
+    if (
+      !start ||
+      start.pointerId !==
+        event.pointerId
+    ) {
+      return;
+    }
+
+    if (dockPosition) {
+      savePosition(
+        dockPositionStorageKey,
+        dockPosition
+      );
+    }
+
+    if (!start.moved) {
+      if (
+        selectedDescriptor
+      ) {
+        setEditorOpen(
+          true
+        );
+
+        setEditorActive(
+          false
+        );
+      } else {
+        clearQBitLockState();
+
+        setEditorOpen(
+          false
+        );
+
+        setEditorActive(
+          (current) =>
+            !current
+        );
       }
-    : {
-        right: 24,
-        bottom: 24,
-      };
+    }
+
+    dockDragStartRef.current =
+      null;
+  }
+
+  /* =========================================================
+     EDITOR PANEL DRAG
+     ========================================================= */
+
+  function handlePanelPointerDown(
+    event: ReactPointerEvent<HTMLDivElement>
+  ): void {
+    if (!panelPosition) {
+      return;
+    }
+
+    const target =
+      event.target;
+
+    if (
+      target instanceof HTMLElement &&
+      target.closest(
+        "button, input, select, textarea, label"
+      )
+    ) {
+      return;
+    }
+
+    panelDragStartRef.current = {
+      pointerId:
+        event.pointerId,
+
+      startX:
+        event.clientX,
+
+      startY:
+        event.clientY,
+
+      originalX:
+        panelPosition.x,
+
+      originalY:
+        panelPosition.y,
+    };
+  }
+
+  function handlePanelPointerMove(
+    event: ReactPointerEvent<HTMLDivElement>
+  ): void {
+    const start =
+      panelDragStartRef.current;
+
+    if (
+      !start ||
+      start.pointerId !==
+        event.pointerId
+    ) {
+      return;
+    }
+
+    setPanelPosition(
+      clampPanelPosition({
+        x:
+          start.originalX +
+          event.clientX -
+          start.startX,
+
+        y:
+          start.originalY +
+          event.clientY -
+          start.startY,
+      })
+    );
+  }
+
+  function handlePanelPointerUp(
+    event: ReactPointerEvent<HTMLDivElement>
+  ): void {
+    const start =
+      panelDragStartRef.current;
+
+    if (
+      !start ||
+      start.pointerId !==
+        event.pointerId
+    ) {
+      return;
+    }
+
+    if (panelPosition) {
+      savePosition(
+        panelPositionStorageKey,
+        panelPosition
+      );
+    }
+
+    panelDragStartRef.current =
+      null;
+  }
+
+  /* =========================================================
+     POSITION STYLES
+     ========================================================= */
+
+  const dockStyle: CSSProperties =
+    dockPosition
+      ? {
+          left:
+            dockPosition.x,
+
+          top:
+            dockPosition.y,
+        }
+      : {
+          right: 24,
+          bottom: 24,
+        };
 
   const panelStyle: CSSProperties =
-    panelPosition && panelSize
+    panelPosition
       ? {
-          left: panelPosition.x,
-          top: panelPosition.y,
-          width: panelSize.width,
-          height: panelSize.height,
-          borderRadius: panelRadius,
+          left:
+            panelPosition.x,
+
+          top:
+            panelPosition.y,
+
+          width:
+            panelWidth,
+
+          height:
+            `min(${panelHeight}px, calc(100vh - 16px))`,
         }
       : {
           right: 24,
           top: 80,
-          width: panelDefaultWidth,
-          height: panelDefaultHeight,
-          borderRadius: panelRadius,
+
+          width:
+            panelWidth,
+
+          height:
+            `min(${panelHeight}px, calc(100vh - 16px))`,
         };
 
-  const hoverLabelStyle: CSSProperties = dockPosition
-    ? {
-        left: Math.max(8, dockPosition.x + 28),
-        top: Math.max(8, dockPosition.y - 28),
-      }
-    : {
-        right: 24,
-        bottom: 176,
-      };
+  const backgroundColor =
+    selectedOverride?.backgroundColor ??
+    "";
 
-  const selectedTileColor = getTileOverrideValue(
-    selectedTileIndex,
-    "backgroundColor",
-    settings.tileBackgroundColor
-  );
+  const borderColor =
+    selectedOverride?.borderColor ??
+    "";
 
-  const selectedTileBorderColor = getTileOverrideValue(
-    selectedTileIndex,
-    "borderColor",
-    settings.tileBorderColor
-  );
+  const textColor =
+    selectedOverride?.textColor ??
+    "";
 
-  const selectedTileTextColor = getTileOverrideValue(
-    selectedTileIndex,
-    "textColor",
-    globalTextColor
-  );
+  const depth =
+    selectedOverride?.depth ??
+    settings.pageThreeDEffect;
 
-  const selectedTileDepth = getTileOverrideValue(
-    selectedTileIndex,
-    "depth",
-    settings.pageThreeDEffect
-  ) as ThreeDEffectLevel;
-
-  const logoUrlInputValue = logoIsUploadedImage(settings.logoUrl)
-    ? ""
-    : settings.logoUrl;
+  /* =========================================================
+     RENDER
+     ========================================================= */
 
   return (
     <>
       {editorActive && (
-        <div className={bannerClass}>Click Tile, Sidebar, or Background</div>
-      )}
-
-      {editorOpen && editSession && (
-        <div className={bannerClass}>
-          Q-Bit edit locked — save current element before selecting another
-        </div>
-      )}
-
-      {hoveringDock && (
-        <div className={hoverLabelClass} style={hoverLabelStyle}>
-          {editorActive ? "Click Element to Edit" : "Appearance Editor"}
+        <div
+          data-t1eq-appearance-editor="true"
+          className="fixed left-1/2 top-6 z-[10001] -translate-x-1/2 rounded-2xl border border-orange-400 bg-orange-50 px-5 py-3 text-sm font-black uppercase tracking-wide text-orange-700 shadow-xl"
+        >
+          Select an element to edit
         </div>
       )}
 
       <button
-        ref={dockButtonRef}
+        ref={
+          dockButtonRef
+        }
         type="button"
         aria-label="Appearance Editor Q-Bit"
-        title={editorActive ? "Click Element to Edit" : "Appearance Editor"}
-        onPointerDown={handleDockPointerDown}
-        onPointerMove={handleDockPointerMove}
-        onPointerUp={handleDockPointerUp}
+        title={
+          editorActive
+            ? "Select Element"
+            : "Appearance Editor"
+        }
+        onPointerDown={
+          handleDockPointerDown
+        }
+        onPointerMove={
+          handleDockPointerMove
+        }
+        onPointerUp={
+          handleDockPointerUp
+        }
         onPointerCancel={() => {
-          dockPointerStartRef.current = null;
+          dockDragStartRef.current =
+            null;
         }}
-        onDoubleClick={(event) => {
+        onDoubleClick={(
+          event
+        ) => {
           event.preventDefault();
-          openPanelDirectly();
+
+          clearEditSession();
+
+          setEditorActive(
+            false
+          );
+
+          setEditorOpen(
+            true
+          );
         }}
-        onMouseEnter={() => setHoveringDock(true)}
-        onMouseLeave={() => setHoveringDock(false)}
-        className={dockButtonBaseClass}
-        style={dockStyle}
+        className="fixed z-[10000] flex h-40 w-40 touch-none select-none items-center justify-center bg-transparent p-0 transition hover:scale-105"
+        style={
+          dockStyle
+        }
       >
-        {editorActive ? <ActiveQBitGraphic /> : <InactiveQBitGraphic />}
+        {editorActive ? (
+          <ActiveQBitGraphic />
+        ) : (
+          <InactiveQBitGraphic />
+        )}
       </button>
 
       {editorOpen && (
         <div
-          ref={panelRef}
-          data-t1eq-page-card="true"
+          ref={
+            panelRef
+          }
           data-t1eq-appearance-editor="true"
-          className={panelBaseClass}
-          style={panelStyle}
+          className="fixed z-[10000] overflow-hidden rounded-2xl border border-zinc-300 bg-white text-black shadow-2xl"
+          style={
+            panelStyle
+          }
         >
-          <div className="relative flex h-full min-h-0 flex-col overflow-hidden">
+          <div className="flex h-full min-h-0 flex-col">
             <div
-              className={`pointer-events-none absolute inset-0 z-[1] rounded-[inherit] border-2 ${
-                panelBoxSelected
-                  ? "border-orange-400/80"
-                  : "border-transparent"
-              }`}
-            />
-
-            {renderResizeHandle(
-              "n",
-              "-top-1 left-4 right-4 h-3",
-              "cursor-ns-resize"
-            )}
-            {renderResizeHandle(
-              "s",
-              "-bottom-1 left-4 right-4 h-3",
-              "cursor-ns-resize"
-            )}
-            {renderResizeHandle(
-              "e",
-              "bottom-4 right-[-4px] top-4 w-3",
-              "cursor-ew-resize"
-            )}
-            {renderResizeHandle(
-              "w",
-              "bottom-4 left-[-4px] top-4 w-3",
-              "cursor-ew-resize"
-            )}
-            {renderResizeHandle(
-              "ne",
-              "-right-1 -top-1 h-5 w-5",
-              "cursor-nesw-resize"
-            )}
-            {renderResizeHandle(
-              "nw",
-              "-left-1 -top-1 h-5 w-5",
-              "cursor-nwse-resize"
-            )}
-            {renderResizeHandle(
-              "se",
-              "-bottom-1 -right-1 h-5 w-5",
-              "cursor-nwse-resize"
-            )}
-            {renderResizeHandle(
-              "sw",
-              "-bottom-1 -left-1 h-5 w-5",
-              "cursor-nesw-resize"
-            )}
-
-            <div
-              className={panelHeaderClass}
-              onClick={() => setPanelBoxSelected(true)}
-              onPointerDown={handlePanelPointerDown}
-              onPointerMove={handlePanelPointerMove}
-              onPointerUp={handlePanelPointerUp}
+              className="flex cursor-grab touch-none select-none items-start justify-between gap-3 border-b border-zinc-200 bg-white px-4 py-4 active:cursor-grabbing"
+              onPointerDown={
+                handlePanelPointerDown
+              }
+              onPointerMove={
+                handlePanelPointerMove
+              }
+              onPointerUp={
+                handlePanelPointerUp
+              }
               onPointerCancel={() => {
-                panelPointerStartRef.current = null;
+                panelDragStartRef.current =
+                  null;
               }}
             >
-              <div>
+              <div className="min-w-0">
                 <p className="text-[10px] font-black uppercase tracking-wide text-zinc-500">
-                  Editing
+                  Q-Bit Editor
                 </p>
 
-                <h2 className="mt-0.5 text-base font-black text-black">
-                  {editTarget}
-                  {editTarget === "Tile" && selectedTileIndex !== null
-                    ? ` #${selectedTileIndex + 1}`
-                    : ""}
+                <h2 className="mt-1 truncate text-base font-black text-black">
+                  {selectedDescriptor
+                    ? friendlyTypeName(
+                        selectedDescriptor.type
+                      )
+                    : "Global Appearance"}
                 </h2>
 
-                <p className="mt-0.5 text-[11px] font-semibold text-zinc-600">
-                  Drag header to move. Drag edge to resize.
-                </p>
+                {selectedDescriptor && (
+                  <>
+                    <p className="mt-1 break-all text-[10px] font-semibold text-zinc-500">
+                      ID:{" "}
+                      {
+                        selectedDescriptor.id
+                      }
+                    </p>
+
+                    <p className="break-all text-[10px] font-semibold text-zinc-500">
+                      Scope:{" "}
+                      {
+                        selectedDescriptor.scope
+                      }
+                    </p>
+                  </>
+                )}
               </div>
 
-              <button
-                type="button"
-                onPointerDown={(event) => event.stopPropagation()}
-                onClick={closeEditor}
-                className={buttonClass}
+              <div
+                className="flex shrink-0 gap-2"
+                onPointerDown={(
+                  event
+                ) =>
+                  event.stopPropagation()
+                }
               >
-                Save
-              </button>
+                {selectedDescriptor && (
+                  <button
+                    type="button"
+                    onClick={
+                      cancelEditor
+                    }
+                    className={
+                      secondaryButtonClass
+                    }
+                  >
+                    Cancel
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={
+                    handleResetAll
+                  }
+                  className={
+                    secondaryButtonClass
+                  }
+                >
+                  Reset
+                </button>
+
+                <button
+                  type="button"
+                  onClick={
+                    closeEditor
+                  }
+                  className={
+                    primaryButtonClass
+                  }
+                >
+                  Save
+                </button>
+              </div>
             </div>
 
-            <div className={panelBodyClass}>
-              <div className="mb-2 rounded-lg border border-orange-300 bg-orange-50 p-2 text-[11px] font-bold leading-snug text-orange-800">
-            {editSession
-              ? "Q-Bit has locked this edit target. Save before selecting another element."
-              : "Click Q-Bit once to select another element. Click this box edge to edit its size, shape, and position."}
-          </div>
+            <div className="flex-1 overflow-y-auto p-4">
+              {selectedDescriptor ? (
+                <div className="space-y-4">
+                  <div className="rounded-xl border border-orange-300 bg-orange-50 p-3 text-xs font-bold leading-5 text-orange-800">
+                    Editing this unique
+                    element. Save or Cancel
+                    before selecting another.
+                  </div>
 
-              {panelBoxSelected && (
-                <div className="mb-3 rounded-lg border border-zinc-300 bg-zinc-50 p-2">
-                  <div className="mb-2 flex items-center justify-between gap-2">
-                    <div>
-                      <p className={fieldLabelClass}>Editor Box</p>
-                      <p className="text-[11px] font-semibold text-zinc-600">
-                        Drag edges/corners or enter exact values.
-                      </p>
+                  <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-3">
+                    <p className="text-[10px] font-black uppercase tracking-wide text-zinc-500">
+                      Descriptor
+                    </p>
+
+                    <div className="mt-2 grid gap-2 text-xs">
+                      <div>
+                        <span className="font-black">
+                          Type:
+                        </span>{" "}
+                        {
+                          selectedDescriptor.type
+                        }
+                      </div>
+
+                      <div className="break-all">
+                        <span className="font-black">
+                          ID:
+                        </span>{" "}
+                        {
+                          selectedDescriptor.id
+                        }
+                      </div>
+
+                      <div className="break-all">
+                        <span className="font-black">
+                          Scope:
+                        </span>{" "}
+                        {
+                          selectedDescriptor.scope
+                        }
+                      </div>
                     </div>
+                  </div>
 
-                    <button
-                      type="button"
-                      onClick={() => setPanelBoxSelected(false)}
-                      className={buttonClass}
+                  <label className="block">
+                    <span
+                      className={
+                        fieldLabelClass
+                      }
                     >
-                      Hide
-                    </button>
-                  </div>
+                      Background
+                    </span>
 
-                  <div className="grid grid-cols-3 gap-2">
+                    <ColorSwatchPicker
+                      value={
+                        backgroundColor ||
+                        "#ffffff"
+                      }
+                      onChange={(hex) =>
+                        updateSelectedOverride({
+                          backgroundColor:
+                            hex,
+                        })
+                      }
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span
+                      className={
+                        fieldLabelClass
+                      }
+                    >
+                      Border
+                    </span>
+
+                    <ColorSwatchPicker
+                      value={
+                        borderColor ||
+                        "#e4e4e7"
+                      }
+                      onChange={(hex) =>
+                        updateSelectedOverride({
+                          borderColor:
+                            hex,
+                        })
+                      }
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span
+                      className={
+                        fieldLabelClass
+                      }
+                    >
+                      Text
+                    </span>
+
+                    <ColorSwatchPicker
+                      value={
+                        textColor ||
+                        "#000000"
+                      }
+                      onChange={(hex) =>
+                        updateSelectedOverride({
+                          textColor:
+                            hex,
+                        })
+                      }
+                    />
+                  </label>
+
+                  {(selectedDescriptor.type ===
+                    "tile" ||
+                    selectedDescriptor.type ===
+                      "page-card" ||
+                    selectedDescriptor.type ===
+                      "section") && (
                     <label className="block">
-                      <span className={fieldLabelClass}>Width</span>
-                      <input
-                        type="number"
-                        min={panelMinWidth}
-                        value={Math.round(
-                          panelSize?.width ?? panelDefaultWidth
-                        )}
-                        onChange={(event) =>
-                          updatePanelSize({
-                            width: Number(event.target.value),
+                      <span
+                        className={
+                          fieldLabelClass
+                        }
+                      >
+                        3D Depth
+                      </span>
+
+                      <select
+                        value={
+                          depth
+                        }
+                        onChange={(
+                          event
+                        ) =>
+                          updateSelectedOverride({
+                            depth:
+                              event.target
+                                .value as ThreeDEffectLevel,
                           })
                         }
-                        className={inputClass}
-                      />
+                        className={
+                          inputClass
+                        }
+                      >
+                        {threeDEffectOptions.map(
+                          (option) => (
+                            <option
+                              key={
+                                option
+                              }
+                              value={
+                                option
+                              }
+                            >
+                              {
+                                option
+                              }
+                            </option>
+                          )
+                        )}
+                      </select>
                     </label>
+                  )}
 
+                  <div className="grid grid-cols-2 gap-3">
                     <label className="block">
-                      <span className={fieldLabelClass}>Height</span>
+                      <span
+                        className={
+                          fieldLabelClass
+                        }
+                      >
+                        Width
+                      </span>
+
                       <input
                         type="number"
-                        min={panelMinHeight}
-                        value={Math.round(
-                          panelSize?.height ?? panelDefaultHeight
-                        )}
-                        onChange={(event) =>
-                          updatePanelSize({
-                            height: Number(event.target.value),
+                        min={
+                          objectMinWidth
+                        }
+                        value={
+                          selectedOverride?.width ??
+                          Math.round(
+                            activeRect?.width ??
+                              0
+                          )
+                        }
+                        onChange={(
+                          event
+                        ) =>
+                          updateSelectedOverride({
+                            width:
+                              Number(
+                                event.target
+                                  .value
+                              ),
                           })
                         }
-                        className={inputClass}
-                      />
-                    </label>
-
-                    <label className="block">
-                      <span className={fieldLabelClass}>Shape</span>
-                      <input
-                        type="number"
-                        min={0}
-                        max={48}
-                        value={panelRadius}
-                        onChange={(event) =>
-                          updatePanelRadius(Number(event.target.value))
+                        className={
+                          inputClass
                         }
-                        className={inputClass}
-                      />
-                    </label>
-                  </div>
-
-                  <div className="mt-2 grid grid-cols-2 gap-2">
-                    <label className="block">
-                      <span className={fieldLabelClass}>X Position</span>
-                      <input
-                        type="number"
-                        value={Math.round(panelPosition?.x ?? 0)}
-                        onChange={(event) => {
-                          const nextPosition = clampPanelPosition(
-                            {
-                              x: Number(event.target.value),
-                              y: panelPosition?.y ?? 80,
-                            },
-                            panelSize ?? undefined
-                          );
-
-                          setPanelPosition(nextPosition);
-                          savePosition(panelPositionStorageKey, nextPosition);
-                        }}
-                        className={inputClass}
                       />
                     </label>
 
                     <label className="block">
-                      <span className={fieldLabelClass}>Y Position</span>
+                      <span
+                        className={
+                          fieldLabelClass
+                        }
+                      >
+                        Height
+                      </span>
+
                       <input
                         type="number"
-                        value={Math.round(panelPosition?.y ?? 0)}
-                        onChange={(event) => {
-                          const nextPosition = clampPanelPosition(
-                            {
-                              x: panelPosition?.x ?? 24,
-                              y: Number(event.target.value),
-                            },
-                            panelSize ?? undefined
-                          );
-
-                          setPanelPosition(nextPosition);
-                          savePosition(panelPositionStorageKey, nextPosition);
-                        }}
-                        className={inputClass}
+                        min={
+                          objectMinHeight
+                        }
+                        value={
+                          selectedOverride?.height ??
+                          Math.round(
+                            activeRect?.height ??
+                              0
+                          )
+                        }
+                        onChange={(
+                          event
+                        ) =>
+                          updateSelectedOverride({
+                            height:
+                              Number(
+                                event.target
+                                  .value
+                              ),
+                          })
+                        }
+                        className={
+                          inputClass
+                        }
                       />
                     </label>
                   </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <label className="block">
+                      <span
+                        className={
+                          fieldLabelClass
+                        }
+                      >
+                        X Offset
+                      </span>
+
+                      <input
+                        type="number"
+                        value={
+                          selectedOverride?.offsetX ??
+                          0
+                        }
+                        onChange={(
+                          event
+                        ) =>
+                          updateSelectedOverride({
+                            offsetX:
+                              Number(
+                                event.target
+                                  .value
+                              ),
+                          })
+                        }
+                        className={
+                          inputClass
+                        }
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span
+                        className={
+                          fieldLabelClass
+                        }
+                      >
+                        Y Offset
+                      </span>
+
+                      <input
+                        type="number"
+                        value={
+                          selectedOverride?.offsetY ??
+                          0
+                        }
+                        onChange={(
+                          event
+                        ) =>
+                          updateSelectedOverride({
+                            offsetY:
+                              Number(
+                                event.target
+                                  .value
+                              ),
+                          })
+                        }
+                        className={
+                          inputClass
+                        }
+                      />
+                    </label>
+                  </div>
+
+                  <label className="block">
+                    <span
+                      className={
+                        fieldLabelClass
+                      }
+                    >
+                      Corner Radius
+                    </span>
+
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={
+                        selectedOverride?.borderRadius ??
+                        16
+                      }
+                      onChange={(
+                        event
+                      ) =>
+                        updateSelectedOverride({
+                          borderRadius:
+                            Number(
+                              event.target
+                                .value
+                            ),
+                        })
+                      }
+                      className={
+                        inputClass
+                      }
+                    />
+                  </label>
 
                   <button
                     type="button"
-                    onClick={resetPanelBox}
-                    className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-[11px] font-black text-black shadow-sm transition hover:bg-zinc-50"
+                    onClick={
+                      resetSelectedObject
+                    }
+                    className="w-full rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-xs font-black text-red-700 transition hover:bg-red-100"
                   >
-                    Reset Editor Box
+                    Reset This Element
                   </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-xs font-semibold leading-5 text-zinc-700">
+                    Double-click Q-Bit to
+                    open global settings, or
+                    click Q-Bit once and then
+                    select an element.
+                  </div>
+
+                  <label className="block">
+                    <span
+                      className={
+                        fieldLabelClass
+                      }
+                    >
+                      Page Background
+                    </span>
+
+                    <ColorSwatchPicker
+                      value={
+                        settings.pageBackgroundColor
+                      }
+                      onChange={(hex) =>
+                        updateSettings({
+                          pageBackgroundColor:
+                            hex,
+                        })
+                      }
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span
+                      className={
+                        fieldLabelClass
+                      }
+                    >
+                      Accent Color
+                    </span>
+
+                    <ColorSwatchPicker
+                      value={
+                        settings.accentColor
+                      }
+                      onChange={(hex) =>
+                        updateSettings({
+                          accentColor:
+                            hex,
+                        })
+                      }
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span
+                      className={
+                        fieldLabelClass
+                      }
+                    >
+                      Global Text
+                    </span>
+
+                    <ColorSwatchPicker
+                      value={
+                        globalTextColor
+                      }
+                      onChange={
+                        updateGlobalTextColor
+                      }
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span
+                      className={
+                        fieldLabelClass
+                      }
+                    >
+                      Sidebar
+                    </span>
+
+                    <ColorSwatchPicker
+                      value={
+                        settings.sidebarBackgroundColor
+                      }
+                      onChange={(hex) =>
+                        updateSettings({
+                          sidebarBackgroundColor:
+                            hex,
+                        })
+                      }
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span
+                      className={
+                        fieldLabelClass
+                      }
+                    >
+                      Sidebar Button
+                    </span>
+
+                    <ColorSwatchPicker
+                      value={
+                        settings.sidebarButtonColor
+                      }
+                      onChange={(hex) =>
+                        updateSettings({
+                          sidebarButtonColor:
+                            hex,
+                        })
+                      }
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span
+                      className={
+                        fieldLabelClass
+                      }
+                    >
+                      Sidebar Button Text
+                    </span>
+
+                    <ColorSwatchPicker
+                      value={
+                        settings.sidebarButtonTextColor
+                      }
+                      onChange={(hex) =>
+                        updateSettings({
+                          sidebarButtonTextColor:
+                            hex,
+                        })
+                      }
+                    />
+                  </label>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <label className="block">
+                      <span
+                        className={
+                          fieldLabelClass
+                        }
+                      >
+                        Font
+                      </span>
+
+                      <select
+                        value={
+                          settings.fontFamily
+                        }
+                        onChange={(
+                          event
+                        ) =>
+                          updateSettings({
+                            fontFamily:
+                              event.target
+                                .value as AppearanceSettings["fontFamily"],
+                          })
+                        }
+                        className={
+                          inputClass
+                        }
+                      >
+                        {fontFamilyOptions.map(
+                          (option) => (
+                            <option
+                              key={
+                                option
+                              }
+                              value={
+                                option
+                              }
+                            >
+                              {
+                                option
+                              }
+                            </option>
+                          )
+                        )}
+                      </select>
+                    </label>
+
+                    <label className="block">
+                      <span
+                        className={
+                          fieldLabelClass
+                        }
+                      >
+                        Text Size
+                      </span>
+
+                      <select
+                        value={
+                          settings.fontSize
+                        }
+                        onChange={(
+                          event
+                        ) =>
+                          updateSettings({
+                            fontSize:
+                              event.target
+                                .value as AppearanceSettings["fontSize"],
+                          })
+                        }
+                        className={
+                          inputClass
+                        }
+                      >
+                        {fontSizeOptions.map(
+                          (option) => (
+                            <option
+                              key={
+                                option
+                              }
+                              value={
+                                option
+                              }
+                            >
+                              {
+                                option
+                              }
+                            </option>
+                          )
+                        )}
+                      </select>
+                    </label>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <label className="block">
+                      <span
+                        className={
+                          fieldLabelClass
+                        }
+                      >
+                        Tile Layout
+                      </span>
+
+                      <select
+                        value={
+                          settings.tileOrientation
+                        }
+                        onChange={(
+                          event
+                        ) =>
+                          updateSettings({
+                            tileOrientation:
+                              event.target
+                                .value as AppearanceSettings["tileOrientation"],
+                          })
+                        }
+                        className={
+                          inputClass
+                        }
+                      >
+                        {tileOrientationOptions.map(
+                          (option) => (
+                            <option
+                              key={
+                                option
+                              }
+                              value={
+                                option
+                              }
+                            >
+                              {
+                                option
+                              }
+                            </option>
+                          )
+                        )}
+                      </select>
+                    </label>
+
+                    <label className="block">
+                      <span
+                        className={
+                          fieldLabelClass
+                        }
+                      >
+                        Tile Size
+                      </span>
+
+                      <select
+                        value={
+                          settings.tileSize
+                        }
+                        onChange={(
+                          event
+                        ) =>
+                          updateSettings({
+                            tileSize:
+                              event.target
+                                .value as AppearanceSettings["tileSize"],
+                          })
+                        }
+                        className={
+                          inputClass
+                        }
+                      >
+                        {tileSizeOptions.map(
+                          (option) => (
+                            <option
+                              key={
+                                option
+                              }
+                              value={
+                                option
+                              }
+                            >
+                              {
+                                option
+                              }
+                            </option>
+                          )
+                        )}
+                      </select>
+                    </label>
+                  </div>
+
+                  {renderLogoControls()}
                 </div>
               )}
-
-              <div className="space-y-2">
-                {editTarget === "Tile" && selectedTileIndex !== null && (
-  <>
-    <label className="block">
-      <span className={fieldLabelClass}>Selected Tile Color</span>
-
-      <div className="mt-1 flex items-center gap-2">
-        <input
-          type="color"
-          value={selectedTileColor}
-          onChange={(event) =>
-            updateTileOverride(selectedTileIndex, {
-              backgroundColor: event.target.value,
-            })
-          }
-          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
-        />
-
-        <input
-          type="text"
-          value={selectedTileColor}
-          onChange={(event) =>
-            updateTileOverride(selectedTileIndex, {
-              backgroundColor: event.target.value,
-            })
-          }
-          className={inputClass}
-        />
-      </div>
-    </label>
-
-    <label className="block">
-      <span className={fieldLabelClass}>Selected Tile Border</span>
-
-      <div className="mt-1 flex items-center gap-2">
-        <input
-          type="color"
-          value={selectedTileBorderColor}
-          onChange={(event) =>
-            updateTileOverride(selectedTileIndex, {
-              borderColor: event.target.value,
-            })
-          }
-          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
-        />
-
-        <input
-          type="text"
-          value={selectedTileBorderColor}
-          onChange={(event) =>
-            updateTileOverride(selectedTileIndex, {
-              borderColor: event.target.value,
-            })
-          }
-          className={inputClass}
-        />
-      </div>
-    </label>
-
-    <label className="block">
-      <span className={fieldLabelClass}>Selected Tile Text</span>
-
-      <div className="mt-1 flex items-center gap-2">
-        <input
-          type="color"
-          value={selectedTileTextColor}
-          onChange={(event) =>
-            updateTileOverride(selectedTileIndex, {
-              textColor: event.target.value,
-            })
-          }
-          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
-        />
-
-        <input
-          type="text"
-          value={selectedTileTextColor}
-          onChange={(event) =>
-            updateTileOverride(selectedTileIndex, {
-              textColor: event.target.value,
-            })
-          }
-          className={inputClass}
-        />
-      </div>
-    </label>
-
-    <label className="block">
-      <span className={fieldLabelClass}>Selected Tile Gradient 3D</span>
-
-      <select
-        value={selectedTileDepth}
-        onChange={(event) =>
-          updateTileOverride(selectedTileIndex, {
-            depth: event.target.value as ThreeDEffectLevel,
-          })
-        }
-        className={inputClass}
-      >
-        {threeDEffectOptions.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      </select>
-    </label>
-
-    <div className="grid grid-cols-2 gap-2">
-      <label className="block">
-        <span className={fieldLabelClass}>All Tile Layout</span>
-
-        <select
-          value={settings.tileOrientation}
-          onChange={(event) =>
-            updateSettings({
-              tileOrientation: event.target
-                .value as AppearanceSettings["tileOrientation"],
-            })
-          }
-          className={inputClass}
-        >
-          {tileOrientationOptions.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <label className="block">
-        <span className={fieldLabelClass}>All Tile Size</span>
-
-        <select
-          value={settings.tileSize}
-          onChange={(event) =>
-            updateSettings({
-              tileSize: event.target.value as AppearanceSettings["tileSize"],
-            })
-          }
-          className={inputClass}
-        >
-          {tileSizeOptions.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
-      </label>
-    </div>
-
-    <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-2">
-      <label className="block">
-        <span className={fieldLabelClass}>Upload Dashboard Logo</span>
-
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(event) => {
-            void handleLogoFileUpload(event);
-          }}
-          className="mt-1 w-full rounded-md border border-dashed border-zinc-300 bg-white px-2 py-2 text-[11px] font-bold text-black file:mr-2 file:rounded-md file:border-0 file:bg-black file:px-2 file:py-1 file:text-[10px] file:font-black file:text-white"
-        />
-      </label>
-
-      {logoUploadMessage && (
-        <p className="mt-1 text-[10px] font-black uppercase tracking-wide text-emerald-700">
-          {logoUploadMessage}
-        </p>
-      )}
-
-      {logoUploadError && (
-        <p className="mt-1 text-[10px] font-black uppercase tracking-wide text-red-700">
-          {logoUploadError}
-        </p>
-      )}
-
-      {settings.logoUrl && (
-        <div className="mt-2 flex items-center gap-2 rounded-md border border-zinc-200 bg-white p-2">
-          <div className="flex h-12 w-16 items-center justify-center overflow-hidden rounded-md border border-zinc-200 bg-zinc-100">
-            <img
-              src={settings.logoUrl}
-              alt=""
-              aria-hidden="true"
-              className="max-h-full max-w-full object-contain"
-            />
-          </div>
-
-          <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-black uppercase tracking-wide text-zinc-700">
-              {logoIsUploadedImage(settings.logoUrl)
-                ? "Uploaded logo saved"
-                : "Logo path saved"}
-            </p>
-
-            <p className="truncate text-[10px] font-semibold text-zinc-500">
-              {logoIsUploadedImage(settings.logoUrl)
-                ? "Stored in browser"
-                : settings.logoUrl}
-            </p>
-          </div>
-
-          <button type="button" onClick={clearLogo} className={buttonClass}>
-            Clear
-          </button>
-        </div>
-      )}
-    </div>
-
-    <label className="block">
-      <span className={fieldLabelClass}>Advanced Logo Path</span>
-
-      <input
-        type="text"
-        value={logoUrlInputValue}
-        onChange={(event) => updateSettings({ logoUrl: event.target.value })}
-        placeholder="/appearance/tier-one-logo.png"
-        className={inputClass}
-      />
-    </label>
-  </>
-)}
-                {editTarget === "Sidebar" && (
-                  <>
-                    <label className="block">
-                      <span className={fieldLabelClass}>Sidebar Color</span>
-
-                      <div className="mt-1 flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={settings.sidebarBackgroundColor}
-                          onChange={(event) =>
-                            updateSettings({
-                              sidebarBackgroundColor: event.target.value,
-                            })
-                          }
-                          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
-                        />
-
-                        <input
-                          type="text"
-                          value={settings.sidebarBackgroundColor}
-                          onChange={(event) =>
-                            updateSettings({
-                              sidebarBackgroundColor: event.target.value,
-                            })
-                          }
-                          className={inputClass}
-                        />
-                      </div>
-                    </label>
-
-                    <label className="block">
-                      <span className={fieldLabelClass}>Sidebar 3D Depth</span>
-
-                      <select
-                        value={settings.sidebarThreeDEffect}
-                        onChange={(event) =>
-                          updateSettings({
-                            sidebarThreeDEffect: event.target
-                              .value as AppearanceSettings["sidebarThreeDEffect"],
-                          })
-                        }
-                        className={inputClass}
-                      >
-                        {threeDEffectOptions.map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                  </>
-                )}
-
-                {editTarget === "Background" && (
-                  <>
-                    <label className="block">
-                      <span className={fieldLabelClass}>Background Color</span>
-
-                      <div className="mt-1 flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={settings.pageBackgroundColor}
-                          onChange={(event) =>
-                            updateSettings({
-                              pageBackgroundColor: event.target.value,
-                            })
-                          }
-                          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
-                        />
-
-                        <input
-                          type="text"
-                          value={settings.pageBackgroundColor}
-                          onChange={(event) =>
-                            updateSettings({
-                              pageBackgroundColor: event.target.value,
-                            })
-                          }
-                          className={inputClass}
-                        />
-                      </div>
-                    </label>
-
-                    <label className="block">
-                      <span className={fieldLabelClass}>Accent Color</span>
-
-                      <div className="mt-1 flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={settings.accentColor}
-                          onChange={(event) =>
-                            updateSettings({ accentColor: event.target.value })
-                          }
-                          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
-                        />
-
-                        <input
-                          type="text"
-                          value={settings.accentColor}
-                          onChange={(event) =>
-                            updateSettings({ accentColor: event.target.value })
-                          }
-                          className={inputClass}
-                        />
-                      </div>
-                    </label>
-
-                    <label className="block">
-                      <span className={fieldLabelClass}>Text Color</span>
-
-                      <div className="mt-1 flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={globalTextColor}
-                          onChange={(event) =>
-                            updateGlobalTextColor(event.target.value)
-                          }
-                          className="h-8 w-10 rounded-md border border-zinc-300 bg-white p-1"
-                        />
-
-                        <input
-                          type="text"
-                          value={globalTextColor}
-                          onChange={(event) =>
-                            updateGlobalTextColor(event.target.value)
-                          }
-                          className={inputClass}
-                        />
-                      </div>
-                    </label>
-
-                    <label className="block">
-                      <span className={fieldLabelClass}>Page 3D Depth</span>
-
-                      <select
-                        value={settings.pageThreeDEffect}
-                        onChange={(event) =>
-                          updateSettings({
-                            pageThreeDEffect: event.target
-                              .value as AppearanceSettings["pageThreeDEffect"],
-                          })
-                        }
-                        className={inputClass}
-                      >
-                        {threeDEffectOptions.map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-
-                    <div className="grid grid-cols-2 gap-2">
-                      <label className="block">
-                        <span className={fieldLabelClass}>Font</span>
-
-                        <select
-                          value={settings.fontFamily}
-                          onChange={(event) =>
-                            updateSettings({
-                              fontFamily: event.target
-                                .value as AppearanceSettings["fontFamily"],
-                            })
-                          }
-                          className={inputClass}
-                        >
-                          {fontFamilyOptions.map((option) => (
-                            <option key={option} value={option}>
-                              {option}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-
-                      <label className="block">
-                        <span className={fieldLabelClass}>Text Size</span>
-
-                        <select
-                          value={settings.fontSize}
-                          onChange={(event) =>
-                            updateSettings({
-                              fontSize: event.target
-                                .value as AppearanceSettings["fontSize"],
-                            })
-                          }
-                          className={inputClass}
-                        >
-                          {fontSizeOptions.map((option) => (
-                            <option key={option} value={option}>
-                              {option}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                    </div>
-
-                    <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-2">
-                      <label className="block">
-                        <span className={fieldLabelClass}>Upload Logo</span>
-
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(event) => {
-                            void handleLogoFileUpload(event);
-                          }}
-                          className="mt-1 w-full rounded-md border border-dashed border-zinc-300 bg-white px-2 py-2 text-[11px] font-bold text-black file:mr-2 file:rounded-md file:border-0 file:bg-black file:px-2 file:py-1 file:text-[10px] file:font-black file:text-white"
-                        />
-                      </label>
-
-                      {logoUploadMessage && (
-                        <p className="mt-1 text-[10px] font-black uppercase tracking-wide text-emerald-700">
-                          {logoUploadMessage}
-                        </p>
-                      )}
-
-                      {logoUploadError && (
-                        <p className="mt-1 text-[10px] font-black uppercase tracking-wide text-red-700">
-                          {logoUploadError}
-                        </p>
-                      )}
-
-                      {settings.logoUrl && (
-                        <div className="mt-2 flex items-center gap-2 rounded-md border border-zinc-200 bg-white p-2">
-                          <div className="flex h-12 w-16 items-center justify-center overflow-hidden rounded-md border border-zinc-200 bg-zinc-100">
-                            <img
-                              src={settings.logoUrl}
-                              alt=""
-                              aria-hidden="true"
-                              className="max-h-full max-w-full object-contain"
-                            />
-                          </div>
-
-                          <div className="min-w-0 flex-1">
-                            <p className="text-[10px] font-black uppercase tracking-wide text-zinc-700">
-                              {logoIsUploadedImage(settings.logoUrl)
-                                ? "Uploaded logo saved"
-                                : "Logo path saved"}
-                            </p>
-                            <p className="truncate text-[10px] font-semibold text-zinc-500">
-                              {logoIsUploadedImage(settings.logoUrl)
-                                ? "Stored in browser"
-                                : settings.logoUrl}
-                            </p>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={clearLogo}
-                            className={buttonClass}
-                          >
-                            Clear
-                          </button>
-                        </div>
-                      )}
-                    </div>
-
-                    <label className="block">
-                      <span className={fieldLabelClass}>Advanced Logo Path</span>
-
-                      <input
-                        type="text"
-                        value={logoUrlInputValue}
-                        onChange={(event) =>
-                          updateSettings({ logoUrl: event.target.value })
-                        }
-                        placeholder="/appearance/tier-one-logo.png"
-                        className={inputClass}
-                      />
-                    </label>
-                  </>
-                )}
-
-                <div className="flex flex-wrap justify-between gap-1.5 border-t border-zinc-200 pt-2">
-                  <button
-                    type="button"
-                    onClick={handleReset}
-                    className={buttonClass}
-                  >
-                    Reset
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (editSession) {
-                        setEditorOpen(true);
-                        setEditorActive(false);
-                        return;
-                      }
-
-                      setEditorOpen(false);
-                      setEditorActive(true);
-                    }}
-                    className={buttonClass}
-                  >
-                    Select
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={closeEditor}
-                    className={primaryButtonClass}
-                  >
-                    Done
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         </div>
       )}
+
+      {editorOpen &&
+        selectedDescriptor &&
+        activeRect !== null && (
+          <div
+            data-t1eq-qbit-selection-overlay="true"
+            aria-hidden="true"
+            className="pointer-events-none fixed z-[9999]"
+            style={{
+              top:
+                activeRect.top,
+
+              left:
+                activeRect.left,
+
+              width:
+                activeRect.width,
+
+              height:
+                activeRect.height,
+
+              background:
+                "transparent",
+
+              backgroundColor:
+                "transparent",
+            }}
+          >
+            {/* Top move edge */}
+            <div
+              title="Drag to move"
+              onPointerDown={
+                startObjectDrag
+              }
+              className="pointer-events-auto absolute -top-[3px] left-3 right-3 h-[6px] cursor-move bg-orange-500"
+            />
+
+            {/* Bottom move edge */}
+            <div
+              title="Drag to move"
+              onPointerDown={
+                startObjectDrag
+              }
+              className="pointer-events-auto absolute -bottom-[3px] left-3 right-3 h-[6px] cursor-move bg-orange-500"
+            />
+
+            {/* Left move edge */}
+            <div
+              title="Drag to move"
+              onPointerDown={
+                startObjectDrag
+              }
+              className="pointer-events-auto absolute bottom-3 -left-[3px] top-3 w-[6px] cursor-move bg-orange-500"
+            />
+
+            {/* Right move edge */}
+            <div
+              title="Drag to move"
+              onPointerDown={
+                startObjectDrag
+              }
+              className="pointer-events-auto absolute bottom-3 -right-[3px] top-3 w-[6px] cursor-move bg-orange-500"
+            />
+
+            {/* Top resize handle */}
+            <div
+              title="Resize height"
+              onPointerDown={(event) =>
+                startObjectResize(
+                  event,
+                  "top"
+                )
+              }
+              className="pointer-events-auto absolute -top-[5px] left-1/2 h-[10px] w-16 -translate-x-1/2 cursor-ns-resize rounded-sm bg-orange-600"
+            />
+
+            {/* Bottom resize handle */}
+            <div
+              title="Resize height"
+              onPointerDown={(event) =>
+                startObjectResize(
+                  event,
+                  "bottom"
+                )
+              }
+              className="pointer-events-auto absolute -bottom-[5px] left-1/2 h-[10px] w-16 -translate-x-1/2 cursor-ns-resize rounded-sm bg-orange-600"
+            />
+
+            {/* Left resize handle */}
+            <div
+              title="Resize width"
+              onPointerDown={(event) =>
+                startObjectResize(
+                  event,
+                  "left"
+                )
+              }
+              className="pointer-events-auto absolute -left-[5px] top-1/2 h-16 w-[10px] -translate-y-1/2 cursor-ew-resize rounded-sm bg-orange-600"
+            />
+
+            {/* Right resize handle */}
+            <div
+              title="Resize width"
+              onPointerDown={(event) =>
+                startObjectResize(
+                  event,
+                  "right"
+                )
+              }
+              className="pointer-events-auto absolute -right-[5px] top-1/2 h-16 w-[10px] -translate-y-1/2 cursor-ew-resize rounded-sm bg-orange-600"
+            />
+
+            {/* Top-left corner */}
+            <div
+              title="Resize"
+              onPointerDown={(event) =>
+                startObjectResize(
+                  event,
+                  "top-left"
+                )
+              }
+              className="pointer-events-auto absolute -left-[6px] -top-[6px] h-3 w-3 cursor-nwse-resize rounded-sm border border-white bg-orange-600 shadow-sm"
+            />
+
+            {/* Top-right corner */}
+            <div
+              title="Resize"
+              onPointerDown={(event) =>
+                startObjectResize(
+                  event,
+                  "top-right"
+                )
+              }
+              className="pointer-events-auto absolute -right-[6px] -top-[6px] h-3 w-3 cursor-nesw-resize rounded-sm border border-white bg-orange-600 shadow-sm"
+            />
+
+            {/* Bottom-left corner */}
+            <div
+              title="Resize"
+              onPointerDown={(event) =>
+                startObjectResize(
+                  event,
+                  "bottom-left"
+                )
+              }
+              className="pointer-events-auto absolute -bottom-[6px] -left-[6px] h-3 w-3 cursor-nesw-resize rounded-sm border border-white bg-orange-600 shadow-sm"
+            />
+
+            {/* Bottom-right corner */}
+            <div
+              title="Resize"
+              onPointerDown={(event) =>
+                startObjectResize(
+                  event,
+                  "bottom-right"
+                )
+              }
+              className="pointer-events-auto absolute -bottom-[6px] -right-[6px] h-3 w-3 cursor-nwse-resize rounded-sm border border-white bg-orange-600 shadow-sm"
+            />
+          </div>
+        )}
     </>
   );
 }
-

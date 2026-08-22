@@ -148,13 +148,13 @@ export function RepairOrderLaborEntryForm(
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-zinc-200 bg-white p-4">
+    <form data-t1eq-tile="true" data-t1eq-page-card="true" onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-zinc-200 bg-white p-4">
       <div className="grid gap-4 md:grid-cols-2">
         <label className="block">
           <span className="text-xs font-black uppercase tracking-wide text-zinc-500">
             Technician
           </span>
-          <input
+          <input data-t1eq-field="true"
             value={technicianNameValue}
             onChange={(event) => setTechnicianNameValue(event.target.value)}
             className="mt-1 w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm font-semibold outline-none focus:border-black"
@@ -165,7 +165,7 @@ export function RepairOrderLaborEntryForm(
           <span className="text-xs font-black uppercase tracking-wide text-zinc-500">
             Manufacturer
           </span>
-          <input
+          <input data-t1eq-field="true"
             value={manufacturerValue}
             onChange={(event) => setManufacturerValue(event.target.value)}
             className="mt-1 w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm font-semibold outline-none focus:border-black"
@@ -176,7 +176,7 @@ export function RepairOrderLaborEntryForm(
           <span className="text-xs font-black uppercase tracking-wide text-zinc-500">
             Labor Type
           </span>
-          <select
+          <select data-t1eq-field="true"
             value={laborType}
             onChange={(event) =>
               setLaborType(event.target.value as RepairOrderLaborType)
@@ -195,7 +195,7 @@ export function RepairOrderLaborEntryForm(
           <span className="text-xs font-black uppercase tracking-wide text-zinc-500">
             Rate Source
           </span>
-          <select
+          <select data-t1eq-field="true"
             value={rateSource}
             onChange={(event) =>
               setRateSource(event.target.value as RepairOrderLaborRateSource)
@@ -214,7 +214,7 @@ export function RepairOrderLaborEntryForm(
           <span className="text-xs font-black uppercase tracking-wide text-zinc-500">
             Hours
           </span>
-          <input
+          <input data-t1eq-field="true"
             type="number"
             min="0"
             step="0.1"
@@ -228,7 +228,7 @@ export function RepairOrderLaborEntryForm(
           <span className="text-xs font-black uppercase tracking-wide text-zinc-500">
             Labor Rate
           </span>
-          <input
+          <input data-t1eq-field="true"
             type="number"
             min="0"
             step="0.01"
@@ -242,7 +242,7 @@ export function RepairOrderLaborEntryForm(
           <span className="text-xs font-black uppercase tracking-wide text-zinc-500">
             Mileage Rate
           </span>
-          <input
+          <input data-t1eq-field="true"
             type="number"
             min="0"
             step="0.01"
@@ -256,7 +256,7 @@ export function RepairOrderLaborEntryForm(
           <span className="text-xs font-black uppercase tracking-wide text-zinc-500">
             Billing Group
           </span>
-          <select
+          <select data-t1eq-field="true"
             value={billingGroup}
             onChange={(event) =>
               setBillingGroup(event.target.value as RepairOrderBillingGroup)
@@ -275,7 +275,7 @@ export function RepairOrderLaborEntryForm(
         <span className="text-xs font-black uppercase tracking-wide text-zinc-500">
           Notes
         </span>
-        <textarea
+        <textarea data-t1eq-field="true"
           value={notes}
           onChange={(event) => setNotes(event.target.value)}
           rows={3}
@@ -284,7 +284,7 @@ export function RepairOrderLaborEntryForm(
       </label>
 
       <div className="flex gap-3">
-        <button
+        <button data-t1eq-action-button="true"
           type="submit"
           className="rounded-xl bg-black px-4 py-2 text-sm font-black text-white"
         >
@@ -292,7 +292,7 @@ export function RepairOrderLaborEntryForm(
         </button>
 
         {onCancel && (
-          <button
+          <button data-t1eq-action-button="true"
             type="button"
             onClick={onCancel}
             className="rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm font-black text-black"

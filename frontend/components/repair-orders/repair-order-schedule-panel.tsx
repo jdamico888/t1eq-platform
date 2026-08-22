@@ -80,7 +80,7 @@ export default function RepairOrderSchedulePanel({
   }
 
   return (
-    <section className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+    <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
       <div className="mb-5">
         <h2 className="text-2xl font-bold text-white">Scheduling</h2>
 
@@ -95,7 +95,7 @@ export default function RepairOrderSchedulePanel({
             Start Date / Time
           </label>
 
-          <input
+          <input data-t1eq-field="true"
             type="datetime-local"
             value={startDateTime}
             onChange={(event) => setStartDateTime(event.target.value)}
@@ -108,7 +108,7 @@ export default function RepairOrderSchedulePanel({
             End Date / Time
           </label>
 
-          <input
+          <input data-t1eq-field="true"
             type="datetime-local"
             value={endDateTime}
             onChange={(event) => setEndDateTime(event.target.value)}
@@ -117,7 +117,7 @@ export default function RepairOrderSchedulePanel({
         </div>
 
         <div className="flex items-end">
-          <button
+          <button data-t1eq-action-button="true"
             type="button"
             onClick={handleCreateScheduleEvent}
             className="w-full rounded-xl border border-blue-400/30 bg-blue-500/20 px-4 py-2 text-sm font-semibold text-blue-100 transition hover:bg-blue-500/30"
@@ -132,7 +132,7 @@ export default function RepairOrderSchedulePanel({
           Schedule Notes
         </label>
 
-        <textarea
+        <textarea data-t1eq-field="true"
           value={notes}
           onChange={(event) => setNotes(event.target.value)}
           rows={3}
@@ -147,7 +147,7 @@ export default function RepairOrderSchedulePanel({
         </h3>
 
         {scheduleEvents.length === 0 ? (
-          <div className="mt-3 rounded-2xl border border-dashed border-white/10 bg-white/5 p-6 text-center">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-3 rounded-2xl border border-dashed border-white/10 bg-white/5 p-6 text-center">
             <div className="text-sm font-semibold text-white">
               No schedule events found.
             </div>
@@ -159,7 +159,7 @@ export default function RepairOrderSchedulePanel({
         ) : (
           <div className="mt-3 space-y-3">
             {scheduleEvents.map((scheduleEvent) => (
-              <div
+              <div data-t1eq-tile="true" data-t1eq-page-card="true"
                 key={scheduleEvent.id}
                 className="rounded-2xl border border-white/10 bg-black/20 p-4"
               >

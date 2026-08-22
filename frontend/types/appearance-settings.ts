@@ -8,6 +8,7 @@ export type AppFontFamily =
   | "Courier New";
 export type AppFontSize = "Small" | "Medium" | "Large" | "Extra Large";
 export type ThreeDEffectLevel = "Off" | "Subtle" | "Medium" | "Strong";
+export type LogoPlacement = "Sidebar" | "Background" | "Both";
 
 export type QBitPageScope =
   | "Dashboard"
@@ -96,6 +97,7 @@ export type AdvertisingBlock = {
 
 export type AppearanceSettings = {
   logoUrl: string;
+  logoPlacement: LogoPlacement;
 
   tileOrientation: TileOrientation;
   tileSize: TileSize;
@@ -133,9 +135,29 @@ export type AppearanceSettings = {
   sidebarBackgroundColor: string;
 
   /**
+   * Sidebar nav button highlight (hover/active) background color.
+   */
+  sidebarButtonColor: string;
+
+  /**
+   * Sidebar nav button text color.
+   */
+  sidebarButtonTextColor: string;
+
+  /**
    * Exact main page/background color.
    */
   pageBackgroundColor: string;
+
+  /**
+   * Message balloon (tile hover tooltip) background color.
+   */
+  balloonBackgroundColor: string;
+
+  /**
+   * Message balloon (tile hover tooltip) text color.
+   */
+  balloonTextColor: string;
 
   qBitScopes: QBitScope[];
   outputTemplates: OutputTemplateSettings[];

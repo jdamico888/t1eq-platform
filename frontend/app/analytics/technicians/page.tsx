@@ -15,10 +15,10 @@ import {
   getLaborEntries,
 } from "../../../services/labor-entries";
 
-import { getUserFullName, getUsersByRole } from "../../../services/users";
+import { getActiveTechnicianProfiles } from "../../../services/technician-profiles";
 
 import type { LaborEntry } from "../../../types/labor-entry";
-import type { User } from "../../../types/user";
+import type { TechnicianProfile } from "../../../types/technician-profile";
 
 type TechnicianAnalytics = {
   technicianId: string;
@@ -37,17 +37,17 @@ const formatCurrency = (value: number) => {
 };
 
 export default function TechnicianAnalyticsPage() {
-  const [technicians, setTechnicians] = useState<User[]>([]);
+  const [technicians, setTechnicians] = useState<TechnicianProfile[]>([]);
   const [laborEntries, setLaborEntries] = useState<LaborEntry[]>([]);
 
   useEffect(() => {
-    setTechnicians(getUsersByRole("Technician"));
+    setTechnicians(getActiveTechnicianProfiles());
     setLaborEntries(getLaborEntries());
   }, []);
 
   const analytics = useMemo<TechnicianAnalytics[]>(() => {
     return technicians.map((technician) => {
-      const technicianName = getUserFullName(technician);
+      const technicianName = technician.displayName;
 
       const technicianLaborEntries = laborEntries.filter(
         (laborEntry) => laborEntry.technicianId === technician.id

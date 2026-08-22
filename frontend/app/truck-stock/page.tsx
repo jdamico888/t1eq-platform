@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import type { InventoryItem } from "@/types/inventory-item";
 import type { Truck, TruckStockItem } from "@/types/truck-stock";
-import type { User } from "@/types/user";
+import type { TechnicianProfile } from "@/types/technician-profile";
 
 import { getInventoryItems } from "@/services/inventory";
 
@@ -22,7 +22,7 @@ import {
   updateTruck,
 } from "@/services/truck-stock";
 
-import { getUserFullName, getUsers } from "@/services/users";
+import { getActiveTechnicianProfiles } from "@/services/technician-profiles";
 
 const formatDate = (value?: string) => {
   if (!value) return "Not set";
@@ -51,7 +51,9 @@ const formatDateTime = (value?: string) => {
 export default function TruckStockPage() {
   const [trucks, setTrucks] = useState<Truck[]>([]);
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
+  const [technicianProfiles, setTechnicianProfiles] = useState<
+    TechnicianProfile[]
+  >([]);
   const [truckTransactions, setTruckTransactions] = useState<
     TruckStockTransaction[]
   >([]);
@@ -74,13 +76,13 @@ export default function TruckStockPage() {
     Record<string, string>
   >({});
 
-  const assignableUsers = useMemo(() => {
-    return users.filter(
-      (user) =>
-        user.status === "Active" &&
-        (user.role === "Technician" || user.role === "Inspector")
+  const assignableTechnicians = useMemo(() => {
+    return technicianProfiles.filter(
+      (technician) =>
+        technician.status === "Active" &&
+        (technician.role === "Technician" || technician.role === "Inspector")
     );
-  }, [users]);
+  }, [technicianProfiles]);
 
   function reloadData(nextSelectedTruckId?: string) {
     const loadedTrucks = getTrucks();
@@ -88,7 +90,7 @@ export default function TruckStockPage() {
 
     setTrucks(loadedTrucks);
     setInventoryItems(getInventoryItems());
-    setUsers(getUsers());
+    setTechnicianProfiles(getActiveTechnicianProfiles());
 
     if (activeTruckId) {
       setTruckTransactions(getTruckTransactionsByTruck(activeTruckId));
@@ -164,17 +166,18 @@ export default function TruckStockPage() {
       return;
     }
 
-    const assignedUser =
-      assignableUsers.find((user) => user.id === assignedTechnicianId) ??
-      null;
+    const assignedTechnician =
+      assignableTechnicians.find(
+        (technician) => technician.id === assignedTechnicianId
+      ) ?? null;
 
     const truck = createTruck({
       truckNumber: truckNumber.trim(),
       name: truckName.trim(),
 
-      assignedTechnicianId: assignedUser?.id ?? undefined,
-      assignedTechnicianName: assignedUser
-        ? getUserFullName(assignedUser)
+      assignedTechnicianId: assignedTechnician?.id ?? undefined,
+      assignedTechnicianName: assignedTechnician
+        ? assignedTechnician.displayName
         : undefined,
 
       status: "Active",
@@ -190,15 +193,17 @@ export default function TruckStockPage() {
 
   function handleUpdateTruckAssignment(
     truck: Truck,
-    assignedUserId: string
+    assignedTechnicianProfileId: string
   ) {
-    const assignedUser =
-      assignableUsers.find((user) => user.id === assignedUserId) ?? null;
+    const assignedTechnician =
+      assignableTechnicians.find(
+        (technician) => technician.id === assignedTechnicianProfileId
+      ) ?? null;
 
     updateTruck(truck.id, {
-      assignedTechnicianId: assignedUser?.id ?? undefined,
-      assignedTechnicianName: assignedUser
-        ? getUserFullName(assignedUser)
+      assignedTechnicianId: assignedTechnician?.id ?? undefined,
+      assignedTechnicianName: assignedTechnician
+        ? assignedTechnician.displayName
         : undefined,
     });
 
@@ -289,7 +294,7 @@ export default function TruckStockPage() {
   return (
     <main className="min-h-screen bg-slate-950 p-6 text-white">
       <div className="mx-auto max-w-7xl space-y-6">
-        <section className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
           <div className="text-sm font-semibold uppercase tracking-[0.25em] text-white/50">
             T1EQ Field Inventory
           </div>
@@ -306,25 +311,25 @@ export default function TruckStockPage() {
         </section>
 
         <section className="grid gap-6 lg:grid-cols-3">
-          <div className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
             <h2 className="text-2xl font-bold text-white">Add Truck</h2>
 
             <div className="mt-5 space-y-4">
-              <input
+              <input data-t1eq-field="true"
                 value={truckNumber}
                 onChange={(event) => setTruckNumber(event.target.value)}
                 className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-white"
                 placeholder="Truck number"
               />
 
-              <input
+              <input data-t1eq-field="true"
                 value={truckName}
                 onChange={(event) => setTruckName(event.target.value)}
                 className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-white"
                 placeholder="Truck name"
               />
 
-              <select
+              <select data-t1eq-field="true"
                 value={assignedTechnicianId}
                 onChange={(event) =>
                   setAssignedTechnicianId(event.target.value)
@@ -333,23 +338,25 @@ export default function TruckStockPage() {
               >
                 <option value="">Unassigned technician / inspector</option>
 
-                {assignableUsers.map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {getUserFullName(user)}
-                    {user.employeeId ? ` — ${user.employeeId}` : ""}
-                    {user.role ? ` — ${user.role}` : ""}
+                {assignableTechnicians.map((technician) => (
+                  <option key={technician.id} value={technician.id}>
+                    {technician.displayName}
+                    {technician.employeeNumber
+                      ? ` — ${technician.employeeNumber}`
+                      : ""}
+                    {technician.role ? ` — ${technician.role}` : ""}
                   </option>
                 ))}
               </select>
 
-              {assignableUsers.length === 0 && (
-                <div className="rounded-xl border border-yellow-400/20 bg-yellow-500/10 p-3 text-sm text-yellow-100">
-                  No active technicians or inspectors found. Add users first,
-                  or create the truck unassigned.
+              {assignableTechnicians.length === 0 && (
+                <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-yellow-400/20 bg-yellow-500/10 p-3 text-sm text-yellow-100">
+                  No active technicians or inspectors found. Add employees in
+                  Employee Setup first, or create the truck unassigned.
                 </div>
               )}
 
-              <button
+              <button data-t1eq-action-button="true"
                 type="button"
                 onClick={handleCreateTruck}
                 className="w-full rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-500"
@@ -359,17 +366,17 @@ export default function TruckStockPage() {
             </div>
           </div>
 
-          <div className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl lg:col-span-2">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl lg:col-span-2">
             <h2 className="text-2xl font-bold text-white">Trucks</h2>
 
             {trucks.length === 0 ? (
-              <div className="mt-5 rounded-2xl border border-dashed border-white/10 bg-white/5 p-8 text-center text-white/60">
+              <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-5 rounded-2xl border border-dashed border-white/10 bg-white/5 p-8 text-center text-white/60">
                 No trucks added yet.
               </div>
             ) : (
               <div className="mt-5 grid gap-4 md:grid-cols-2">
                 {trucks.map((truck) => (
-                  <button
+                  <button data-t1eq-action-button="true"
                     key={truck.id}
                     type="button"
                     onClick={() => setSelectedTruckId(truck.id)}
@@ -392,7 +399,7 @@ export default function TruckStockPage() {
                         Tech / Inspector
                       </div>
 
-                      <select
+                      <select data-t1eq-field="true"
                         value={truck.assignedTechnicianId ?? ""}
                         onClick={(event) => event.stopPropagation()}
                         onChange={(event) => {
@@ -406,11 +413,13 @@ export default function TruckStockPage() {
                       >
                         <option value="">Unassigned</option>
 
-                        {assignableUsers.map((user) => (
-                          <option key={user.id} value={user.id}>
-                            {getUserFullName(user)}
-                            {user.employeeId ? ` — ${user.employeeId}` : ""}
-                            {user.role ? ` — ${user.role}` : ""}
+                        {assignableTechnicians.map((technician) => (
+                          <option key={technician.id} value={technician.id}>
+                            {technician.displayName}
+                            {technician.employeeNumber
+                              ? ` — ${technician.employeeNumber}`
+                              : ""}
+                            {technician.role ? ` — ${technician.role}` : ""}
                           </option>
                         ))}
                       </select>
@@ -427,7 +436,7 @@ export default function TruckStockPage() {
         </section>
 
         {selectedTruck && (
-          <section className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+          <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
             <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
               <div>
                 <h2 className="text-2xl font-bold text-white">
@@ -441,7 +450,7 @@ export default function TruckStockPage() {
               </div>
 
               <div className="grid gap-3 md:grid-cols-2">
-                <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-right">
+                <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4 text-right">
                   <div className="text-xs uppercase tracking-wide text-white/50">
                     Items On Truck
                   </div>
@@ -451,7 +460,7 @@ export default function TruckStockPage() {
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-right">
+                <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4 text-right">
                   <div className="text-xs uppercase tracking-wide text-white/50">
                     Low Stock
                   </div>
@@ -463,14 +472,14 @@ export default function TruckStockPage() {
               </div>
             </div>
 
-            <div className="mt-6 rounded-2xl border border-white/10 bg-black/20 p-5">
+            <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-6 rounded-2xl border border-white/10 bg-black/20 p-5">
               <h3 className="text-xl font-bold text-white">
                 Load Inventory To Truck
               </h3>
 
               <div className="mt-4 grid gap-4 md:grid-cols-3">
                 <div className="relative md:col-span-2">
-                  <input
+                  <input data-t1eq-field="true"
                     value={inventorySearch}
                     onChange={(event) => {
                       setInventorySearch(event.target.value);
@@ -481,9 +490,9 @@ export default function TruckStockPage() {
                   />
 
                   {inventorySearchResults.length > 0 && (
-                    <div className="absolute z-20 mt-2 max-h-80 w-full overflow-y-auto rounded-xl border border-white/10 bg-slate-900 shadow-2xl">
+                    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="absolute z-20 mt-2 max-h-80 w-full overflow-y-auto rounded-xl border border-white/10 bg-slate-900 shadow-2xl">
                       {inventorySearchResults.map((item) => (
-                        <button
+                        <button data-t1eq-action-button="true"
                           key={item.id}
                           type="button"
                           onClick={() => {
@@ -513,7 +522,7 @@ export default function TruckStockPage() {
                   )}
                 </div>
 
-                <input
+                <input data-t1eq-field="true"
                   type="number"
                   value={transferQuantity}
                   onChange={(event) =>
@@ -526,7 +535,7 @@ export default function TruckStockPage() {
               </div>
 
               {selectedInventoryItem && (
-                <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-4">
+                <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-4 rounded-xl border border-white/10 bg-white/5 p-4">
                   <div className="text-sm font-semibold text-white">
                     Selected: {selectedInventoryItem.partNumber}
                   </div>
@@ -542,7 +551,7 @@ export default function TruckStockPage() {
                 </div>
               )}
 
-              <button
+              <button data-t1eq-action-button="true"
                 type="button"
                 onClick={handleTransferToTruck}
                 className="mt-4 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-500"
@@ -553,7 +562,7 @@ export default function TruckStockPage() {
 
             <div className="mt-6">
               {truckStockItems.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-white/10 bg-white/5 p-8 text-center text-white/60">
+                <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-dashed border-white/10 bg-white/5 p-8 text-center text-white/60">
                   No stock on this truck yet.
                 </div>
               ) : (
@@ -573,7 +582,7 @@ export default function TruckStockPage() {
                       stockItem.quantityOnTruck <= stockItem.minimumQuantity;
 
                     return (
-                      <div
+                      <div data-t1eq-tile="true" data-t1eq-page-card="true"
                         key={stockItem.id}
                         className="rounded-2xl border border-white/10 bg-black/20 p-5"
                       >
@@ -598,7 +607,7 @@ export default function TruckStockPage() {
                             </div>
 
                             {isLowStock && (
-                              <div className="mt-2 rounded-full border border-red-400/30 bg-red-500/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-100">
+                              <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-2 rounded-full border border-red-400/30 bg-red-500/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-100">
                                 Low Stock
                               </div>
                             )}
@@ -658,13 +667,13 @@ export default function TruckStockPage() {
                         </div>
 
                         {stockItem.notes && (
-                          <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-3 text-sm leading-6 text-white/70">
+                          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-4 rounded-xl border border-white/10 bg-white/5 p-3 text-sm leading-6 text-white/70">
                             {stockItem.notes}
                           </div>
                         )}
 
                         <div className="mt-4 grid gap-3 md:grid-cols-2">
-                          <button
+                          <button data-t1eq-action-button="true"
                             type="button"
                             disabled={!replenishQuantity}
                             onClick={() => handleReplenishTruckStock(stockItem)}
@@ -673,20 +682,20 @@ export default function TruckStockPage() {
                             Replenish To Ideal
                           </button>
 
-                          <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70">
+                          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70">
                             {replenishQuantity && replenishQuantity > 0
                               ? `Load ${replenishQuantity} from warehouse`
                               : "No replenish needed"}
                           </div>
                         </div>
 
-                        <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-4">
+                        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-4 rounded-xl border border-white/10 bg-white/5 p-4">
                           <div className="text-xs uppercase tracking-wide text-white/50">
                             Field Count Adjustment
                           </div>
 
                           <div className="mt-3 grid gap-3 md:grid-cols-3">
-                            <input
+                            <input data-t1eq-field="true"
                               type="number"
                               value={adjustmentQuantities[stockItem.id] ?? ""}
                               onChange={(event) =>
@@ -701,7 +710,7 @@ export default function TruckStockPage() {
                               step="1"
                             />
 
-                            <input
+                            <input data-t1eq-field="true"
                               value={adjustmentNotes[stockItem.id] ?? ""}
                               onChange={(event) =>
                                 setAdjustmentNotes((currentValues) => ({
@@ -714,7 +723,7 @@ export default function TruckStockPage() {
                             />
                           </div>
 
-                          <button
+                          <button data-t1eq-action-button="true"
                             type="button"
                             onClick={() => handleAdjustTruckStock(stockItem)}
                             className="mt-3 rounded-xl border border-blue-400/30 bg-blue-500/20 px-4 py-2 text-sm font-semibold text-blue-100 transition hover:bg-blue-500/30"
@@ -729,7 +738,7 @@ export default function TruckStockPage() {
               )}
             </div>
 
-            <div className="mt-6 rounded-2xl border border-white/10 bg-black/20 p-5">
+            <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-6 rounded-2xl border border-white/10 bg-black/20 p-5">
               <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
                 <div>
                   <h3 className="text-xl font-bold text-white">
@@ -742,18 +751,18 @@ export default function TruckStockPage() {
                   </p>
                 </div>
 
-                <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70">
+                <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70">
                   {truckTransactions.length} Transaction
                   {truckTransactions.length === 1 ? "" : "s"}
                 </div>
               </div>
 
               {truckTransactions.length === 0 ? (
-                <div className="mt-4 rounded-xl border border-dashed border-white/10 bg-white/5 p-6 text-center text-sm text-white/60">
+                <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-4 rounded-xl border border-dashed border-white/10 bg-white/5 p-6 text-center text-sm text-white/60">
                   No truck stock transactions recorded yet.
                 </div>
               ) : (
-                <div className="mt-4 overflow-hidden rounded-xl border border-white/10">
+                <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-4 overflow-hidden rounded-xl border border-white/10">
                   <div className="grid grid-cols-6 gap-3 border-b border-white/10 bg-white/5 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-white/50">
                     <div>Type</div>
                     <div>Part</div>

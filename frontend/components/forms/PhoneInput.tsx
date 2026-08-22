@@ -1,76 +1,91 @@
 "use client";
 
+import type { ChangeEvent } from "react";
+
 type PhoneInputProps = {
   label?: string;
-
-  value?: string;
-
-  onChange: (
-    value: string
-  ) => void;
+  value: string;
+  onChange: (value: string) => void;
 
   placeholder?: string;
+
+  qbitId?: string;
+  qbitScope?: string;
+
+  className?: string;
+
+  required?: boolean;
+  disabled?: boolean;
 };
 
-function formatPhone(
-  value: string
-): string {
-  const digits =
-    value.replace(/\D/g, "");
-
-  if (digits.length <= 3)
-    return digits;
-
-  if (digits.length <= 6) {
-    return `(${digits.slice(
-      0,
-      3
-    )}) ${digits.slice(3)}`;
-  }
-
-  return `(${digits.slice(
-    0,
-    3
-  )}) ${digits.slice(
-    3,
-    6
-  )}-${digits.slice(
-    6,
-    10
-  )}`;
-}
-
 export default function PhoneInput({
-  label,
-  value = "",
+  label = "Phone",
+  value,
   onChange,
   placeholder = "(555) 555-5555",
+  qbitId,
+  qbitScope = "global",
+  className = "",
+  required = false,
+  disabled = false,
 }: PhoneInputProps) {
+  function handleChange(
+    event: ChangeEvent<HTMLInputElement>
+  ) {
+    onChange(event.target.value);
+  }
+
   return (
-    <div>
+    <label
+      data-t1eq-qbit-type={
+        qbitId ? "section" : undefined
+      }
+      data-t1eq-qbit-id={
+        qbitId
+          ? `${qbitId}-wrapper`
+          : undefined
+      }
+      data-t1eq-qbit-scope={
+        qbitId ? qbitScope : undefined
+      }
+      className="block"
+    >
       {label && (
-        <label className="mb-2 block text-sm text-slate-300">
+        <span
+          data-t1eq-qbit-type={
+            qbitId ? "text" : undefined
+          }
+          data-t1eq-qbit-id={
+            qbitId
+              ? `${qbitId}-label`
+              : undefined
+          }
+          data-t1eq-qbit-scope={
+            qbitId ? qbitScope : undefined
+          }
+          className="mb-1 block text-sm font-medium"
+        >
           {label}
-        </label>
+        </span>
       )}
 
       <input
         type="tel"
         value={value}
-        placeholder={
-          placeholder
+        onChange={handleChange}
+        placeholder={placeholder}
+        required={required}
+        disabled={disabled}
+        data-t1eq-field="true"
+        data-t1eq-qbit-type="field"
+        data-t1eq-qbit-id={
+          qbitId || undefined
         }
-        onChange={(
-          event
-        ) =>
-          onChange(
-            formatPhone(
-              event.target.value
-            )
-          )
+        data-t1eq-qbit-scope={
+          qbitId ? qbitScope : undefined
         }
-        className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 outline-none transition focus:border-cyan-500"
+        className={`w-full rounded-xl border border-black/10 bg-white px-3 py-3 text-black outline-none transition placeholder:text-black/40 focus:border-cyan-500 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
       />
-    </div>
+    </label>
   );
 }

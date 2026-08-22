@@ -1135,7 +1135,7 @@ export default function PurchaseOrdersPage() {
         <label className="space-y-1">
           <span className={smallMutedTextClass}>Location Type</span>
 
-          <select
+          <select data-t1eq-field="true"
             value={draftLine.receiveLocationType}
             onChange={(event) =>
               updateDraftLine(draftLine.id, {
@@ -1157,7 +1157,7 @@ export default function PurchaseOrdersPage() {
           <label className="space-y-1">
             <span className={smallMutedTextClass}>Compartment</span>
 
-            <select
+            <select data-t1eq-field="true"
               value={draftLine.truckCompartment ?? ""}
               onChange={(event) =>
                 updateDraftLine(draftLine.id, {
@@ -1179,7 +1179,7 @@ export default function PurchaseOrdersPage() {
           <label className="space-y-1">
             <span className={smallMutedTextClass}>Row</span>
 
-            <select
+            <select data-t1eq-field="true"
               value={draftLine.warehouseRow ?? ""}
               onChange={(event) =>
                 updateDraftLine(draftLine.id, {
@@ -1202,7 +1202,7 @@ export default function PurchaseOrdersPage() {
         <label className="space-y-1">
           <span className={smallMutedTextClass}>Shelf</span>
 
-          <select
+          <select data-t1eq-field="true"
             value={draftLine.shelf ?? ""}
             onChange={(event) =>
               updateDraftLine(draftLine.id, {
@@ -1224,7 +1224,7 @@ export default function PurchaseOrdersPage() {
         <label className="space-y-1">
           <span className={smallMutedTextClass}>Location #</span>
 
-          <select
+          <select data-t1eq-field="true"
             value={draftLine.locationNumber ?? ""}
             onChange={(event) =>
               updateDraftLine(draftLine.id, {
@@ -1249,7 +1249,7 @@ export default function PurchaseOrdersPage() {
   return (
     <main className="min-h-screen bg-zinc-100 p-6 text-black">
       <div className="mx-auto max-w-7xl space-y-6">
-        <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
             <div>
               <h1 className="text-5xl font-bold text-black">
@@ -1268,7 +1268,7 @@ export default function PurchaseOrdersPage() {
             </div>
 
             <div className="flex flex-col gap-3">
-              <button
+              <button data-t1eq-action-button="true"
                 type="button"
                 onClick={refreshPurchaseOrders}
                 className={secondaryButtonClass}
@@ -1276,7 +1276,7 @@ export default function PurchaseOrdersPage() {
                 Refresh
               </button>
 
-              <button
+              <button data-t1eq-action-button="true"
                 type="button"
                 onClick={() => {
                   resetDraftForm();
@@ -1288,7 +1288,7 @@ export default function PurchaseOrdersPage() {
               </button>
 
               {isManager && (
-                <button
+                <button data-t1eq-action-button="true"
                   type="button"
                   onClick={handleManagerLogout}
                   className={secondaryButtonClass}
@@ -1301,7 +1301,7 @@ export default function PurchaseOrdersPage() {
         </section>
 
         <section className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          <button
+          <button data-t1eq-action-button="true"
             type="button"
             onClick={() => setSelectedStatusTileFilter("All")}
             className={`cursor-pointer rounded-2xl border bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99] ${
@@ -1321,7 +1321,7 @@ export default function PurchaseOrdersPage() {
             </div>
           </button>
 
-          <button
+          <button data-t1eq-action-button="true"
             type="button"
             onClick={() => setSelectedStatusTileFilter("Open")}
             className={`cursor-pointer rounded-2xl border bg-orange-50 p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99] ${
@@ -1343,7 +1343,7 @@ export default function PurchaseOrdersPage() {
             </div>
           </button>
 
-          <button
+          <button data-t1eq-action-button="true"
             type="button"
             onClick={() => setSelectedStatusTileFilter("Received")}
             className={`cursor-pointer rounded-2xl border bg-green-50 p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99] ${
@@ -1365,7 +1365,7 @@ export default function PurchaseOrdersPage() {
             </div>
           </button>
 
-          <button
+          <button data-t1eq-action-button="true"
             type="button"
             onClick={() => setSelectedStatusTileFilter("All")}
             className="cursor-pointer rounded-2xl border border-zinc-200 bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99]"
@@ -1385,7 +1385,7 @@ export default function PurchaseOrdersPage() {
         </section>
 
         {showCreatePurchaseOrderForm && (
-          <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+          <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
             <h2 className="text-3xl font-bold">
               {editingPoId ? "Edit Purchase Order" : "Create Purchase Order"}
             </h2>
@@ -1394,7 +1394,7 @@ export default function PurchaseOrdersPage() {
               <label className="space-y-1">
                 <span className={smallMutedTextClass}>Supplier</span>
 
-                <input
+                <input data-t1eq-field="true"
                   value={supplierName}
                   onChange={(event) => setSupplierName(event.target.value)}
                   placeholder="Supplier name"
@@ -1405,7 +1405,7 @@ export default function PurchaseOrdersPage() {
               <label className="space-y-1 md:col-span-2">
                 <span className={smallMutedTextClass}>Notes</span>
 
-                <input
+                <input data-t1eq-field="true"
                   value={notes}
                   onChange={(event) => setNotes(event.target.value)}
                   placeholder="PO notes"
@@ -1416,14 +1416,14 @@ export default function PurchaseOrdersPage() {
 
             <div className="mt-5 space-y-4">
               {draftLines.map((draftLine, index) => (
-                <div
+                <div data-t1eq-tile="true" data-t1eq-page-card="true"
                   key={draftLine.id}
                   className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4"
                 >
                   <div className="mb-4 flex items-center justify-between">
                     <div className="text-lg font-bold">Line {index + 1}</div>
 
-                    <button
+                    <button data-t1eq-action-button="true"
                       type="button"
                       onClick={() => removeDraftLine(draftLine.id)}
                       className={dangerButtonClass}
@@ -1436,7 +1436,7 @@ export default function PurchaseOrdersPage() {
                     <label className="space-y-1">
                       <span className={smallMutedTextClass}>Line Class</span>
 
-                      <select
+                      <select data-t1eq-field="true"
                         value={draftLine.lineClass}
                         onChange={(event) =>
                           updateDraftLine(draftLine.id, {
@@ -1457,7 +1457,7 @@ export default function PurchaseOrdersPage() {
                     <label className="space-y-1">
                       <span className={smallMutedTextClass}>Part Number</span>
 
-                      <input
+                      <input data-t1eq-field="true"
                         value={draftLine.partNumber}
                         onChange={(event) =>
                           updateDraftLine(draftLine.id, {
@@ -1471,7 +1471,7 @@ export default function PurchaseOrdersPage() {
                     <label className="space-y-1 md:col-span-2">
                       <span className={smallMutedTextClass}>Description</span>
 
-                      <input
+                      <input data-t1eq-field="true"
                         value={draftLine.description}
                         onChange={(event) =>
                           updateDraftLine(draftLine.id, {
@@ -1485,7 +1485,7 @@ export default function PurchaseOrdersPage() {
                     <label className="space-y-1">
                       <span className={smallMutedTextClass}>Quantity</span>
 
-                      <input
+                      <input data-t1eq-field="true"
                         type="number"
                         min="1"
                         value={draftLine.quantity}
@@ -1501,7 +1501,7 @@ export default function PurchaseOrdersPage() {
                     <label className="space-y-1">
                       <span className={smallMutedTextClass}>Unit Cost</span>
 
-                      <input
+                      <input data-t1eq-field="true"
                         type="number"
                         min="0"
                         step="0.01"
@@ -1515,7 +1515,7 @@ export default function PurchaseOrdersPage() {
                       />
                     </label>
 
-                    <div className="rounded-xl border border-zinc-200 bg-white p-3">
+                    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-zinc-200 bg-white p-3">
                       <div className={smallMutedTextClass}>Line Total</div>
 
                       <div className="text-xl font-bold">
@@ -1535,7 +1535,7 @@ export default function PurchaseOrdersPage() {
             </div>
 
             <div className="mt-5 flex flex-wrap gap-3">
-              <button
+              <button data-t1eq-action-button="true"
                 type="button"
                 onClick={addDraftLine}
                 className={secondaryButtonClass}
@@ -1543,7 +1543,7 @@ export default function PurchaseOrdersPage() {
                 Add Line
               </button>
 
-              <button
+              <button data-t1eq-action-button="true"
                 type="button"
                 onClick={handleCreateOrUpdatePurchaseOrder}
                 className={primaryButtonClass}
@@ -1552,7 +1552,7 @@ export default function PurchaseOrdersPage() {
               </button>
 
               {!editingPoId && (
-                <button
+                <button data-t1eq-action-button="true"
                   type="button"
                   onClick={resetDraftForm}
                   className={secondaryButtonClass}
@@ -1562,7 +1562,7 @@ export default function PurchaseOrdersPage() {
               )}
 
               {editingPoId && (
-                <button
+                <button data-t1eq-action-button="true"
                   type="button"
                   onClick={resetDraftForm}
                   className={secondaryButtonClass}
@@ -1574,14 +1574,14 @@ export default function PurchaseOrdersPage() {
           </section>
         )}
 
-        <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="grid gap-4 md:grid-cols-3">
             <label className="space-y-1 md:col-span-2">
               <span className={smallMutedTextClass}>
                 Search Purchase Orders
               </span>
 
-              <input
+              <input data-t1eq-field="true"
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="Search PO, supplier, status, part, description..."
@@ -1591,16 +1591,16 @@ export default function PurchaseOrdersPage() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
           <h2 className="text-3xl font-bold">Purchase Order List</h2>
 
           <div className="mt-3 flex flex-wrap items-center gap-3">
-            <div className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-sm font-semibold text-black/60">
+            <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-sm font-semibold text-black/60">
               Filter: {selectedStatusTileFilter ?? "None"}
             </div>
 
             {selectedStatusTileFilter && (
-              <button
+              <button data-t1eq-action-button="true"
                 type="button"
                 onClick={() => setSelectedStatusTileFilter(null)}
                 className={secondaryButtonClass}
@@ -1611,7 +1611,7 @@ export default function PurchaseOrdersPage() {
           </div>
 
           {filteredPurchaseOrders.length === 0 ? (
-            <div className="mt-5 rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-10 text-center">
+            <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-5 rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-10 text-center">
               <div className="text-xl font-bold">No purchase orders found</div>
 
               <p className="mt-2 text-black/60">
@@ -1644,7 +1644,7 @@ export default function PurchaseOrdersPage() {
                   getSelectedRecommendedInventoryTotals(purchaseOrder.id);
 
                 return (
-                  <article
+                  <article data-t1eq-tile="true" data-t1eq-page-card="true"
                     key={purchaseOrder.id}
                     className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5"
                   >
@@ -1698,7 +1698,7 @@ export default function PurchaseOrdersPage() {
                     </div>
 
                     <div className="mt-4 flex flex-wrap gap-3">
-                      <button
+                      <button data-t1eq-action-button="true"
                         type="button"
                         onClick={() =>
                           setExpandedPoId(isExpanded ? null : purchaseOrder.id)
@@ -1710,7 +1710,7 @@ export default function PurchaseOrdersPage() {
 
                       {!isLocked && (
                         <>
-                          <button
+                          <button data-t1eq-action-button="true"
                             type="button"
                             onClick={() =>
                               beginEditPurchaseOrder(purchaseOrder)
@@ -1720,7 +1720,7 @@ export default function PurchaseOrdersPage() {
                             Edit PO
                           </button>
 
-                          <button
+                          <button data-t1eq-action-button="true"
                             type="button"
                             onClick={() => handleMarkOrdered(purchaseOrder)}
                             className={secondaryButtonClass}
@@ -1728,7 +1728,7 @@ export default function PurchaseOrdersPage() {
                             Mark Ordered
                           </button>
 
-                          <button
+                          <button data-t1eq-action-button="true"
                             type="button"
                             onClick={() =>
                               toggleRecommendedInventoryPanel(purchaseOrder.id)
@@ -1738,7 +1738,7 @@ export default function PurchaseOrdersPage() {
                             Show Recommended Inventory
                           </button>
 
-                          <button
+                          <button data-t1eq-action-button="true"
                             type="button"
                             onClick={() =>
                               handleReceivePurchaseOrder(purchaseOrder)
@@ -1748,7 +1748,7 @@ export default function PurchaseOrdersPage() {
                             Receive PO
                           </button>
 
-                          <button
+                          <button data-t1eq-action-button="true"
                             type="button"
                             onClick={() =>
                               handleRecalculateTotals(purchaseOrder)
@@ -1758,7 +1758,7 @@ export default function PurchaseOrdersPage() {
                             Recalculate Totals
                           </button>
 
-                          <button
+                          <button data-t1eq-action-button="true"
                             type="button"
                             onClick={() =>
                               handleDeletePurchaseOrder(purchaseOrder)
@@ -1772,13 +1772,13 @@ export default function PurchaseOrdersPage() {
                     </div>
 
                     {isLocked && !isManager && (
-                      <div className="mt-4 flex flex-wrap items-center gap-2 rounded-xl border border-orange-200 bg-orange-50 p-3">
+                      <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-4 flex flex-wrap items-center gap-2 rounded-xl border border-orange-200 bg-orange-50 p-3">
                         <div className="w-full text-sm font-semibold text-orange-700 md:w-auto">
                           Completed PO locked. Manager login required for
                           changes.
                         </div>
 
-                        <input
+                        <input data-t1eq-field="true"
                           value={managerCodeByPoId[purchaseOrder.id] ?? ""}
                           onChange={(event) =>
                             updateManagerCode(
@@ -1790,7 +1790,7 @@ export default function PurchaseOrdersPage() {
                           className="w-40 rounded-lg border border-orange-200 bg-white px-3 py-2 text-sm text-black outline-none"
                         />
 
-                        <button
+                        <button data-t1eq-action-button="true"
                           type="button"
                           onClick={() => handleManagerLogin(purchaseOrder.id)}
                           className={warningButtonClass}
@@ -1801,7 +1801,7 @@ export default function PurchaseOrdersPage() {
                     )}
 
                     {recommendedInventoryVisibleByPoId[purchaseOrder.id] && (
-                      <div className="mt-5 rounded-2xl border border-zinc-200 bg-white p-4">
+                      <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-5 rounded-2xl border border-zinc-200 bg-white p-4">
                         <div className="flex flex-col justify-between gap-3 md:flex-row md:items-start">
                           <div>
                             <h3 className="text-xl font-bold">
@@ -1825,7 +1825,7 @@ export default function PurchaseOrdersPage() {
                         </div>
 
                         <div className="mt-4 flex flex-wrap gap-3">
-                          <button
+                          <button data-t1eq-action-button="true"
                             type="button"
                             onClick={() =>
                               selectAllRecommendedInventory(purchaseOrder.id)
@@ -1835,7 +1835,7 @@ export default function PurchaseOrdersPage() {
                             Select All
                           </button>
 
-                          <button
+                          <button data-t1eq-action-button="true"
                             type="button"
                             onClick={() =>
                               unselectAllRecommendedInventory(purchaseOrder.id)
@@ -1845,7 +1845,7 @@ export default function PurchaseOrdersPage() {
                             Unselect All
                           </button>
 
-                          <button
+                          <button data-t1eq-action-button="true"
                             type="button"
                             onClick={() =>
                               addSelectedRecommendedInventoryToPurchaseOrder(
@@ -1859,7 +1859,7 @@ export default function PurchaseOrdersPage() {
                         </div>
 
                         {recommendedInventoryItems.length === 0 ? (
-                          <div className="mt-4 rounded-xl border border-dashed border-zinc-300 bg-zinc-50 p-5 text-center text-black/60">
+                          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-4 rounded-xl border border-dashed border-zinc-300 bg-zinc-50 p-5 text-center text-black/60">
                             No recommended inventory items found.
                           </div>
                         ) : (
@@ -1873,12 +1873,12 @@ export default function PurchaseOrdersPage() {
                               const isSelected = selectedIds.includes(item.id);
 
                               return (
-                                <label
+                                <label data-t1eq-tile="true" data-t1eq-page-card="true"
                                   key={item.id}
                                   className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-zinc-200 bg-zinc-50 p-3"
                                 >
                                   <div className="flex items-center gap-3">
-                                    <input
+                                    <input data-t1eq-field="true"
                                       type="checkbox"
                                       checked={isSelected}
                                       onChange={() =>
@@ -1925,7 +1925,7 @@ export default function PurchaseOrdersPage() {
                     {isExpanded && (
                       <div className="mt-5 space-y-3">
                         {lines.length === 0 ? (
-                          <div className="rounded-xl border border-dashed border-zinc-300 bg-white p-5 text-center text-black/60">
+                          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-dashed border-zinc-300 bg-white p-5 text-center text-black/60">
                             This purchase order has no lines.
                           </div>
                         ) : (
@@ -1936,7 +1936,7 @@ export default function PurchaseOrdersPage() {
                               verifiedLiveInventoryCountByLineId[line.id] ?? "";
 
                             return (
-                              <div
+                              <div data-t1eq-tile="true" data-t1eq-page-card="true"
                                 key={line.id}
                                 className="rounded-2xl border border-zinc-200 bg-white p-4"
                               >
@@ -1968,7 +1968,7 @@ export default function PurchaseOrdersPage() {
                                 </div>
 
                                 {isReceivingLineClass(line.lineClass) && (
-                                  <div className="mt-4 rounded-xl border border-zinc-200 bg-zinc-50 p-3">
+                                  <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-4 rounded-xl border border-zinc-200 bg-zinc-50 p-3">
                                     <div className="text-sm font-semibold text-black/60">
                                       Receiving Location
                                     </div>
@@ -1992,7 +1992,7 @@ export default function PurchaseOrdersPage() {
 
                                 {line.lineClass === "Inventory Stock" && (
                                   <div className="mt-4 grid gap-3 md:grid-cols-3">
-                                    <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-3">
+                                    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-zinc-200 bg-zinc-50 p-3">
                                       <div className="text-sm font-semibold text-black/60">
                                         Current Qty On Hand
                                       </div>
@@ -2003,7 +2003,7 @@ export default function PurchaseOrdersPage() {
                                       </div>
                                     </div>
 
-                                    <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-3">
+                                    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-zinc-200 bg-zinc-50 p-3">
                                       <div className="text-sm font-semibold text-black/60">
                                         Quantity on hand including this order
                                       </div>
@@ -2020,7 +2020,7 @@ export default function PurchaseOrdersPage() {
                                         Verified Live Inventory Count
                                       </span>
 
-                                      <input
+                                      <input data-t1eq-field="true"
                                         type="number"
                                         min="0"
                                         value={verifiedLiveInventoryCount}

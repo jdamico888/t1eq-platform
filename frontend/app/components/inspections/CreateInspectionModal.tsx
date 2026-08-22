@@ -56,7 +56,7 @@ export default function CreateInspectionModal({
               New ESA Inspection
             </h2>
 
-            <button
+            <button data-t1eq-action-button="true"
               onClick={onClose}
               className="
                 text-gray-500
@@ -76,7 +76,7 @@ export default function CreateInspectionModal({
                 Inspection Type
               </label>
 
-              <select
+              <select data-t1eq-field="true"
                 value={inspectionType}
                 onChange={(e) =>
                   setInspectionType(
@@ -122,7 +122,7 @@ export default function CreateInspectionModal({
                 Status
               </label>
 
-              <select
+              <select data-t1eq-field="true"
                 value={status}
                 onChange={(e) =>
                   setStatus(
@@ -160,7 +160,7 @@ export default function CreateInspectionModal({
                 Notes
               </label>
 
-              <textarea
+              <textarea data-t1eq-field="true"
                 value={notes}
                 onChange={(e) =>
                   setNotes(
@@ -184,7 +184,7 @@ export default function CreateInspectionModal({
 
           <div className="flex justify-end gap-3">
 
-            <button
+            <button data-t1eq-action-button="true"
               onClick={onClose}
               className="
                 px-5

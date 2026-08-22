@@ -8,7 +8,7 @@ export default function EmptyState({
   description,
 }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-white/10 bg-black/20 px-8 py-16 text-center">
+    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-white/10 bg-black/20 px-8 py-16 text-center">
       <h3 className="text-xl font-semibold">
         {title}
       </h3>

@@ -91,7 +91,7 @@ export default function EquipmentTable({
           render: (item) => (
             <div className="flex justify-end gap-2">
               {onEdit && (
-                <button
+                <button data-t1eq-action-button="true"
                   type="button"
                   onClick={() =>
                     onEdit(item)
@@ -103,7 +103,7 @@ export default function EquipmentTable({
               )}
 
               {onDelete && (
-                <button
+                <button data-t1eq-action-button="true"
                   type="button"
                   onClick={() =>
                     onDelete(item)

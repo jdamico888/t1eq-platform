@@ -74,7 +74,7 @@ export default function RepairOrderActionItemCard({
   const generatedActionTotal = getGeneratedActionTotal(actionItem);
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-md">
+    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-md">
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
@@ -157,7 +157,7 @@ export default function RepairOrderActionItemCard({
         </div>
       </div>
 
-      <div className="mt-5 rounded-2xl border border-cyan-400/20 bg-cyan-500/10 p-4">
+      <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-5 rounded-2xl border border-cyan-400/20 bg-cyan-500/10 p-4">
         <div className="text-xs font-black uppercase tracking-[0.2em] text-cyan-200">
           Action Item Generation
         </div>
@@ -189,7 +189,7 @@ export default function RepairOrderActionItemCard({
         </div>
 
         {actionItem.generationNotes && (
-          <div className="mt-4 rounded-xl border border-cyan-400/20 bg-black/20 p-3 text-sm leading-6 text-cyan-50/90">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-4 rounded-xl border border-cyan-400/20 bg-black/20 p-3 text-sm leading-6 text-cyan-50/90">
             {actionItem.generationNotes}
           </div>
         )}
@@ -280,7 +280,7 @@ export default function RepairOrderActionItemCard({
       </div>
 
       {actionItem.completionNotes && (
-        <div className="mt-5 rounded-xl border border-emerald-400/20 bg-emerald-500/10 p-4">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-5 rounded-xl border border-emerald-400/20 bg-emerald-500/10 p-4">
           <div className="mb-1 text-xs uppercase tracking-wide text-emerald-200/70">
             Completion Notes
           </div>
@@ -292,7 +292,7 @@ export default function RepairOrderActionItemCard({
       )}
 
       {actionItem.notes && (
-        <div className="mt-5 rounded-xl border border-white/10 bg-black/20 p-4">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-5 rounded-xl border border-white/10 bg-black/20 p-4">
           <div className="mb-1 text-xs uppercase tracking-wide text-white/50">
             Notes
           </div>
@@ -306,7 +306,7 @@ export default function RepairOrderActionItemCard({
       {(onEdit || onDelete) && (
         <div className="mt-5 flex justify-end gap-3">
           {onEdit && (
-            <button
+            <button data-t1eq-action-button="true"
               type="button"
               onClick={() => onEdit(actionItem)}
               className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-white/10"
@@ -316,7 +316,7 @@ export default function RepairOrderActionItemCard({
           )}
 
           {onDelete && (
-            <button
+            <button data-t1eq-action-button="true"
               type="button"
               onClick={() => onDelete(actionItem)}
               className="rounded-xl border border-red-400/30 bg-red-500/10 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-red-200 transition hover:bg-red-500/20"

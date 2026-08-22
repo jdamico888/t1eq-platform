@@ -1,15 +1,31 @@
-type ActionButtonVariant = "primary" | "secondary" | "danger" | "warning";
+"use client";
+
+import type {
+  ButtonHTMLAttributes,
+  ReactNode,
+} from "react";
+
+type ActionButtonVariant =
+  | "primary"
+  | "secondary"
+  | "danger"
+  | "warning";
 
 type ActionButtonProps = {
-  children: React.ReactNode;
-  type?: "button" | "submit";
-  variant?: ActionButtonVariant;
-  onClick?: () => void;
-  className?: string;
-  disabled?: boolean;
-};
+  children: ReactNode;
 
-function getVariantClasses(variant: ActionButtonVariant): string {
+  variant?: ActionButtonVariant;
+
+  qbitId?: string;
+  qbitScope?: string;
+} & Omit<
+  ButtonHTMLAttributes<HTMLButtonElement>,
+  "children"
+>;
+
+function getVariantClasses(
+  variant: ActionButtonVariant
+): string {
   switch (variant) {
     case "primary":
       return "bg-cyan-600 hover:bg-cyan-500 text-white";
@@ -32,18 +48,22 @@ export default function ActionButton({
   children,
   type = "button",
   variant = "primary",
-  onClick,
+  qbitId,
+  qbitScope = "global",
   className = "",
-  disabled = false,
+  ...buttonProps
 }: ActionButtonProps) {
   return (
     <button
       type={type}
-      onClick={onClick}
-      disabled={disabled}
+      data-t1eq-action-button="true"
+      data-t1eq-qbit-type={qbitId ? "action-button" : undefined}
+      data-t1eq-qbit-id={qbitId || undefined}
+      data-t1eq-qbit-scope={qbitId ? qbitScope : undefined}
       className={`rounded-xl px-4 py-3 font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${getVariantClasses(
         variant
       )} ${className}`}
+      {...buttonProps}
     >
       {children}
     </button>

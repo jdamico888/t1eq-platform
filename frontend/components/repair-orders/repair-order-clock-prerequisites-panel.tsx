@@ -60,7 +60,7 @@ export default function RepairOrderClockPrerequisitesPanel({
   }
 
   return (
-    <section className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+    <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
       <div className="mb-5">
         <p className="text-xs font-black uppercase tracking-[0.24em] text-orange-300">
           Clock Prerequisites
@@ -78,7 +78,7 @@ export default function RepairOrderClockPrerequisitesPanel({
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
               <h3 className="text-lg font-black text-white">
@@ -103,16 +103,16 @@ export default function RepairOrderClockPrerequisitesPanel({
           </div>
 
           {modelSerialPhotoUrl && (
-            <img
+            <img data-t1eq-tile="true" data-t1eq-page-card="true"
               src={modelSerialPhotoUrl}
               alt="Model and serial tag"
               className="mt-4 max-h-56 w-full rounded-2xl border border-white/10 object-contain"
             />
           )}
 
-          <label className="mt-5 inline-flex cursor-pointer rounded-xl border border-blue-400/30 bg-blue-500/20 px-4 py-2 text-sm font-black text-blue-100 transition hover:bg-blue-500/30">
+          <label data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-5 inline-flex cursor-pointer rounded-xl border border-blue-400/30 bg-blue-500/20 px-4 py-2 text-sm font-black text-blue-100 transition hover:bg-blue-500/30">
             Upload Model / Serial Photo
-            <input
+            <input data-t1eq-field="true"
               type="file"
               accept="image/*"
               onChange={handleModelSerialPhotoUpload}
@@ -121,7 +121,7 @@ export default function RepairOrderClockPrerequisitesPanel({
           </label>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
               <h3 className="text-lg font-black text-white">
@@ -146,7 +146,7 @@ export default function RepairOrderClockPrerequisitesPanel({
           </div>
 
           {customerSignature && (
-            <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4">
               <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/40">
                 Signer
               </p>
@@ -163,7 +163,7 @@ export default function RepairOrderClockPrerequisitesPanel({
             </div>
           )}
 
-          <button
+          <button data-t1eq-action-button="true"
             type="button"
             onClick={handleCustomerSignature}
             className="mt-5 rounded-xl border border-blue-400/30 bg-blue-500/20 px-4 py-2 text-sm font-black text-blue-100 transition hover:bg-blue-500/30"

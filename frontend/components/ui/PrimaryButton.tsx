@@ -12,7 +12,7 @@ export default function PrimaryButton({
   className = "",
 }: PrimaryButtonProps) {
   return (
-    <button
+    <button data-t1eq-action-button="true"
       type={type}
       onClick={onClick}
       className={`rounded-xl bg-cyan-600 px-4 py-3 font-medium transition hover:bg-cyan-500 ${className}`}

@@ -153,7 +153,7 @@ export default function RolesPermissionsPage() {
           </p>
 
           {statusMessage && (
-            <div className="mt-4 rounded-2xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-black text-emerald-800">
+            <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-4 rounded-2xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-black text-emerald-800">
               {statusMessage}
             </div>
           )}
@@ -172,7 +172,7 @@ export default function RolesPermissionsPage() {
               const inUse = settings.selectedModelId === model.id;
 
               return (
-                <div
+                <div data-t1eq-tile="true" data-t1eq-page-card="true"
                   key={model.id}
                   className="flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-4"
                 >
@@ -188,7 +188,7 @@ export default function RolesPermissionsPage() {
                     Roles: {model.roles.map((role) => role.name).join(", ")}
                   </p>
 
-                  <button
+                  <button data-t1eq-action-button="true"
                     type="button"
                     onClick={() => handleUseModel(model)}
                     className={inUse ? primaryButtonClass : secondaryButtonClass}
@@ -201,21 +201,21 @@ export default function RolesPermissionsPage() {
           </div>
 
           {pendingModel && (
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3">
+            <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3">
               <p className="text-sm font-bold text-amber-900">
                 Applying &quot;{pendingModel.title}&quot; will replace your
                 current roles and permissions. Continue?
               </p>
 
               <div className="flex gap-2">
-                <button
+                <button data-t1eq-action-button="true"
                   type="button"
                   onClick={() => setPendingModel(null)}
                   className={secondaryButtonClass}
                 >
                   Cancel
                 </button>
-                <button
+                <button data-t1eq-action-button="true"
                   type="button"
                   onClick={confirmUseModel}
                   className={primaryButtonClass}
@@ -236,11 +236,11 @@ export default function RolesPermissionsPage() {
 
           <div className="mt-4 flex flex-wrap items-center gap-2">
             {settings.roles.map((role) => (
-              <div
+              <div data-t1eq-tile="true" data-t1eq-page-card="true"
                 key={role.id}
                 className="flex items-center gap-2 rounded-full border border-zinc-300 bg-zinc-50 py-1 pl-3 pr-1"
               >
-                <input
+                <input data-t1eq-field="true"
                   value={role.name}
                   onChange={(event) =>
                     handleRenameRole(role.id, event.target.value)
@@ -255,7 +255,7 @@ export default function RolesPermissionsPage() {
                     🔒 Full Control
                   </span>
                 ) : (
-                  <button
+                  <button data-t1eq-action-button="true"
                     type="button"
                     onClick={() => handleRequestRemoveRole(role.id)}
                     title="Remove role"
@@ -268,7 +268,7 @@ export default function RolesPermissionsPage() {
             ))}
 
             <div className="flex items-center gap-2">
-              <input
+              <input data-t1eq-field="true"
                 type="text"
                 value={newRoleName}
                 onChange={(event) => setNewRoleName(event.target.value)}
@@ -280,7 +280,7 @@ export default function RolesPermissionsPage() {
                 placeholder="+ Add role…"
                 className="rounded-full border border-dashed border-zinc-400 px-3 py-1.5 text-sm font-semibold outline-none"
               />
-              <button
+              <button data-t1eq-action-button="true"
                 type="button"
                 onClick={handleAddRole}
                 className={secondaryButtonClass}
@@ -291,21 +291,21 @@ export default function RolesPermissionsPage() {
           </div>
 
           {pendingRemoveRole && (
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-red-300 bg-red-50 px-4 py-3">
+            <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-red-300 bg-red-50 px-4 py-3">
               <p className="text-sm font-bold text-red-900">
                 Remove &quot;{pendingRemoveRole.name}&quot;? This deletes its
                 entire permission column and can&apos;t be undone here.
               </p>
 
               <div className="flex gap-2">
-                <button
+                <button data-t1eq-action-button="true"
                   type="button"
                   onClick={() => setPendingRemoveRoleId(null)}
                   className={secondaryButtonClass}
                 >
                   Cancel
                 </button>
-                <button
+                <button data-t1eq-action-button="true"
                   type="button"
                   onClick={confirmRemoveRole}
                   className="rounded-xl bg-red-600 px-5 py-3 text-sm font-black text-white shadow-sm transition hover:bg-red-500"
@@ -324,7 +324,7 @@ export default function RolesPermissionsPage() {
             it&apos;s hidden from that role entirely.
           </p>
 
-          <div className="mt-5 overflow-x-auto rounded-2xl border border-zinc-200">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-5 overflow-x-auto rounded-2xl border border-zinc-200">
             {settings.roles.length === 0 ? (
               <div className="p-10 text-center text-sm font-semibold text-zinc-500">
                 No roles yet — pick a starting model above, or add a role, to
@@ -347,7 +347,7 @@ export default function RolesPermissionsPage() {
                           {role.name}
                         </div>
                         {!role.isLocked && (
-                          <button
+                          <button data-t1eq-action-button="true"
                             type="button"
                             onClick={() => handleToggleAllForRole(role.id)}
                             className="mt-1 text-[11px] font-black text-zinc-500 underline underline-offset-2"
@@ -391,7 +391,7 @@ export default function RolesPermissionsPage() {
                               key={role.id}
                               className="p-3 text-center align-middle"
                             >
-                              <input
+                              <input data-t1eq-field="true"
                                 type="checkbox"
                                 checked={
                                   role.isLocked
@@ -421,13 +421,13 @@ export default function RolesPermissionsPage() {
           </div>
 
           <div className="mt-5 flex items-center gap-3">
-            <button type="button" onClick={handleSave} className={primaryButtonClass}>
+            <button data-t1eq-action-button="true" type="button" onClick={handleSave} className={primaryButtonClass}>
               Save Changes
             </button>
           </div>
         </section>
 
-        <section className="rounded-3xl border border-dashed border-zinc-300 bg-white p-5 text-xs font-medium text-zinc-500">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-dashed border-zinc-300 bg-white p-5 text-xs font-medium text-zinc-500">
           This function list will keep growing as more screens get built
           (dispatch, inventory, invoicing, accounting, etc.) — it currently
           covers the functions introduced by the Technician Workorder screen

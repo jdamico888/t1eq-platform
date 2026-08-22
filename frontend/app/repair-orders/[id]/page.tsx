@@ -21,7 +21,6 @@ import {
   type RepairOrderInput,
 } from "@/services/repair-orders";
 import { getActiveTechnicianProfiles } from "@/services/technician-profiles";
-import { getUserFullName } from "@/services/users";
 
 import type {
   RepairOrder,
@@ -34,7 +33,6 @@ import type {
 } from "@/types/repair-order";
 import type { TechnicianProfile as EmployeeProfile } from "@/types/technician-profile";
 import type { Truck } from "@/types/truck-stock";
-import type { User } from "@/types/user";
 
 const createRepairOrderInput = (
   repairOrder: RepairOrder,
@@ -480,27 +478,6 @@ export default function RepairOrderWorkspacePage() {
     loadRepairOrder();
   }
 
-  function handleTechnicianChange(technician: User | null) {
-    if (!repairOrder) return;
-
-    const displayName = technician ? getUserFullName(technician) : "";
-
-    const updatedRepairOrder: RepairOrder = {
-      ...repairOrder,
-      assignedTechnicianId: technician?.id ?? "",
-      assignedTechnicianName: displayName,
-      assignedUserId: technician?.id ?? "",
-      assignedUserName: displayName,
-    };
-
-    updateRepairOrder(
-      repairOrder.id,
-      createRepairOrderInput(updatedRepairOrder, updatedRepairOrder.actionItems)
-    );
-
-    loadRepairOrder();
-  }
-
   function handleEmployeeProfileChange(employeeProfileId: string) {
     if (!repairOrder) return;
 
@@ -821,7 +798,7 @@ export default function RepairOrderWorkspacePage() {
   if (!repairOrder) {
     return (
       <main className="min-h-screen bg-slate-950 p-6 text-white">
-        <div className="rounded-3xl border border-white/10 bg-white/10 p-8 shadow-2xl backdrop-blur-xl">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-8 shadow-2xl backdrop-blur-xl">
           <div className="text-sm font-semibold uppercase tracking-[0.25em] text-white/50">
             Repair Order Workspace
           </div>
@@ -832,7 +809,7 @@ export default function RepairOrderWorkspacePage() {
             The requested repair order could not be found in local storage.
           </p>
 
-          <button
+          <button data-t1eq-action-button="true"
             type="button"
             onClick={() => router.push("/repair-orders")}
             className="mt-6 rounded-xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
@@ -847,7 +824,7 @@ export default function RepairOrderWorkspacePage() {
   return (
     <main className="min-h-screen bg-slate-950 p-6 text-white">
       <div className="mx-auto max-w-7xl space-y-6">
-        <button
+        <button data-t1eq-action-button="true"
           type="button"
           onClick={() => router.push("/repair-orders")}
           className="rounded-xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
@@ -866,7 +843,6 @@ export default function RepairOrderWorkspacePage() {
 
         <RepairOrderTechnicianPanel
           repairOrder={repairOrder}
-          onTechnicianChange={handleTechnicianChange}
           onTruckChange={handleTruckChange}
         />
 
@@ -901,7 +877,7 @@ export default function RepairOrderWorkspacePage() {
 
         <RepairOrderTimeline repairOrder={repairOrder} />
 
-        <section className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
           <div className="mb-5 flex flex-col justify-between gap-4 md:flex-row md:items-center">
             <div>
               <h2 className="text-2xl font-bold text-white">Action Items</h2>
@@ -912,7 +888,7 @@ export default function RepairOrderWorkspacePage() {
               </p>
             </div>
 
-            <button
+            <button data-t1eq-action-button="true"
               type="button"
               onClick={openAddActionItemModal}
               className="rounded-xl border border-blue-400/30 bg-blue-500/20 px-4 py-2 text-sm font-semibold text-blue-100 transition hover:bg-blue-500/30"
@@ -953,7 +929,7 @@ function RepairOrderEmployeeSetupPanel({
   onEmployeeProfileChange: (employeeProfileId: string) => void;
 }) {
   return (
-    <section className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+    <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
       <div className="mb-5 flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
         <div>
           <p className="text-xs font-black uppercase tracking-[0.24em] text-orange-300">
@@ -977,7 +953,7 @@ function RepairOrderEmployeeSetupPanel({
               Assigned Employee Profile
             </span>
 
-            <select
+            <select data-t1eq-field="true"
               value={selectedEmployeeProfile?.id ?? ""}
               onChange={(event) => onEmployeeProfileChange(event.target.value)}
               className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm font-bold text-white outline-none focus:border-orange-400"
@@ -1000,7 +976,7 @@ function RepairOrderEmployeeSetupPanel({
       </div>
 
       {!selectedEmployeeProfile && (
-        <div className="rounded-2xl border border-dashed border-orange-400/30 bg-orange-500/10 p-5">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-dashed border-orange-400/30 bg-orange-500/10 p-5">
           <h3 className="text-sm font-black uppercase tracking-wide text-orange-200">
             No Employee Setup Profile Linked
           </h3>
@@ -1158,7 +1134,7 @@ function RepairOrderLaborClockPanel({
   );
 
   return (
-    <section className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+    <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
       <div className="mb-5 flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
         <div>
           <p className="text-xs font-black uppercase tracking-[0.24em] text-orange-300">
@@ -1176,7 +1152,7 @@ function RepairOrderLaborClockPanel({
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <button
+          <button data-t1eq-action-button="true"
             type="button"
             onClick={onClockIn}
             disabled={!selectedEmployeeProfile || Boolean(activeLaborEntry)}
@@ -1185,7 +1161,7 @@ function RepairOrderLaborClockPanel({
             Clock In
           </button>
 
-          <button
+          <button data-t1eq-action-button="true"
             type="button"
             onClick={onClockOut}
             disabled={!selectedEmployeeProfile || !activeLaborEntry}
@@ -1197,7 +1173,7 @@ function RepairOrderLaborClockPanel({
       </div>
 
       {!selectedEmployeeProfile && (
-        <div className="rounded-2xl border border-dashed border-orange-400/30 bg-orange-500/10 p-5 text-sm font-bold leading-6 text-orange-100/80">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-dashed border-orange-400/30 bg-orange-500/10 p-5 text-sm font-bold leading-6 text-orange-100/80">
           Select an employee profile before clocking labor.
         </div>
       )}
@@ -1335,7 +1311,7 @@ function RuleCard({
   rows: [string, string][];
 }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4">
       <h3 className="text-sm font-black uppercase tracking-wide text-white">
         {title}
       </h3>

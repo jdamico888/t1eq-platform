@@ -207,7 +207,7 @@ export default function InventoryReceivingPage() {
   return (
     <main className="min-h-screen bg-zinc-100 p-6 text-black">
       <div className="mx-auto max-w-7xl space-y-6">
-        <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
             <div>
               <h1 className="text-5xl font-bold text-black">
@@ -234,7 +234,7 @@ export default function InventoryReceivingPage() {
                 Company Tools
               </a>
 
-              <button
+              <button data-t1eq-action-button="true"
                 type="button"
                 onClick={refreshData}
                 className={primaryButtonClass}
@@ -246,7 +246,7 @@ export default function InventoryReceivingPage() {
         </section>
 
         <section className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
             <div className="text-sm font-semibold uppercase tracking-wide text-black/50">
               Receiving Lines
             </div>
@@ -256,7 +256,7 @@ export default function InventoryReceivingPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
             <div className="text-sm font-semibold uppercase tracking-wide text-black/50">
               Inventory Stock
             </div>
@@ -266,7 +266,7 @@ export default function InventoryReceivingPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
             <div className="text-sm font-semibold uppercase tracking-wide text-black/50">
               Company Tools
             </div>
@@ -276,7 +276,7 @@ export default function InventoryReceivingPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-orange-200 bg-orange-50 p-5 shadow-sm">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-orange-200 bg-orange-50 p-5 shadow-sm">
             <div className="text-sm font-semibold uppercase tracking-wide text-orange-700">
               Open Discrepancies
             </div>
@@ -286,7 +286,7 @@ export default function InventoryReceivingPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-orange-200 bg-orange-50 p-5 shadow-sm">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-orange-200 bg-orange-50 p-5 shadow-sm">
             <div className="text-sm font-semibold uppercase tracking-wide text-orange-700">
               Unmatched Stock
             </div>
@@ -296,7 +296,7 @@ export default function InventoryReceivingPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-green-200 bg-green-50 p-5 shadow-sm">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-green-200 bg-green-50 p-5 shadow-sm">
             <div className="text-sm font-semibold uppercase tracking-wide text-green-700">
               Reviewed
             </div>
@@ -306,7 +306,7 @@ export default function InventoryReceivingPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
             <div className="text-sm font-semibold uppercase tracking-wide text-black/50">
               Tool Assets
             </div>
@@ -316,7 +316,7 @@ export default function InventoryReceivingPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
             <div className="text-sm font-semibold uppercase tracking-wide text-black/50">
               Receiving Status
             </div>
@@ -325,14 +325,14 @@ export default function InventoryReceivingPage() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="grid gap-4 md:grid-cols-3">
             <label className="space-y-1 md:col-span-2">
               <span className="text-sm font-semibold text-black/70">
                 Search Receiving
               </span>
 
-              <input
+              <input data-t1eq-field="true"
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="Search PO, supplier, part, description, location..."
@@ -342,11 +342,11 @@ export default function InventoryReceivingPage() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
           <h2 className="text-3xl font-bold">Received PO Lines</h2>
 
           {filteredReceivingLines.length === 0 ? (
-            <div className="mt-5 rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-10 text-center">
+            <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-5 rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-10 text-center">
               <div className="text-xl font-bold">
                 No received PO lines found
               </div>
@@ -365,7 +365,7 @@ export default function InventoryReceivingPage() {
                   const receivingNotes = notesByLineId[line.id] ?? "";
 
                   return (
-                    <article
+                    <article data-t1eq-tile="true" data-t1eq-page-card="true"
                       key={`${purchaseOrder.id}-${line.id}`}
                       className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5"
                     >
@@ -410,7 +410,7 @@ export default function InventoryReceivingPage() {
                           </div>
 
                           {lineReviewed && (
-                            <div className="inline-flex rounded-full border border-green-200 bg-green-50 px-3 py-1 text-sm font-semibold text-green-700">
+                            <div data-t1eq-tile="true" data-t1eq-page-card="true" className="inline-flex rounded-full border border-green-200 bg-green-50 px-3 py-1 text-sm font-semibold text-green-700">
                               Reviewed
                             </div>
                           )}
@@ -418,7 +418,7 @@ export default function InventoryReceivingPage() {
                       </div>
 
                       <div className="mt-4 grid gap-4 md:grid-cols-3">
-                        <div className="rounded-xl border border-zinc-200 bg-white p-3">
+                        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-zinc-200 bg-white p-3">
                           <div className="text-sm font-semibold text-black/50">
                             Receiving Location
                           </div>
@@ -432,7 +432,7 @@ export default function InventoryReceivingPage() {
                           </div>
                         </div>
 
-                        <div className="rounded-xl border border-zinc-200 bg-white p-3">
+                        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-zinc-200 bg-white p-3">
                           <div className="text-sm font-semibold text-black/50">
                             Inventory Match
                           </div>
@@ -465,7 +465,7 @@ export default function InventoryReceivingPage() {
                           )}
                         </div>
 
-                        <div className="rounded-xl border border-zinc-200 bg-white p-3">
+                        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-zinc-200 bg-white p-3">
                           <div className="text-sm font-semibold text-black/50">
                             Receiving Action
                           </div>
@@ -490,7 +490,7 @@ export default function InventoryReceivingPage() {
                             Receipt Photo Reference
                           </span>
 
-                          <input
+                          <input data-t1eq-field="true"
                             value={receiptPhoto}
                             onChange={(event) =>
                               updateReceiptPhoto(line.id, event.target.value)
@@ -505,7 +505,7 @@ export default function InventoryReceivingPage() {
                             Receiving Notes
                           </span>
 
-                          <input
+                          <input data-t1eq-field="true"
                             value={receivingNotes}
                             onChange={(event) =>
                               updateNotes(line.id, event.target.value)
@@ -517,7 +517,7 @@ export default function InventoryReceivingPage() {
                       </div>
 
                       <div className="mt-4 flex flex-wrap gap-3">
-                        <button
+                        <button data-t1eq-action-button="true"
                           type="button"
                           onClick={() => markLineReviewed(line.id)}
                           className={primaryButtonClass}

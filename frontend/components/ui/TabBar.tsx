@@ -21,13 +21,13 @@ export default function TabBar({
   onChange,
 }: TabBarProps) {
   return (
-    <div className="flex flex-wrap gap-2 rounded-3xl border border-white/10 bg-white/5 p-2 backdrop-blur-xl">
+    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="flex flex-wrap gap-2 rounded-3xl border border-white/10 bg-white/5 p-2 backdrop-blur-xl">
       {tabs.map((tab) => {
         const isActive =
           tab.value === activeTab;
 
         return (
-          <button
+          <button data-t1eq-action-button="true"
             key={tab.value}
             type="button"
             onClick={() =>

@@ -14,7 +14,7 @@ export default function InfoGrid({
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {items.map((item) => (
-        <div
+        <div data-t1eq-tile="true" data-t1eq-page-card="true"
           key={item.label}
           className="rounded-2xl border border-white/5 bg-black/20 p-4"
         >

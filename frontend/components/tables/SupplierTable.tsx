@@ -96,7 +96,7 @@ export default function SupplierTable({
           render: (supplier) => (
             <div className="flex justify-end gap-2">
               {onEdit && (
-                <button
+                <button data-t1eq-action-button="true"
                   type="button"
                   onClick={() =>
                     onEdit(
@@ -110,7 +110,7 @@ export default function SupplierTable({
               )}
 
               {onDelete && (
-                <button
+                <button data-t1eq-action-button="true"
                   type="button"
                   onClick={() =>
                     onDelete(

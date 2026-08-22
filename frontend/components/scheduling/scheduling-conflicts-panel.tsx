@@ -26,7 +26,7 @@ export default function SchedulingConflictsPanel({
   const technicianLoads = getAllTechnicianScheduleLoads(scheduleEvents);
 
   return (
-    <section className="rounded-2xl border border-black/10 bg-black/[0.03] p-5">
+    <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-black/10 bg-black/[0.03] p-5">
       <div className="mb-5">
         <h2 className="text-3xl font-bold text-black">
           Scheduling Intelligence
@@ -38,7 +38,7 @@ export default function SchedulingConflictsPanel({
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-2xl border border-black/10 bg-white/70 p-4">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-black/10 bg-white/70 p-4">
           <div className="text-xs uppercase tracking-wide text-black/50">
             Active Conflicts
           </div>
@@ -48,7 +48,7 @@ export default function SchedulingConflictsPanel({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-black/10 bg-white/70 p-4">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-black/10 bg-white/70 p-4">
           <div className="text-xs uppercase tracking-wide text-black/50">
             Technicians Scheduled
           </div>
@@ -58,7 +58,7 @@ export default function SchedulingConflictsPanel({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-black/10 bg-white/70 p-4">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-black/10 bg-white/70 p-4">
           <div className="text-xs uppercase tracking-wide text-black/50">
             Total Schedule Events
           </div>
@@ -74,13 +74,13 @@ export default function SchedulingConflictsPanel({
           <h3 className="text-xl font-bold text-black">Conflicts</h3>
 
           {conflicts.length === 0 ? (
-            <div className="mt-3 rounded-xl border border-dashed border-black/10 bg-white/60 p-5 text-center text-sm text-black/50">
+            <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-3 rounded-xl border border-dashed border-black/10 bg-white/60 p-5 text-center text-sm text-black/50">
               No schedule conflicts detected.
             </div>
           ) : (
             <div className="mt-3 space-y-3">
               {conflicts.map((conflict) => (
-                <div
+                <div data-t1eq-tile="true" data-t1eq-page-card="true"
                   key={conflict.id}
                   className="rounded-xl border border-red-300 bg-red-50 p-4"
                 >
@@ -111,13 +111,13 @@ export default function SchedulingConflictsPanel({
           <h3 className="text-xl font-bold text-black">Technician Loads</h3>
 
           {technicianLoads.length === 0 ? (
-            <div className="mt-3 rounded-xl border border-dashed border-black/10 bg-white/60 p-5 text-center text-sm text-black/50">
+            <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-3 rounded-xl border border-dashed border-black/10 bg-white/60 p-5 text-center text-sm text-black/50">
               No technician schedule load data available.
             </div>
           ) : (
             <div className="mt-3 space-y-3">
               {technicianLoads.map((load) => (
-                <div
+                <div data-t1eq-tile="true" data-t1eq-page-card="true"
                   key={load.technicianId}
                   className="rounded-xl border border-black/10 bg-white/70 p-4"
                 >

@@ -198,7 +198,7 @@ export default function InventoryTransactionsPage() {
             </p>
           </div>
 
-          <button
+          <button data-t1eq-action-button="true"
             type="button"
             onClick={refreshDiscrepancies}
             className={secondaryButtonClass}
@@ -208,7 +208,7 @@ export default function InventoryTransactionsPage() {
         </div>
 
         {statusMessage && (
-          <div className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm font-bold text-zinc-700">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm font-bold text-zinc-700">
             {statusMessage}
           </div>
         )}
@@ -275,7 +275,7 @@ export default function InventoryTransactionsPage() {
               Search Transactions / Discrepancies
             </span>
 
-            <input
+            <input data-t1eq-field="true"
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               className={inputClass}
@@ -285,11 +285,11 @@ export default function InventoryTransactionsPage() {
         </div>
 
         {filteredDiscrepancies.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-8 text-center text-sm font-bold text-zinc-500">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-8 text-center text-sm font-bold text-zinc-500">
             No inventory discrepancies found.
           </div>
         ) : (
-          <div className="overflow-hidden rounded-2xl border border-zinc-200">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="overflow-hidden rounded-2xl border border-zinc-200">
             <table className="w-full border-collapse bg-white">
               <thead>
                 <tr>
@@ -365,7 +365,7 @@ export default function InventoryTransactionsPage() {
                     <td className={tableCellClass}>
                       <div className="flex flex-wrap gap-2">
                         {discrepancy.status === "Open" && (
-                          <button
+                          <button data-t1eq-action-button="true"
                             type="button"
                             onClick={() =>
                               handleMarkUnderReview(discrepancy)
@@ -377,7 +377,7 @@ export default function InventoryTransactionsPage() {
                         )}
 
                         {discrepancy.status !== "Resolved" && (
-                          <button
+                          <button data-t1eq-action-button="true"
                             type="button"
                             onClick={() =>
                               handleResolveDiscrepancy(discrepancy)
@@ -389,7 +389,7 @@ export default function InventoryTransactionsPage() {
                         )}
 
                         {discrepancy.status !== "Dismissed" && (
-                          <button
+                          <button data-t1eq-action-button="true"
                             type="button"
                             onClick={() =>
                               handleDismissDiscrepancy(discrepancy)

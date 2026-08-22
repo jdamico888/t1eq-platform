@@ -45,6 +45,7 @@ export default function Button({
     <button
       type={type}
       disabled={disabled}
+      data-t1eq-action-button="true"
       className={`
         rounded-xl
         border

@@ -9,7 +9,7 @@ export default function RepairOrderSummary({
 }: RepairOrderSummaryProps) {
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      <div className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+      <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
         <h2 className="text-2xl font-bold text-white">Customer Concern</h2>
 
         <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-white/70">
@@ -17,7 +17,7 @@ export default function RepairOrderSummary({
         </p>
       </div>
 
-      <div className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+      <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
         <h2 className="text-2xl font-bold text-white">Equipment Summary</h2>
 
         <div className="mt-4 space-y-3">
@@ -53,7 +53,7 @@ export default function RepairOrderSummary({
         </div>
       </div>
 
-      <div className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+      <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
         <h2 className="text-2xl font-bold text-white">Initial Findings</h2>
 
         <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-white/70">
@@ -63,7 +63,7 @@ export default function RepairOrderSummary({
         </p>
       </div>
 
-      <div className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+      <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
         <h2 className="text-2xl font-bold text-white">Work Performed</h2>
 
         <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-white/70">
@@ -73,7 +73,7 @@ export default function RepairOrderSummary({
         </p>
       </div>
 
-      <div className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+      <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
         <h2 className="text-2xl font-bold text-white">Recommendations</h2>
 
         <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-white/70">
@@ -81,7 +81,7 @@ export default function RepairOrderSummary({
         </p>
       </div>
 
-      <div className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+      <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
         <h2 className="text-2xl font-bold text-white">Internal Notes</h2>
 
         <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-white/70">

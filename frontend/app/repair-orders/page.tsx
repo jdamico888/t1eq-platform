@@ -162,6 +162,24 @@ export default function RepairOrdersPage() {
     };
   }, []);
 
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+
+    const prefillCustomerName = searchParams.get("customerName");
+    const shouldOpenCreate = searchParams.get("openCreate") === "1";
+
+    if (prefillCustomerName) {
+      setForm((currentForm) => ({
+        ...currentForm,
+        customerName: prefillCustomerName,
+      }));
+    }
+
+    if (shouldOpenCreate) {
+      setIsCreateOpen(true);
+    }
+  }, []);
+
   function updateForm<K extends keyof RepairOrderFormState>(
     key: K,
     value: RepairOrderFormState[K]
@@ -243,7 +261,7 @@ export default function RepairOrdersPage() {
   return (
     <main className="min-h-screen bg-slate-950 p-6 text-white">
       <div className="mx-auto max-w-7xl space-y-6">
-        <section className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur-xl">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur-xl">
           <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
             <div>
               <p className="text-xs font-black uppercase tracking-[0.28em] text-blue-200">
@@ -260,7 +278,7 @@ export default function RepairOrdersPage() {
               </p>
             </div>
 
-            <button
+            <button data-t1eq-action-button="true"
               type="button"
               onClick={() => setIsCreateOpen((current) => !current)}
               className="rounded-xl border border-blue-400/30 bg-blue-500/20 px-5 py-3 text-sm font-black text-blue-100 transition hover:bg-blue-500/30"
@@ -279,7 +297,7 @@ export default function RepairOrdersPage() {
         </section>
 
         {isCreateOpen && (
-          <section className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+          <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
             <div className="mb-5">
               <p className="text-xs font-black uppercase tracking-[0.24em] text-orange-300">
                 New Repair Order
@@ -323,7 +341,7 @@ export default function RepairOrdersPage() {
                   Priority
                 </span>
 
-                <select
+                <select data-t1eq-field="true"
                   value={form.priority}
                   onChange={(event) =>
                     updateForm(
@@ -346,7 +364,7 @@ export default function RepairOrdersPage() {
                   Starting Status
                 </span>
 
-                <select
+                <select data-t1eq-field="true"
                   value={form.status}
                   onChange={(event) =>
                     updateForm(
@@ -367,7 +385,7 @@ export default function RepairOrdersPage() {
                   Complaint / Customer Concern
                 </span>
 
-                <textarea
+                <textarea data-t1eq-field="true"
                   value={form.complaint}
                   onChange={(event) =>
                     updateForm("complaint", event.target.value)
@@ -380,7 +398,7 @@ export default function RepairOrdersPage() {
             </div>
 
             <div className="mt-5 flex flex-wrap gap-3">
-              <button
+              <button data-t1eq-action-button="true"
                 type="button"
                 onClick={handleCreateRepairOrder}
                 className="rounded-xl border border-emerald-400/30 bg-emerald-500/20 px-5 py-3 text-sm font-black text-emerald-100 transition hover:bg-emerald-500/30"
@@ -388,7 +406,7 @@ export default function RepairOrdersPage() {
                 Create and Open RO
               </button>
 
-              <button
+              <button data-t1eq-action-button="true"
                 type="button"
                 onClick={resetForm}
                 className="rounded-xl border border-white/10 bg-white/10 px-5 py-3 text-sm font-black text-white transition hover:bg-white/20"
@@ -399,16 +417,16 @@ export default function RepairOrdersPage() {
           </section>
         )}
 
-        <section className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
           <div className="mb-5 grid gap-4 lg:grid-cols-[1fr_260px]">
-            <input
+            <input data-t1eq-field="true"
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               className="rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-sm font-bold text-white outline-none placeholder:text-white/30 focus:border-blue-400"
               placeholder="Search repair orders..."
             />
 
-            <select
+            <select data-t1eq-field="true"
               value={statusFilter}
               onChange={(event) =>
                 setStatusFilter(event.target.value as "All" | RepairOrderStatus)
@@ -423,7 +441,7 @@ export default function RepairOrdersPage() {
             </select>
           </div>
 
-          <div className="overflow-hidden rounded-2xl border border-white/10">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="overflow-hidden rounded-2xl border border-white/10">
             <table className="w-full border-collapse text-left text-sm">
               <thead className="bg-white/10 text-[10px] font-black uppercase tracking-[0.18em] text-white/50">
                 <tr>
@@ -464,7 +482,7 @@ export default function RepairOrdersPage() {
                     </td>
 
                     <td className="px-4 py-4">
-                      <span className="rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-black text-white">
+                      <span data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-black text-white">
                         {repairOrder.status}
                       </span>
                     </td>
@@ -483,7 +501,7 @@ export default function RepairOrdersPage() {
 
                     <td className="px-4 py-4">
                       <div className="flex justify-end gap-2">
-                        <button
+                        <button data-t1eq-action-button="true"
                           type="button"
                           onClick={() =>
                             router.push(`/repair-orders/${repairOrder.id}`)
@@ -493,7 +511,7 @@ export default function RepairOrdersPage() {
                           Open
                         </button>
 
-                        <button
+                        <button data-t1eq-action-button="true"
                           type="button"
                           onClick={() => handleDeleteRepairOrder(repairOrder)}
                           className="rounded-lg border border-red-400/30 bg-red-500/20 px-3 py-2 text-xs font-black text-red-100 transition hover:bg-red-500/30"
@@ -526,7 +544,7 @@ export default function RepairOrdersPage() {
 
 function MetricCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4">
       <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/40">
         {label}
       </p>
@@ -553,7 +571,7 @@ function TextField({
         {required ? " *" : ""}
       </span>
 
-      <input
+      <input data-t1eq-field="true"
         value={value}
         onChange={(event) => onChange(event.target.value)}
         className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-3 text-sm font-bold text-white outline-none placeholder:text-white/30 focus:border-blue-400"

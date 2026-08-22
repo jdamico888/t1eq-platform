@@ -7,6 +7,7 @@ export type ScheduleEventStatus =
   | "Cancelled";
 
 export type ScheduleEventType =
+  | "Appointment"
   | "Repair Order"
   | "Inspection"
   | "Installation"

@@ -1,53 +1,77 @@
-type FormSelectOption = {
+"use client";
+
+import type {
+  ReactNode,
+  SelectHTMLAttributes,
+} from "react";
+
+type SelectOption = {
   label: string;
   value: string;
 };
 
 type FormSelectProps = {
-  name: string;
+  label?: ReactNode;
 
-  value?: string;
-
-  options: FormSelectOption[];
-
-  onChange: (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => void;
-
-  label?: string;
+  options: SelectOption[];
 
   placeholder?: string;
 
-  required?: boolean;
+  qbitId?: string;
+  qbitScope?: string;
 
-  disabled?: boolean;
-};
+  className?: string;
+} & Omit<
+  SelectHTMLAttributes<HTMLSelectElement>,
+  "className"
+>;
 
 export default function FormSelect({
-  name,
-  value,
-  options,
-  onChange,
   label,
+  options,
   placeholder,
-  required = false,
-  disabled = false,
+  qbitId,
+  qbitScope = "global",
+  className = "",
+  ...selectProps
 }: FormSelectProps) {
   return (
-    <div>
+    <label
+      data-t1eq-qbit-type={qbitId ? "section" : undefined}
+      data-t1eq-qbit-id={
+        qbitId ? `${qbitId}-wrapper` : undefined
+      }
+      data-t1eq-qbit-scope={
+        qbitId ? qbitScope : undefined
+      }
+      className="block"
+    >
       {label && (
-        <label className="mb-2 block text-sm text-slate-300">
+        <span
+          data-t1eq-qbit-type={
+            qbitId ? "text" : undefined
+          }
+          data-t1eq-qbit-id={
+            qbitId ? `${qbitId}-label` : undefined
+          }
+          data-t1eq-qbit-scope={
+            qbitId ? qbitScope : undefined
+          }
+          className="mb-1 block text-sm font-medium"
+        >
           {label}
-        </label>
+        </span>
       )}
 
       <select
-        className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 outline-none transition focus:border-cyan-500 disabled:opacity-50"
-        name={name}
-        value={value || ""}
-        onChange={onChange}
-        required={required}
-        disabled={disabled}
+        {...selectProps}
+        data-t1eq-field="true"
+        data-t1eq-qbit-type="field"
+        data-t1eq-qbit-id={qbitId || undefined}
+        data-t1eq-qbit-scope={
+          qbitId ? qbitScope : undefined
+        }
+        className={`w-full rounded-xl border border-black/10 bg-white px-3 py-3 text-black outline-none transition focus:border-cyan-500 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
       >
         {placeholder && (
           <option value="">
@@ -64,6 +88,6 @@ export default function FormSelect({
           </option>
         ))}
       </select>
-    </div>
+    </label>
   );
 }

@@ -67,7 +67,7 @@ export default function SiteSelector({
 
   return (
     <div className="relative">
-      <input
+      <input data-t1eq-field="true"
         className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 outline-none transition focus:border-cyan-500"
         placeholder={placeholder}
         value={search}
@@ -79,7 +79,7 @@ export default function SiteSelector({
       />
 
       {isOpen && (
-        <div className="absolute z-50 mt-2 max-h-72 w-full overflow-y-auto rounded-2xl border border-white/10 bg-slate-900 shadow-2xl">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="absolute z-50 mt-2 max-h-72 w-full overflow-y-auto rounded-2xl border border-white/10 bg-slate-900 shadow-2xl">
           {filteredSites.length === 0 && (
             <div className="px-4 py-3 text-sm text-slate-400">
               No sites found.
@@ -87,7 +87,7 @@ export default function SiteSelector({
           )}
 
           {filteredSites.map((site) => (
-            <button
+            <button data-t1eq-action-button="true"
               key={site.id}
               type="button"
               onClick={() => handleSelect(site)}

@@ -29,6 +29,8 @@ export default function Card({
   return (
     <div
       onClick={onClick}
+      data-t1eq-tile="true"
+      data-t1eq-page-card="true"
       className={`
         ${CARD_GLASS_CLASS}
         ${CARD_PADDING_CLASS}

@@ -216,7 +216,7 @@ export default function CompanyToolsPage() {
   return (
     <main className="min-h-screen bg-zinc-100 p-6 text-black">
       <div className="mx-auto max-w-7xl space-y-6">
-        <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
             <div>
               <h1 className="text-5xl font-bold text-black">
@@ -241,7 +241,7 @@ export default function CompanyToolsPage() {
                 Inventory Discrepancies
               </a>
 
-              <button
+              <button data-t1eq-action-button="true"
                 type="button"
                 onClick={handleCreateCompanyTool}
                 className={primaryButtonClass}
@@ -253,7 +253,7 @@ export default function CompanyToolsPage() {
         </section>
 
         <section className="grid grid-cols-2 gap-4 md:grid-cols-5">
-          <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
             <div className="text-sm font-semibold uppercase tracking-wide text-black/50">
               Total Tools
             </div>
@@ -261,7 +261,7 @@ export default function CompanyToolsPage() {
             <div className="mt-2 text-3xl font-bold">{metrics.total}</div>
           </div>
 
-          <div className="rounded-2xl border border-green-200 bg-green-50 p-5 shadow-sm">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-green-200 bg-green-50 p-5 shadow-sm">
             <div className="text-sm font-semibold uppercase tracking-wide text-green-700">
               Available
             </div>
@@ -271,7 +271,7 @@ export default function CompanyToolsPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-blue-200 bg-blue-50 p-5 shadow-sm">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-blue-200 bg-blue-50 p-5 shadow-sm">
             <div className="text-sm font-semibold uppercase tracking-wide text-blue-700">
               Assigned
             </div>
@@ -281,7 +281,7 @@ export default function CompanyToolsPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-orange-200 bg-orange-50 p-5 shadow-sm">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-orange-200 bg-orange-50 p-5 shadow-sm">
             <div className="text-sm font-semibold uppercase tracking-wide text-orange-700">
               In Repair
             </div>
@@ -291,7 +291,7 @@ export default function CompanyToolsPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
             <div className="text-sm font-semibold uppercase tracking-wide text-black/50">
               Tool Value
             </div>
@@ -302,14 +302,14 @@ export default function CompanyToolsPage() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="grid gap-4 md:grid-cols-3">
             <label className="space-y-1 md:col-span-2">
               <span className="text-sm font-semibold text-black/70">
                 Search Tools
               </span>
 
-              <input
+              <input data-t1eq-field="true"
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="Search asset number, tool name, serial, assigned user, location..."
@@ -318,7 +318,7 @@ export default function CompanyToolsPage() {
             </label>
 
             <div className="flex items-end">
-              <button
+              <button data-t1eq-action-button="true"
                 type="button"
                 onClick={refreshData}
                 className={secondaryButtonClass}
@@ -329,11 +329,11 @@ export default function CompanyToolsPage() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
           <h2 className="text-3xl font-bold">Tool Registry</h2>
 
           {filteredCompanyTools.length === 0 ? (
-            <div className="mt-5 rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-10 text-center">
+            <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-5 rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-10 text-center">
               <div className="text-xl font-bold">No company tools found</div>
 
               <p className="mt-2 text-black/60">
@@ -348,7 +348,7 @@ export default function CompanyToolsPage() {
                 const displayTool = isEditing ? draftTool : tool;
 
                 return (
-                  <article
+                  <article data-t1eq-tile="true" data-t1eq-page-card="true"
                     key={tool.id}
                     className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5"
                   >
@@ -388,7 +388,7 @@ export default function CompanyToolsPage() {
                           Tool Name
                         </span>
 
-                        <input
+                        <input data-t1eq-field="true"
                           value={displayTool.toolName}
                           disabled={!isEditing}
                           onChange={(event) =>
@@ -405,7 +405,7 @@ export default function CompanyToolsPage() {
                           Manufacturer
                         </span>
 
-                        <input
+                        <input data-t1eq-field="true"
                           value={displayTool.manufacturer ?? ""}
                           disabled={!isEditing}
                           onChange={(event) =>
@@ -422,7 +422,7 @@ export default function CompanyToolsPage() {
                           Model Number
                         </span>
 
-                        <input
+                        <input data-t1eq-field="true"
                           value={displayTool.modelNumber ?? ""}
                           disabled={!isEditing}
                           onChange={(event) =>
@@ -439,7 +439,7 @@ export default function CompanyToolsPage() {
                           Serial Number
                         </span>
 
-                        <input
+                        <input data-t1eq-field="true"
                           value={displayTool.serialNumber ?? ""}
                           disabled={!isEditing}
                           onChange={(event) =>
@@ -456,7 +456,7 @@ export default function CompanyToolsPage() {
                           Description
                         </span>
 
-                        <input
+                        <input data-t1eq-field="true"
                           value={displayTool.description ?? ""}
                           disabled={!isEditing}
                           onChange={(event) =>
@@ -473,7 +473,7 @@ export default function CompanyToolsPage() {
                           Cost
                         </span>
 
-                        <input
+                        <input data-t1eq-field="true"
                           type="number"
                           min="0"
                           step="0.01"
@@ -493,7 +493,7 @@ export default function CompanyToolsPage() {
                           Status
                         </span>
 
-                        <select
+                        <select data-t1eq-field="true"
                           value={displayTool.status}
                           disabled={!isEditing}
                           onChange={(event) =>
@@ -516,7 +516,7 @@ export default function CompanyToolsPage() {
                           Location Type
                         </span>
 
-                        <select
+                        <select data-t1eq-field="true"
                           value={displayTool.locationType}
                           disabled={!isEditing}
                           onChange={(event) =>
@@ -544,7 +544,7 @@ export default function CompanyToolsPage() {
                           Location Name
                         </span>
 
-                        <input
+                        <input data-t1eq-field="true"
                           value={displayTool.locationName ?? ""}
                           disabled={!isEditing}
                           onChange={(event) =>
@@ -561,7 +561,7 @@ export default function CompanyToolsPage() {
                           Bin Location
                         </span>
 
-                        <input
+                        <input data-t1eq-field="true"
                           value={displayTool.binLocation ?? ""}
                           disabled={!isEditing}
                           onChange={(event) =>
@@ -578,7 +578,7 @@ export default function CompanyToolsPage() {
                           Assigned To
                         </span>
 
-                        <input
+                        <input data-t1eq-field="true"
                           value={displayTool.assignedToName ?? ""}
                           disabled={!isEditing}
                           onChange={(event) =>
@@ -601,7 +601,7 @@ export default function CompanyToolsPage() {
                           Notes
                         </span>
 
-                        <input
+                        <input data-t1eq-field="true"
                           value={displayTool.notes ?? ""}
                           disabled={!isEditing}
                           onChange={(event) =>
@@ -617,7 +617,7 @@ export default function CompanyToolsPage() {
                     <div className="mt-4 flex flex-wrap gap-3">
                       {isEditing ? (
                         <>
-                          <button
+                          <button data-t1eq-action-button="true"
                             type="button"
                             onClick={() => saveCompanyTool(tool.id)}
                             className={primaryButtonClass}
@@ -625,7 +625,7 @@ export default function CompanyToolsPage() {
                             Save Tool
                           </button>
 
-                          <button
+                          <button data-t1eq-action-button="true"
                             type="button"
                             onClick={() => cancelEditCompanyTool(tool.id)}
                             className={secondaryButtonClass}
@@ -634,7 +634,7 @@ export default function CompanyToolsPage() {
                           </button>
                         </>
                       ) : (
-                        <button
+                        <button data-t1eq-action-button="true"
                           type="button"
                           onClick={() => beginEditCompanyTool(tool)}
                           className={secondaryButtonClass}
@@ -643,7 +643,7 @@ export default function CompanyToolsPage() {
                         </button>
                       )}
 
-                      <button
+                      <button data-t1eq-action-button="true"
                         type="button"
                         onClick={() => handleDeleteCompanyTool(tool.id)}
                         className={dangerButtonClass}

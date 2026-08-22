@@ -26,7 +26,7 @@ export default function OpenRepairOrdersPanel({
   repairOrders,
 }: OpenRepairOrdersPanelProps) {
   return (
-    <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
+    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-2xl font-semibold">
           Open Repair Orders
@@ -88,7 +88,7 @@ export default function OpenRepairOrdersPanel({
 
                 <div className="flex flex-col items-end gap-2">
                   {repairOrder.priority && (
-                    <div className="rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-xs text-amber-300">
+                    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-xs text-amber-300">
                       {
                         repairOrder.priority
                       }

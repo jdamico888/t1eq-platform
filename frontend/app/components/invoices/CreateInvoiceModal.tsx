@@ -180,7 +180,7 @@ export default function CreateInvoiceModal({
             </p>
           </div>
 
-          <button
+          <button data-t1eq-action-button="true"
             type="button"
             onClick={onClose}
             className="rounded-lg border border-black/10 px-3 py-2 text-sm hover:bg-black/5"
@@ -195,7 +195,7 @@ export default function CreateInvoiceModal({
               Customer ID
             </span>
 
-            <input
+            <input data-t1eq-field="true"
               value={customerId}
               onChange={(event) => setCustomerId(event.target.value)}
               className="w-full rounded-lg border border-black/10 px-3 py-2"
@@ -208,7 +208,7 @@ export default function CreateInvoiceModal({
               Customer Name
             </span>
 
-            <input
+            <input data-t1eq-field="true"
               value={customerName}
               onChange={(event) => setCustomerName(event.target.value)}
               className="w-full rounded-lg border border-black/10 px-3 py-2"
@@ -221,7 +221,7 @@ export default function CreateInvoiceModal({
               Repair Order ID
             </span>
 
-            <input
+            <input data-t1eq-field="true"
               value={repairOrderId}
               onChange={(event) => setRepairOrderId(event.target.value)}
               className="w-full rounded-lg border border-black/10 px-3 py-2"
@@ -234,7 +234,7 @@ export default function CreateInvoiceModal({
               Repair Order Number
             </span>
 
-            <input
+            <input data-t1eq-field="true"
               value={repairOrderNumber}
               onChange={(event) =>
                 setRepairOrderNumber(event.target.value)
@@ -249,7 +249,7 @@ export default function CreateInvoiceModal({
               Line Item Type
             </span>
 
-            <select
+            <select data-t1eq-field="true"
               value={lineItemType}
               onChange={(event) =>
                 setLineItemType(event.target.value as InvoiceLineItemType)
@@ -271,7 +271,7 @@ export default function CreateInvoiceModal({
               Line Item Description
             </span>
 
-            <input
+            <input data-t1eq-field="true"
               value={description}
               onChange={(event) => setDescription(event.target.value)}
               className="w-full rounded-lg border border-black/10 px-3 py-2"
@@ -284,7 +284,7 @@ export default function CreateInvoiceModal({
               Quantity
             </span>
 
-            <input
+            <input data-t1eq-field="true"
               type="number"
               value={quantity}
               onChange={(event) =>
@@ -300,7 +300,7 @@ export default function CreateInvoiceModal({
               Unit Price
             </span>
 
-            <input
+            <input data-t1eq-field="true"
               type="number"
               value={unitPrice}
               onChange={(event) =>
@@ -317,7 +317,7 @@ export default function CreateInvoiceModal({
               Tax Rate
             </span>
 
-            <input
+            <input data-t1eq-field="true"
               type="number"
               value={taxRate}
               onChange={(event) =>
@@ -334,7 +334,7 @@ export default function CreateInvoiceModal({
               Status
             </span>
 
-            <select
+            <select data-t1eq-field="true"
               value={status}
               onChange={(event) =>
                 setStatus(event.target.value as InvoiceStatus)
@@ -357,7 +357,7 @@ export default function CreateInvoiceModal({
               Notes
             </span>
 
-            <textarea
+            <textarea data-t1eq-field="true"
               value={notes}
               onChange={(event) => setNotes(event.target.value)}
               className="min-h-24 w-full rounded-lg border border-black/10 px-3 py-2"
@@ -366,7 +366,7 @@ export default function CreateInvoiceModal({
           </label>
         </div>
 
-        <div className="mt-6 rounded-xl border border-black/10 bg-black/[0.03] p-4">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-6 rounded-xl border border-black/10 bg-black/[0.03] p-4">
           <div className="flex justify-between text-sm">
             <span>Labor</span>
             <span>{formatCurrency(subtotalLabor)}</span>
@@ -394,7 +394,7 @@ export default function CreateInvoiceModal({
         </div>
 
         <div className="mt-6 flex justify-end gap-3">
-          <button
+          <button data-t1eq-action-button="true"
             type="button"
             onClick={onClose}
             className="rounded-lg border border-black/10 px-4 py-2 hover:bg-black/5"
@@ -402,7 +402,7 @@ export default function CreateInvoiceModal({
             Cancel
           </button>
 
-          <button
+          <button data-t1eq-action-button="true"
             type="button"
             onClick={handleCreateInvoice}
             className="rounded-lg bg-black px-4 py-2 font-semibold text-white hover:bg-black/80"

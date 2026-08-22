@@ -28,7 +28,7 @@ export default function Select({
   ...props
 }: SelectProps) {
   return (
-    <select
+    <select data-t1eq-field="true"
       value={value}
       disabled={disabled}
       onChange={(event) =>

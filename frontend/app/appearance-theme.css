@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   --t1eq-accent-color: #e26209;
   --t1eq-accent-color-soft: rgb(226 98 9 / 0.12);
 
@@ -6,8 +6,17 @@
   --t1eq-tile-border-color: #e4e4e7;
 
   --t1eq-sidebar-background-color: #09090b;
+  --t1eq-sidebar-button-color: #27272a;
+  --t1eq-sidebar-button-text-color: #ffffff;
   --t1eq-page-background-color: #f4f4f5;
+
+  --t1eq-balloon-background-color: #020617;
+  --t1eq-balloon-text-color: #ffffff;
 }
+
+/* =========================================================
+   FONT FAMILY
+   ========================================================= */
 
 html[data-t1eq-font-family="System"] body {
   font-family:
@@ -40,6 +49,10 @@ html[data-t1eq-font-family="Courier New"] body {
   font-family: "Courier New", monospace;
 }
 
+/* =========================================================
+   FONT SIZE
+   ========================================================= */
+
 html[data-t1eq-font-size="Small"] body {
   font-size: 14px;
 }
@@ -56,25 +69,60 @@ html[data-t1eq-font-size="Extra Large"] body {
   font-size: 20px;
 }
 
-/* Main app background */
+/* =========================================================
+   MAIN APP BACKGROUND
+   ========================================================= */
+
 body {
   background-color: var(--t1eq-page-background-color);
 }
 
-body > div,
-main,
+/*
+ * IMPORTANT:
+ * Do not use body > div here.
+ *
+ * Q-Bit renders its selection overlay as a top-level div.
+ * Styling every body child with the page background makes the
+ * selection rectangle opaque and covers the selected card.
+ */
+[data-t1eq-page-background="true"],
 .min-h-screen.bg-zinc-100 {
   background-color: var(--t1eq-page-background-color) !important;
 }
 
-/* Sidebar background */
+/*
+ * Q-Bit selection geometry must remain transparent.
+ * Only the orange perimeter/handles should be visible.
+ */
+[data-t1eq-qbit-selection-overlay="true"] {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
 [data-t1eq-sidebar="true"] {
   background-color: var(--t1eq-sidebar-background-color) !important;
   transform-origin: left center;
   will-change: transform, box-shadow;
 }
 
-/* Tile color system */
+/* Sidebar nav buttons — independently editable from the sidebar background */
+[data-t1eq-sidebar-button="true"] {
+  color: var(--t1eq-sidebar-button-text-color) !important;
+}
+
+[data-t1eq-sidebar-button="true"]:hover,
+[data-t1eq-sidebar-button-active="true"] {
+  background-color: var(--t1eq-sidebar-button-color) !important;
+}
+
+/* =========================================================
+   TILE COLOR SYSTEM
+   ========================================================= */
+
 [data-t1eq-tile="true"] {
   background:
     linear-gradient(
@@ -84,11 +132,19 @@ main,
       rgb(0 0 0 / 0.04) 100%
     ),
     var(--t1eq-tile-background-color) !important;
+
   background-color: var(--t1eq-tile-background-color) !important;
   border-color: var(--t1eq-tile-border-color) !important;
+
   border-radius: 1rem;
+
   transform-origin: center center;
-  will-change: transform, box-shadow, border-radius;
+
+  will-change:
+    transform,
+    box-shadow,
+    border-radius;
+
   transition:
     transform 180ms ease,
     box-shadow 180ms ease,
@@ -101,11 +157,20 @@ main,
   border-color: var(--t1eq-accent-color) !important;
 }
 
-/* Page card color system */
+/* =========================================================
+   PAGE CARD COLOR SYSTEM
+   ========================================================= */
+
 [data-t1eq-page-card="true"] {
   border-color: var(--t1eq-tile-border-color) !important;
+
   transform-origin: center top;
-  will-change: transform, box-shadow, border-radius;
+
+  will-change:
+    transform,
+    box-shadow,
+    border-radius;
+
   transition:
     transform 180ms ease,
     box-shadow 180ms ease,
@@ -113,14 +178,20 @@ main,
     border-radius 180ms ease;
 }
 
-/* Focus state */
+/* =========================================================
+   FOCUS STATE
+   ========================================================= */
+
 [data-t1eq-tile="true"]:focus-within,
 [data-t1eq-page-card="true"]:focus-within {
   outline: 2px solid var(--t1eq-accent-color);
   outline-offset: 2px;
 }
 
-/* Accent helper hooks */
+/* =========================================================
+   ACCENT HELPERS
+   ========================================================= */
+
 [data-t1eq-accent-button="true"] {
   background-color: var(--t1eq-accent-color) !important;
   border-color: var(--t1eq-accent-color) !important;
@@ -140,7 +211,52 @@ main,
   color: var(--t1eq-accent-color) !important;
 }
 
-/* Sidebar 3D depth */
+/* =========================================================
+   MESSAGE BALLOON COLOR SYSTEM
+   ========================================================= */
+
+[data-t1eq-balloon="true"] {
+  background-color: var(--t1eq-balloon-background-color) !important;
+  color: var(--t1eq-balloon-text-color) !important;
+}
+
+[data-t1eq-balloon-arrow="true"] {
+  background-color: var(--t1eq-balloon-background-color) !important;
+}
+
+/* =========================================================
+   Q-BIT EDIT MODE — INFORMATION BALLOONS
+   ========================================================= */
+
+/*
+ * Info balloons are pointer-events: none by default (see the
+ * InfoBalloon component) so a decorative tooltip never blocks a
+ * click-through to the tile underneath it. While Q-Bit is actively
+ * in click-to-select mode, make them clickable so they can be
+ * selected like any other element. This only matters once a balloon
+ * is already visible (on hover/focus of its parent tile) — an
+ * invisible element never receives clicks regardless of
+ * pointer-events.
+ *
+ * data-t1eq-balloon-region is the invisible padding gap between the
+ * tile and the visible bubble (bottom-full + padding, not margin, so
+ * the region has an actual hoverable box instead of dead space).
+ * Both it and the bubble itself need pointer-events re-enabled here
+ * — otherwise the pointer leaves every hoverable box the instant it
+ * crosses from the tile into that gap, group-hover turns off, and
+ * the balloon vanishes before the click can land on it.
+ */
+html[data-t1eq-qbit-editing="true"]
+  [data-t1eq-balloon-region="true"],
+html[data-t1eq-qbit-editing="true"]
+  [data-t1eq-qbit-type="information-balloon"] {
+  pointer-events: auto !important;
+}
+
+/* =========================================================
+   SIDEBAR 3D DEPTH
+   ========================================================= */
+
 html[data-t1eq-sidebar-depth="Off"] [data-t1eq-sidebar="true"] {
   box-shadow: none !important;
   transform: none !important;
@@ -150,14 +266,22 @@ html[data-t1eq-sidebar-depth="Subtle"] [data-t1eq-sidebar="true"] {
   box-shadow:
     10px 0 24px rgb(0 0 0 / 0.18),
     inset -1px 0 0 rgb(255 255 255 / 0.08) !important;
-  transform: perspective(900px) rotateY(-1deg) translateZ(0) !important;
+
+  transform:
+    perspective(900px)
+    rotateY(-1deg)
+    translateZ(0) !important;
 }
 
 html[data-t1eq-sidebar-depth="Medium"] [data-t1eq-sidebar="true"] {
   box-shadow:
     18px 0 46px rgb(0 0 0 / 0.3),
     inset -2px 0 0 rgb(255 255 255 / 0.12) !important;
-  transform: perspective(850px) rotateY(-2.75deg) translateZ(0) !important;
+
+  transform:
+    perspective(850px)
+    rotateY(-2.75deg)
+    translateZ(0) !important;
 }
 
 html[data-t1eq-sidebar-depth="Strong"] [data-t1eq-sidebar="true"] {
@@ -165,10 +289,17 @@ html[data-t1eq-sidebar-depth="Strong"] [data-t1eq-sidebar="true"] {
     34px 0 90px rgb(0 0 0 / 0.48),
     16px 0 36px rgb(0 0 0 / 0.32),
     inset -4px 0 0 rgb(255 255 255 / 0.16) !important;
-  transform: perspective(800px) rotateY(-5.5deg) translateZ(0) !important;
+
+  transform:
+    perspective(800px)
+    rotateY(-5.5deg)
+    translateZ(0) !important;
 }
 
-/* Page and tile 3D depth */
+/* =========================================================
+   PAGE AND TILE 3D DEPTH
+   ========================================================= */
+
 html[data-t1eq-page-depth="Off"] [data-t1eq-page-card="true"],
 html[data-t1eq-page-depth="Off"] [data-t1eq-tile="true"] {
   box-shadow: none !important;
@@ -182,45 +313,81 @@ html[data-t1eq-page-depth="Off"] [data-t1eq-tile="true"] {
 html[data-t1eq-page-depth="Subtle"] [data-t1eq-page-card="true"],
 html[data-t1eq-page-depth="Subtle"] [data-t1eq-tile="true"] {
   border-radius: 1rem !important;
+
   box-shadow:
     0 12px 24px rgb(0 0 0 / 0.14),
     0 3px 8px rgb(0 0 0 / 0.1),
     inset 0 1px 0 rgb(255 255 255 / 0.45) !important;
-  transform: perspective(900px) rotateX(1deg) translateY(-2px) scale(1.005) !important;
+
+  transform:
+    perspective(900px)
+    rotateX(1deg)
+    translateY(-2px)
+    scale(1.005) !important;
 }
 
 html[data-t1eq-page-depth="Medium"] [data-t1eq-page-card="true"],
 html[data-t1eq-page-depth="Medium"] [data-t1eq-tile="true"] {
   border-radius: 1.35rem !important;
+
   box-shadow:
     0 18px 38px rgb(0 0 0 / 0.22),
     0 6px 14px rgb(0 0 0 / 0.16),
     inset 0 1px 0 rgb(255 255 255 / 0.55) !important;
-  transform: perspective(900px) rotateX(2.5deg) translateY(-5px) scale(1.018) !important;
+
+  transform:
+    perspective(900px)
+    rotateX(2.5deg)
+    translateY(-5px)
+    scale(1.018) !important;
 }
 
 html[data-t1eq-page-depth="Strong"] [data-t1eq-page-card="true"],
 html[data-t1eq-page-depth="Strong"] [data-t1eq-tile="true"] {
   border-radius: 1.85rem !important;
+
   box-shadow:
     0 42px 95px rgb(0 0 0 / 0.42),
     0 18px 38px rgb(0 0 0 / 0.28),
     inset 0 2px 0 rgb(255 255 255 / 0.65),
     inset 0 -18px 32px rgb(0 0 0 / 0.08) !important;
-  transform: perspective(850px) rotateX(7deg) rotateY(-1deg) translateY(-14px) scale(1.055) !important;
+
+  transform:
+    perspective(850px)
+    rotateX(7deg)
+    rotateY(-1deg)
+    translateY(-14px)
+    scale(1.055) !important;
 }
 
-/* Extra hover lift */
+/* =========================================================
+   EXTRA HOVER LIFT
+   ========================================================= */
+
 html[data-t1eq-page-depth="Subtle"] [data-t1eq-tile="true"]:hover {
-  transform: perspective(900px) rotateX(1.5deg) translateY(-4px) scale(1.012) !important;
+  transform:
+    perspective(900px)
+    rotateX(1.5deg)
+    translateY(-4px)
+    scale(1.012) !important;
 }
 
 html[data-t1eq-page-depth="Medium"] [data-t1eq-tile="true"]:hover {
-  transform: perspective(900px) rotateX(3.25deg) translateY(-8px) scale(1.03) !important;
+  transform:
+    perspective(900px)
+    rotateX(3.25deg)
+    translateY(-8px)
+    scale(1.03) !important;
 }
 
 html[data-t1eq-page-depth="Strong"] [data-t1eq-tile="true"]:hover {
-  transform: perspective(850px) rotateX(8deg) rotateY(-1.25deg) translateY(-18px) scale(1.075) !important;
+  transform:
+    perspective(850px)
+    rotateX(8deg)
+    rotateY(-1.25deg)
+    translateY(-18px)
+    scale(1.075) !important;
+
   box-shadow:
     0 54px 120px rgb(0 0 0 / 0.48),
     0 24px 50px rgb(0 0 0 / 0.32),
@@ -228,7 +395,10 @@ html[data-t1eq-page-depth="Strong"] [data-t1eq-tile="true"]:hover {
     inset 0 -22px 36px rgb(0 0 0 / 0.1) !important;
 }
 
-/* Tile sizing */
+/* =========================================================
+   TILE SIZING
+   ========================================================= */
+
 html[data-t1eq-tile-size="Small"] [data-t1eq-tile="true"] {
   padding: 0.75rem;
 }
@@ -241,9 +411,16 @@ html[data-t1eq-tile-size="Large"] [data-t1eq-tile="true"] {
   padding: 1.75rem;
 }
 
-/* Tile board layout */
+/* =========================================================
+   TILE BOARD LAYOUT
+   ========================================================= */
+
 html[data-t1eq-tile-orientation="Grid"] [data-t1eq-tile-grid="true"] {
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(220px, 1fr)
+    );
 }
 
 html[data-t1eq-tile-orientation="List"] [data-t1eq-tile-grid="true"] {
@@ -251,26 +428,117 @@ html[data-t1eq-tile-orientation="List"] [data-t1eq-tile-grid="true"] {
 }
 
 html[data-t1eq-tile-orientation="Compact"] [data-t1eq-tile-grid="true"] {
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(160px, 1fr)
+    );
 }
 
-/* Logo rendering */
-html[style*="--t1eq-logo-url"] [data-t1eq-logo-box="true"] {
+/* =========================================================
+   LOGO — SIDEBAR
+   ========================================================= */
+
+html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Sidebar"]
+  [data-t1eq-logo-box="true"],
+html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Both"]
+  [data-t1eq-logo-box="true"] {
   background-image: var(--t1eq-logo-url);
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
 }
 
-html[style*="--t1eq-logo-url"] [data-t1eq-logo-fallback="true"] {
+html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Sidebar"]
+  [data-t1eq-logo-fallback="true"],
+html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Both"]
+  [data-t1eq-logo-fallback="true"] {
   display: none;
 }
 
+/* =========================================================
+   LOGO — BUSINESS CARD
+   ========================================================= */
+
 html[style*="--t1eq-logo-url"] [data-t1eq-business-card="true"] {
   background-image:
-    linear-gradient(rgb(0 0 0 / 0.45), rgb(0 0 0 / 0.45)),
+    linear-gradient(
+      rgb(0 0 0 / 0.45),
+      rgb(0 0 0 / 0.45)
+    ),
     var(--t1eq-logo-url);
+
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+}
+
+/* =========================================================
+   LOGO — PAGE WATERMARK
+   ========================================================= */
+
+/*
+ * Page-wide logo watermark.
+ * Only shows when placement is Background or Both.
+ */
+html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Background"]
+  [data-t1eq-page-background="true"],
+html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Both"]
+  [data-t1eq-page-background="true"] {
+  position: relative;
+}
+
+/*
+ * Keep page content above the watermark.
+ */
+html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Background"]
+  [data-t1eq-page-background="true"]
+  > *,
+html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Both"]
+  [data-t1eq-page-background="true"]
+  > * {
+  position: relative;
+  z-index: 1;
+}
+
+/*
+ * Watermark layer.
+ */
+html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Background"]
+  [data-t1eq-page-background="true"]::before,
+html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Both"]
+  [data-t1eq-page-background="true"]::before {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+
+  pointer-events: none;
+
+  background-image: var(--t1eq-logo-url);
+  background-repeat: no-repeat;
+
+  /*
+   * background-attachment: fixed positions the image relative
+   * to the viewport. Shifting it right by half the desktop
+   * sidebar width re-centers it on the content column.
+   */
+  background-position:
+    calc(50% + 9rem)
+    center;
+
+  background-size: 75%;
+  background-attachment: fixed;
+
+  opacity: 0.35;
+}
+
+@media (max-width: 1023px) {
+  html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Background"]
+    [data-t1eq-page-background="true"]::before,
+  html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Both"]
+    [data-t1eq-page-background="true"]::before {
+    background-position: center;
+  }
 }

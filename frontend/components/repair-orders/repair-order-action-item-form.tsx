@@ -822,7 +822,7 @@ export default function RepairOrderActionItemForm({
         }
       />
 
-      <div className="rounded-2xl border border-orange-400/20 bg-orange-500/10 p-4">
+      <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-orange-400/20 bg-orange-500/10 p-4">
         <div className="text-sm font-bold uppercase tracking-wide text-orange-200">
           Schedule / Assignment
         </div>
@@ -898,7 +898,7 @@ export default function RepairOrderActionItemForm({
         </div>
 
         {selectedEmployeeSuggestion && (
-          <div className="mt-4 rounded-xl border border-white/10 bg-black/20 p-4">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-4 rounded-xl border border-white/10 bg-black/20 p-4">
             <div className="text-sm font-bold text-white">
               {selectedEmployee?.displayName}
             </div>
@@ -925,7 +925,7 @@ export default function RepairOrderActionItemForm({
         )}
       </div>
 
-      <div className="rounded-2xl border border-cyan-400/20 bg-cyan-500/10 p-4">
+      <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-cyan-400/20 bg-cyan-500/10 p-4">
         <div className="text-sm font-bold uppercase tracking-wide text-cyan-200">
           Action Item Generation
         </div>
@@ -1166,7 +1166,7 @@ export default function RepairOrderActionItemForm({
 
       <div className="flex flex-wrap justify-end gap-3">
         {onCancel && (
-          <button
+          <button data-t1eq-action-button="true"
             type="button"
             onClick={onCancel}
             className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
@@ -1175,7 +1175,7 @@ export default function RepairOrderActionItemForm({
           </button>
         )}
 
-        <button
+        <button data-t1eq-action-button="true"
           type="submit"
           className="rounded-xl border border-blue-400/30 bg-blue-500/20 px-4 py-2 text-sm font-semibold text-blue-100 transition hover:bg-blue-500/30"
         >
@@ -1212,7 +1212,7 @@ function TextInput({
       <span className="text-xs font-semibold uppercase tracking-wide text-white/50">
         {label}
       </span>
-      <input
+      <input data-t1eq-field="true"
         type={type}
         min={type === "number" ? "0" : undefined}
         step={type === "number" ? "0.01" : undefined}
@@ -1243,7 +1243,7 @@ function TextAreaInput({
       <span className="text-xs font-semibold uppercase tracking-wide text-white/50">
         {label}
       </span>
-      <textarea
+      <textarea data-t1eq-field="true"
         value={value}
         placeholder={placeholder}
         rows={rows}
@@ -1270,7 +1270,7 @@ function SelectBlock({
       <span className="text-xs font-semibold uppercase tracking-wide text-white/50">
         {label}
       </span>
-      <select
+      <select data-t1eq-field="true"
         value={value}
         onChange={(event) => onChange(event.target.value)}
         className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white outline-none transition focus:border-blue-400/60"
@@ -1302,7 +1302,7 @@ function ReadOnlyInput({ label, value }: { label: string; value: string }) {
       <span className="text-xs font-semibold uppercase tracking-wide text-white/50">
         {label}
       </span>
-      <input
+      <input data-t1eq-field="true"
         value={value}
         readOnly
         className="mt-2 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white/70 outline-none"
@@ -1313,7 +1313,7 @@ function ReadOnlyInput({ label, value }: { label: string; value: string }) {
 
 function TotalDisplay({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4">
       <div className="text-xs uppercase tracking-wide text-white/50">
         {label}
       </div>

@@ -137,7 +137,7 @@ export default function InvoiceTable({
           ) => (
             <div className="flex justify-end gap-2">
               {onEdit && (
-                <button
+                <button data-t1eq-action-button="true"
                   type="button"
                   onClick={() =>
                     onEdit(
@@ -151,7 +151,7 @@ export default function InvoiceTable({
               )}
 
               {onDelete && (
-                <button
+                <button data-t1eq-action-button="true"
                   type="button"
                   onClick={() =>
                     onDelete(

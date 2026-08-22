@@ -102,7 +102,7 @@ export default function DispatchPage() {
 
           <div className="space-y-4">
             {dispatchJobs.map((dispatchJob) => (
-              <div
+              <div data-t1eq-tile="true" data-t1eq-page-card="true"
                 key={dispatchJob.id}
                 className="rounded-2xl border border-black/10 bg-black/[0.03] p-5"
               >
@@ -170,7 +170,7 @@ export default function DispatchPage() {
                       tone={getStatusTone(dispatchJob.status)}
                     />
 
-                    <div className="rounded-full border border-black/10 bg-black/[0.04] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-black/70">
+                    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-full border border-black/10 bg-black/[0.04] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-black/70">
                       Created {formatDateTime(dispatchJob.createdDate)}
                     </div>
                   </div>

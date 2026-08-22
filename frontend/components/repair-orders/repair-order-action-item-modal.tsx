@@ -21,7 +21,7 @@ export default function RepairOrderActionItemModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-      <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-3xl border border-white/10 bg-slate-950 p-6 shadow-2xl">
+      <div data-t1eq-tile="true" data-t1eq-page-card="true" className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-3xl border border-white/10 bg-slate-950 p-6 shadow-2xl">
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
             <div className="text-sm font-semibold uppercase tracking-[0.25em] text-white/50">
@@ -39,7 +39,7 @@ export default function RepairOrderActionItemModal({
             </p>
           </div>
 
-          <button
+          <button data-t1eq-action-button="true"
             type="button"
             onClick={onClose}
             className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"

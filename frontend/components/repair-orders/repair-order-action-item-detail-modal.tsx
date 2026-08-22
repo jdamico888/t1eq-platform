@@ -1,3 +1,5 @@
+"use client";
+
 import type {
   RepairOrderActionItem,
   RepairOrderLaborEntry,
@@ -20,51 +22,15 @@ import RepairOrderLaborEntryForm from "./repair-order-labor-entry-form";
 import RepairOrderPartEntries from "./repair-order-part-entries";
 import RepairOrderPartEntryForm from "./repair-order-part-entry-form";
 
-type RepairOrderActionItemsProps = {
-  actionItems: RepairOrderActionItem[];
+type RepairOrderActionItemDetailModalProps = {
+  isOpen: boolean;
+  actionItem: RepairOrderActionItem | null;
   assignedTruckId?: string;
-  onEdit?: (actionItem: RepairOrderActionItem) => void;
+  onClose: () => void;
+  onEditDetails?: (actionItem: RepairOrderActionItem) => void;
   onDelete?: (actionItem: RepairOrderActionItem) => void;
-  onUpdate?: (actionItem: RepairOrderActionItem) => void;
+  onUpdate: (actionItem: RepairOrderActionItem) => void;
 };
-
-const calculateLaborTotal = (
-  laborEntries: RepairOrderLaborEntry[]
-): number => {
-  return laborEntries.reduce(
-    (total, laborEntry) => total + laborEntry.total,
-    0
-  );
-};
-
-const calculatePartsTotal = (
-  partEntries: RepairOrderPartEntry[]
-): number => {
-  return partEntries.reduce(
-    (total, partEntry) => total + partEntry.total,
-    0
-  );
-};
-
-const calculateLaborHours = (
-  laborEntries: RepairOrderLaborEntry[]
-): number => {
-  return laborEntries.reduce(
-    (total, laborEntry) => total + laborEntry.hours,
-    0
-  );
-};
-
-function getGeneratedTravelTotal(actionItem: RepairOrderActionItem): number {
-  if (actionItem.generatedTravelTotal !== undefined) {
-    return actionItem.generatedTravelTotal;
-  }
-
-  return (
-    (actionItem.generatedTravelMiles ?? 0) *
-    (actionItem.generatedTravelRate ?? 0)
-  );
-}
 
 function formatActionItemSchedule(actionItem: RepairOrderActionItem): string {
   if (
@@ -132,52 +98,70 @@ function RepairOrderActionItemAssignmentSummary({
   );
 }
 
-export default function RepairOrderActionItems({
-  actionItems,
+const calculateLaborTotal = (laborEntries: RepairOrderLaborEntry[]): number => {
+  return laborEntries.reduce((total, laborEntry) => total + laborEntry.total, 0);
+};
+
+const calculatePartsTotal = (partEntries: RepairOrderPartEntry[]): number => {
+  return partEntries.reduce((total, partEntry) => total + partEntry.total, 0);
+};
+
+const calculateLaborHours = (laborEntries: RepairOrderLaborEntry[]): number => {
+  return laborEntries.reduce((total, laborEntry) => total + laborEntry.hours, 0);
+};
+
+function getGeneratedTravelTotal(actionItem: RepairOrderActionItem): number {
+  if (actionItem.generatedTravelTotal !== undefined) {
+    return actionItem.generatedTravelTotal;
+  }
+
+  return (
+    (actionItem.generatedTravelMiles ?? 0) *
+    (actionItem.generatedTravelRate ?? 0)
+  );
+}
+
+export default function RepairOrderActionItemDetailModal({
+  isOpen,
+  actionItem,
   assignedTruckId,
-  onEdit,
+  onClose,
+  onEditDetails,
   onDelete,
   onUpdate,
-}: RepairOrderActionItemsProps) {
-  if (actionItems.length === 0) {
-    return (
-      <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-dashed border-white/10 bg-white/5 p-10 text-center">
-        <div className="text-lg font-semibold text-white">
-          No Action Items
-        </div>
+}: RepairOrderActionItemDetailModalProps) {
+  if (!isOpen || !actionItem) return null;
 
-        <div className="mt-2 text-sm text-white/60">
-          Repair order action items will appear here.
-        </div>
-      </div>
-    );
+  function handleEditDetails(item: RepairOrderActionItem) {
+    onEditDetails?.(item);
+    onClose();
   }
 
   function recalculateActionItem(
-    actionItem: RepairOrderActionItem,
-    laborEntries: RepairOrderLaborEntry[] = actionItem.laborEntries ?? [],
-    partEntries: RepairOrderPartEntry[] = actionItem.partEntries ?? []
+    current: RepairOrderActionItem,
+    laborEntries: RepairOrderLaborEntry[] = current.laborEntries ?? [],
+    partEntries: RepairOrderPartEntry[] = current.partEntries ?? []
   ): RepairOrderActionItem {
-    const generatedTravelTotal = getGeneratedTravelTotal(actionItem);
-    const generatedMiscTotal = actionItem.generatedMiscTotal ?? 0;
+    const generatedTravelTotal = getGeneratedTravelTotal(current);
+    const generatedMiscTotal = current.generatedMiscTotal ?? 0;
 
     const laborTotal =
       laborEntries.length > 0
         ? calculateLaborTotal(laborEntries)
-        : actionItem.generatedLaborTotal ?? actionItem.laborTotal ?? 0;
+        : current.generatedLaborTotal ?? current.laborTotal ?? 0;
 
     const partsTotal =
       partEntries.length > 0
         ? calculatePartsTotal(partEntries)
-        : actionItem.generatedPartsTotal ?? actionItem.partsTotal ?? 0;
+        : current.generatedPartsTotal ?? current.partsTotal ?? 0;
 
     const laborHours =
       laborEntries.length > 0
         ? calculateLaborHours(laborEntries)
-        : actionItem.generatedLaborHours ?? actionItem.laborHours ?? 0;
+        : current.generatedLaborHours ?? current.laborHours ?? 0;
 
     return {
-      ...actionItem,
+      ...current,
       laborEntries,
       partEntries,
       laborHours,
@@ -188,38 +172,25 @@ export default function RepairOrderActionItems({
     };
   }
 
-  function handleAddLaborEntry(
-    actionItem: RepairOrderActionItem,
-    laborEntry: RepairOrderLaborEntry
-  ) {
-    const laborEntries = [
-      ...(actionItem.laborEntries ?? []),
-      laborEntry,
-    ];
+  function handleAddLaborEntry(laborEntry: RepairOrderLaborEntry) {
+    if (!actionItem) return;
 
-    onUpdate?.(
-      recalculateActionItem(
-        actionItem,
-        laborEntries,
-        actionItem.partEntries ?? []
-      )
+    const laborEntries = [...(actionItem.laborEntries ?? []), laborEntry];
+
+    onUpdate(
+      recalculateActionItem(actionItem, laborEntries, actionItem.partEntries ?? [])
     );
   }
 
-  function handleDeleteLaborEntry(
-    actionItem: RepairOrderActionItem,
-    laborEntry: RepairOrderLaborEntry
-  ) {
+  function handleDeleteLaborEntry(laborEntry: RepairOrderLaborEntry) {
+    if (!actionItem) return;
+
     const laborEntries = (actionItem.laborEntries ?? []).filter(
       (item) => item.id !== laborEntry.id
     );
 
-    onUpdate?.(
-      recalculateActionItem(
-        actionItem,
-        laborEntries,
-        actionItem.partEntries ?? []
-      )
+    onUpdate(
+      recalculateActionItem(actionItem, laborEntries, actionItem.partEntries ?? [])
     );
   }
 
@@ -255,8 +226,7 @@ export default function RepairOrderActionItems({
           ...partEntry,
           sourceStockLocation: "Truck",
           sourceTruckId: assignedTruckId,
-          sourceTruckName:
-            assignedTruck?.name ?? truckStockItem.truckName,
+          sourceTruckName: assignedTruck?.name ?? truckStockItem.truckName,
         };
       }
     }
@@ -274,10 +244,7 @@ export default function RepairOrderActionItems({
       return;
     }
 
-    if (
-      partEntry.sourceStockLocation === "Truck" &&
-      partEntry.sourceTruckId
-    ) {
+    if (partEntry.sourceStockLocation === "Truck" && partEntry.sourceTruckId) {
       restoreTruckStock(
         partEntry.sourceTruckId,
         partEntry.inventoryItemId,
@@ -292,94 +259,96 @@ export default function RepairOrderActionItems({
     }
   }
 
-  function handleAddPartEntry(
-    actionItem: RepairOrderActionItem,
-    partEntry: RepairOrderPartEntry
-  ) {
+  function handleAddPartEntry(partEntry: RepairOrderPartEntry) {
+    if (!actionItem) return;
+
     const consumedPartEntry = applyInventoryConsumption(partEntry);
 
-    const partEntries = [
-      ...(actionItem.partEntries ?? []),
-      consumedPartEntry,
-    ];
+    const partEntries = [...(actionItem.partEntries ?? []), consumedPartEntry];
 
-    onUpdate?.(
-      recalculateActionItem(
-        actionItem,
-        actionItem.laborEntries ?? [],
-        partEntries
-      )
+    onUpdate(
+      recalculateActionItem(actionItem, actionItem.laborEntries ?? [], partEntries)
     );
   }
 
-  function handleDeletePartEntry(
-    actionItem: RepairOrderActionItem,
-    partEntry: RepairOrderPartEntry
-  ) {
+  function handleDeletePartEntry(partEntry: RepairOrderPartEntry) {
+    if (!actionItem) return;
+
     restoreInventorySource(partEntry);
 
     const partEntries = (actionItem.partEntries ?? []).filter(
       (item) => item.id !== partEntry.id
     );
 
-    onUpdate?.(
-      recalculateActionItem(
-        actionItem,
-        actionItem.laborEntries ?? [],
-        partEntries
-      )
+    onUpdate(
+      recalculateActionItem(actionItem, actionItem.laborEntries ?? [], partEntries)
     );
   }
 
   return (
-    <div className="space-y-8">
-      {actionItems.map((actionItem) => (
-        <div data-t1eq-tile="true" data-t1eq-page-card="true"
-          key={actionItem.id}
-          className="space-y-4 rounded-3xl border border-white/10 bg-white/[0.03] p-4"
-        >
+    <div
+      data-t1eq-fixed-contrast="true"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+    >
+      <div data-t1eq-tile="true" data-t1eq-page-card="true" className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-3xl border border-white/10 bg-slate-950 p-6 shadow-2xl">
+        <div className="mb-6 flex items-start justify-between gap-4">
+          <div>
+            <div className="text-sm font-semibold uppercase tracking-[0.25em] text-white/50">
+              Action Item
+            </div>
+
+            <h2 className="mt-2 text-3xl font-bold text-white">
+              {actionItem.title}
+            </h2>
+          </div>
+
+          <button data-t1eq-action-button="true"
+            type="button"
+            onClick={onClose}
+            className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+          >
+            Close
+          </button>
+        </div>
+
+        <div className="space-y-6">
           <RepairOrderActionItemCard
             actionItem={actionItem}
-            onEdit={onEdit}
-            onDelete={onDelete}
+            onEdit={onEditDetails ? handleEditDetails : undefined}
+            onDelete={
+              onDelete
+                ? (item) => {
+                    onDelete(item);
+                    onClose();
+                  }
+                : undefined
+            }
           />
 
           <RepairOrderActionItemAssignmentSummary actionItem={actionItem} />
 
           <RepairOrderActionItemExecution
             actionItem={actionItem}
-            onUpdate={(updatedActionItem) => {
-              onUpdate?.(updatedActionItem);
-            }}
+            onUpdate={onUpdate}
           />
 
           <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-5">
-            <h3 className="text-xl font-bold text-white">
-              Labor Entries
-            </h3>
+            <h3 className="text-xl font-bold text-white">Labor Entries</h3>
 
             <div className="mt-4">
               <RepairOrderLaborEntries
                 laborEntries={actionItem.laborEntries ?? []}
-                onDelete={(laborEntry) =>
-                  handleDeleteLaborEntry(actionItem, laborEntry)
-                }
+                onDelete={handleDeleteLaborEntry}
               />
             </div>
 
             <div className="mt-5">
-              <RepairOrderLaborEntryForm
-                onSubmit={(laborEntry) =>
-                  handleAddLaborEntry(actionItem, laborEntry)
-                }
-              />
+              <RepairOrderLaborEntryForm onSubmit={handleAddLaborEntry} />
             </div>
           </div>
 
           <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-5">
-            <h3 className="text-xl font-bold text-white">
-              Parts Entries
-            </h3>
+            <h3 className="text-xl font-bold text-white">Parts Entries</h3>
 
             {assignedTruckId && (
               <p className="mt-1 text-sm text-white/60">
@@ -392,22 +361,16 @@ export default function RepairOrderActionItems({
             <div className="mt-4">
               <RepairOrderPartEntries
                 partEntries={actionItem.partEntries ?? []}
-                onDelete={(partEntry) =>
-                  handleDeletePartEntry(actionItem, partEntry)
-                }
+                onDelete={handleDeletePartEntry}
               />
             </div>
 
             <div className="mt-5">
-              <RepairOrderPartEntryForm
-                onSubmit={(partEntry) =>
-                  handleAddPartEntry(actionItem, partEntry)
-                }
-              />
+              <RepairOrderPartEntryForm onSubmit={handleAddPartEntry} />
             </div>
           </div>
         </div>
-      ))}
+      </div>
     </div>
   );
 }

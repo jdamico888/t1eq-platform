@@ -4,6 +4,7 @@ import type {
   AppearanceSettings,
   AppFontFamily,
   AppFontSize,
+  LogoPlacement,
   OutputAdvertisingPlacement,
   OutputFooterLayout,
   OutputHeaderLayout,
@@ -227,6 +228,7 @@ export const defaultAdvertisingBlocks: AdvertisingBlock[] = [];
 
 export const defaultAppearanceSettings: AppearanceSettings = {
   logoUrl: "",
+  logoPlacement: "Both",
 
   tileOrientation: "Grid",
   tileSize: "Medium",
@@ -244,7 +246,12 @@ export const defaultAppearanceSettings: AppearanceSettings = {
   tileBorderColor: "#e4e4e7",
 
   sidebarBackgroundColor: "#09090b",
+  sidebarButtonColor: "#27272a",
+  sidebarButtonTextColor: "#ffffff",
   pageBackgroundColor: "#f4f4f5",
+
+  balloonBackgroundColor: "#020617",
+  balloonTextColor: "#ffffff",
 
   qBitScopes: defaultQBitScopes,
   outputTemplates: defaultOutputTemplates,
@@ -252,6 +259,12 @@ export const defaultAppearanceSettings: AppearanceSettings = {
 
   updatedDate: new Date().toISOString(),
 };
+
+export const logoPlacementOptions: LogoPlacement[] = [
+  "Sidebar",
+  "Background",
+  "Both",
+];
 
 export const tileOrientationOptions: TileOrientation[] = [
   "Grid",
@@ -603,6 +616,10 @@ function normalizeAppearanceSettings(
 
     logoUrl: settings.logoUrl ?? "",
 
+    logoPlacement: valueIsOneOf(settings.logoPlacement, logoPlacementOptions)
+      ? settings.logoPlacement
+      : defaultAppearanceSettings.logoPlacement,
+
     accentHue: normalizedAccentHue,
 
     accentColor: normalizeColor(
@@ -625,9 +642,29 @@ function normalizeAppearanceSettings(
       defaultAppearanceSettings.sidebarBackgroundColor
     ),
 
+    sidebarButtonColor: normalizeColor(
+      settings.sidebarButtonColor,
+      defaultAppearanceSettings.sidebarButtonColor
+    ),
+
+    sidebarButtonTextColor: normalizeColor(
+      settings.sidebarButtonTextColor,
+      defaultAppearanceSettings.sidebarButtonTextColor
+    ),
+
     pageBackgroundColor: normalizeColor(
       settings.pageBackgroundColor,
       defaultAppearanceSettings.pageBackgroundColor
+    ),
+
+    balloonBackgroundColor: normalizeColor(
+      settings.balloonBackgroundColor,
+      defaultAppearanceSettings.balloonBackgroundColor
+    ),
+
+    balloonTextColor: normalizeColor(
+      settings.balloonTextColor,
+      defaultAppearanceSettings.balloonTextColor
     ),
 
     qBitScopes: normalizeQBitScopes(settings.qBitScopes),

@@ -431,7 +431,7 @@ export default function EmployeesPage() {
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-8 text-white">
       <div className="mx-auto max-w-7xl space-y-6">
-        <header className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/30">
+        <header data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/30">
           <p className="text-xs font-black uppercase tracking-[0.26em] text-orange-300">
             Employee Setup
           </p>
@@ -448,7 +448,7 @@ export default function EmployeesPage() {
         </header>
 
         <section className="grid gap-4 md:grid-cols-3 xl:grid-cols-7">
-          <button
+          <button data-t1eq-action-button="true"
             type="button"
             onClick={() => setRoleFilter("All")}
             className={`rounded-2xl border p-4 text-left transition ${
@@ -464,7 +464,7 @@ export default function EmployeesPage() {
           </button>
 
           {roleCounts.map((item) => (
-            <button
+            <button data-t1eq-action-button="true"
               key={item.role}
               type="button"
               onClick={() => setRoleFilter(item.role)}
@@ -483,7 +483,7 @@ export default function EmployeesPage() {
         </section>
 
         <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-          <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-5 shadow-2xl shadow-black/30">
+          <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/[0.04] p-5 shadow-2xl shadow-black/30">
             <div className="mb-5">
               <p className="text-[10px] font-black uppercase tracking-[0.22em] text-orange-300">
                 {editingEmployeeId ? "Edit Employee" : "Create Employee"}
@@ -494,7 +494,7 @@ export default function EmployeesPage() {
             </div>
 
             <form className="space-y-6" onSubmit={handleSubmit}>
-              <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4">
                 <h3 className="text-sm font-black uppercase tracking-wide text-white">
                   Identity / Role
                 </h3>
@@ -606,7 +606,7 @@ export default function EmployeesPage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4">
                 <h3 className="text-sm font-black uppercase tracking-wide text-white">
                   Payroll Settings
                 </h3>
@@ -659,7 +659,7 @@ export default function EmployeesPage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4">
                 <h3 className="text-sm font-black uppercase tracking-wide text-white">
                   Clock-In / Clock-Out Rules
                 </h3>
@@ -719,7 +719,7 @@ export default function EmployeesPage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4">
                 <h3 className="text-sm font-black uppercase tracking-wide text-white">
                   Customer Labor Billing
                 </h3>
@@ -784,7 +784,7 @@ export default function EmployeesPage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4">
                 <h3 className="text-sm font-black uppercase tracking-wide text-white">
                   Company Metrics
                 </h3>
@@ -892,7 +892,7 @@ export default function EmployeesPage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4">
                 <h3 className="text-sm font-black uppercase tracking-wide text-white">
                   Vacation Settings
                 </h3>
@@ -977,7 +977,7 @@ export default function EmployeesPage() {
                     <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
                       Accrual Start Date
                     </span>
-                    <input
+                    <input data-t1eq-field="true"
                       type="date"
                       value={formData.vacationSettings.accrualStartDate}
                       onChange={(event) =>
@@ -995,7 +995,7 @@ export default function EmployeesPage() {
                       <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
                         Vacation Notes
                       </span>
-                      <textarea
+                      <textarea data-t1eq-field="true"
                         value={formData.vacationSettings.vacationNotes}
                         onChange={(event) =>
                           handleVacationTextChange(
@@ -1012,7 +1012,7 @@ export default function EmployeesPage() {
               </div>
 
               {!editingEmployeeId && (
-                <div className="rounded-2xl border border-orange-400/20 bg-orange-500/10 p-4">
+                <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-orange-400/20 bg-orange-500/10 p-4">
                   <h3 className="text-sm font-black uppercase tracking-wide text-orange-200">
                     After Save Shortcut
                   </h3>
@@ -1039,7 +1039,7 @@ export default function EmployeesPage() {
                 </div>
               )}
 
-              <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4">
                 <TextareaField
                   label="Notes"
                   name="notes"
@@ -1049,14 +1049,14 @@ export default function EmployeesPage() {
               </div>
 
               <div className="flex flex-wrap gap-3">
-                <button
+                <button data-t1eq-action-button="true"
                   type="submit"
                   className="rounded-xl bg-orange-500 px-5 py-3 text-xs font-black uppercase tracking-wide text-white transition hover:bg-orange-400"
                 >
                   {editingEmployeeId ? "Update Employee" : "Create Employee"}
                 </button>
 
-                <button
+                <button data-t1eq-action-button="true"
                   type="button"
                   onClick={resetForm}
                   className="rounded-xl border border-white/10 px-5 py-3 text-xs font-black uppercase tracking-wide text-white transition hover:bg-white/10"
@@ -1067,7 +1067,7 @@ export default function EmployeesPage() {
             </form>
           </section>
 
-          <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-5 shadow-2xl shadow-black/30">
+          <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/[0.04] p-5 shadow-2xl shadow-black/30">
             <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
                 <p className="text-[10px] font-black uppercase tracking-[0.22em] text-orange-300">
@@ -1078,7 +1078,7 @@ export default function EmployeesPage() {
                 </h2>
               </div>
 
-              <input
+              <input data-t1eq-field="true"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search employees..."
@@ -1088,13 +1088,13 @@ export default function EmployeesPage() {
 
             <div className="space-y-3">
               {filteredEmployees.length === 0 && (
-                <div className="rounded-2xl border border-dashed border-white/15 bg-black/20 p-6 text-sm font-bold text-slate-400">
+                <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-dashed border-white/15 bg-black/20 p-6 text-sm font-bold text-slate-400">
                   No employees found.
                 </div>
               )}
 
               {filteredEmployees.map((employee) => (
-                <article
+                <article data-t1eq-tile="true" data-t1eq-page-card="true"
                   key={employee.id}
                   className="rounded-2xl border border-white/10 bg-black/20 p-4"
                 >
@@ -1150,7 +1150,7 @@ export default function EmployeesPage() {
                     </div>
 
                     <div className="flex flex-wrap gap-2">
-                      <button
+                      <button data-t1eq-action-button="true"
                         type="button"
                         onClick={() => handleEdit(employee)}
                         className="rounded-lg border border-cyan-400/30 bg-cyan-400/10 px-3 py-2 text-xs font-black uppercase tracking-wide text-cyan-200 transition hover:bg-cyan-400/20"
@@ -1158,7 +1158,7 @@ export default function EmployeesPage() {
                         Edit
                       </button>
 
-                      <button
+                      <button data-t1eq-action-button="true"
                         type="button"
                         onClick={() => handleDelete(employee)}
                         className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-black uppercase tracking-wide text-red-300 transition hover:bg-red-500/20"
@@ -1195,7 +1195,7 @@ function InputField({
       <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
         {label}
       </span>
-      <input
+      <input data-t1eq-field="true"
         name={name}
         value={value}
         onChange={onChange}
@@ -1219,7 +1219,7 @@ function NumberField({
       <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
         {label}
       </span>
-      <input
+      <input data-t1eq-field="true"
         type="number"
         min="0"
         step="0.01"
@@ -1249,7 +1249,7 @@ function TextareaField({
       <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
         {label}
       </span>
-      <textarea
+      <textarea data-t1eq-field="true"
         name={name}
         value={value}
         onChange={onChange}
@@ -1276,7 +1276,7 @@ function SelectField({
       <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
         {label}
       </span>
-      <select
+      <select data-t1eq-field="true"
         value={value}
         onChange={(event) => onChange(event.target.value)}
         className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm font-bold text-white outline-none focus:border-orange-400"
@@ -1301,8 +1301,8 @@ function CheckboxField({
   onChange: (checked: boolean) => void;
 }) {
   return (
-    <label className="flex items-center gap-3 rounded-xl border border-white/10 bg-black/20 p-3">
-      <input
+    <label data-t1eq-tile="true" data-t1eq-page-card="true" className="flex items-center gap-3 rounded-xl border border-white/10 bg-black/20 p-3">
+      <input data-t1eq-field="true"
         type="checkbox"
         checked={checked}
         onChange={(event) => onChange(event.target.checked)}
@@ -1317,7 +1317,7 @@ function CheckboxField({
 
 function ReadOnlyFlag({ label, value }: { label: string; value: boolean }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-black/20 p-3">
+    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-white/10 bg-black/20 p-3">
       <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
         {label}
       </p>

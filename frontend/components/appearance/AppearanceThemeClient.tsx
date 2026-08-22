@@ -38,6 +38,7 @@ function applyAppearanceSettings() {
   root.dataset.t1eqTileSize = settings.tileSize;
   root.dataset.t1eqSidebarDepth = settings.sidebarThreeDEffect;
   root.dataset.t1eqPageDepth = settings.pageThreeDEffect;
+  root.dataset.t1eqLogoPlacement = settings.logoPlacement;
 
   root.style.setProperty("--t1eq-accent-color", settings.accentColor);
   root.style.setProperty(
@@ -61,8 +62,28 @@ function applyAppearanceSettings() {
   );
 
   root.style.setProperty(
+    "--t1eq-sidebar-button-color",
+    settings.sidebarButtonColor
+  );
+
+  root.style.setProperty(
+    "--t1eq-sidebar-button-text-color",
+    settings.sidebarButtonTextColor
+  );
+
+  root.style.setProperty(
     "--t1eq-page-background-color",
     settings.pageBackgroundColor
+  );
+
+  root.style.setProperty(
+    "--t1eq-balloon-background-color",
+    settings.balloonBackgroundColor
+  );
+
+  root.style.setProperty(
+    "--t1eq-balloon-text-color",
+    settings.balloonTextColor
   );
 
   if (settings.logoUrl.trim().length > 0) {

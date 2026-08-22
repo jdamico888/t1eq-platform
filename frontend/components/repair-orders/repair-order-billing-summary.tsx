@@ -15,7 +15,7 @@ export default function RepairOrderBillingSummary({
   const financialSummary = calculateRepairOrderFinancialSummary(repairOrder);
 
   return (
-    <section className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+    <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
       <div className="mb-5">
         <h2 className="text-2xl font-bold text-white">Billing Summary</h2>
 
@@ -25,7 +25,7 @@ export default function RepairOrderBillingSummary({
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
-        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4">
           <div className="text-xs uppercase tracking-wide text-white/50">
             Inspection Charges
           </div>
@@ -35,7 +35,7 @@ export default function RepairOrderBillingSummary({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4">
           <div className="text-xs uppercase tracking-wide text-white/50">
             Repair Charges
           </div>
@@ -45,7 +45,7 @@ export default function RepairOrderBillingSummary({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4">
           <div className="text-xs uppercase tracking-wide text-white/50">
             Parts Charges
           </div>
@@ -55,7 +55,7 @@ export default function RepairOrderBillingSummary({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4">
           <div className="text-xs uppercase tracking-wide text-white/50">
             Other Charges
           </div>
@@ -67,7 +67,7 @@ export default function RepairOrderBillingSummary({
       </div>
 
       <div className="mt-4 grid gap-4 md:grid-cols-4">
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-white/5 p-4">
           <div className="text-xs uppercase tracking-wide text-white/50">
             Labor Total
           </div>
@@ -77,7 +77,7 @@ export default function RepairOrderBillingSummary({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-white/5 p-4">
           <div className="text-xs uppercase tracking-wide text-white/50">
             Parts Total
           </div>
@@ -87,7 +87,7 @@ export default function RepairOrderBillingSummary({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-blue-400/30 bg-blue-500/10 p-4">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-blue-400/30 bg-blue-500/10 p-4">
           <div className="text-xs uppercase tracking-wide text-blue-200/70">
             Subtotal
           </div>
@@ -97,7 +97,7 @@ export default function RepairOrderBillingSummary({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-white/5 p-4">
           <div className="text-xs uppercase tracking-wide text-white/50">
             Billable Items
           </div>

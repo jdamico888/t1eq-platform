@@ -30,7 +30,7 @@ export default function PurchaseOrderTable({
   purchaseOrders,
 }: PurchaseOrderTableProps) {
   return (
-    <div className="overflow-hidden rounded-xl border border-black/10">
+    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="overflow-hidden rounded-xl border border-black/10">
       <table className="w-full text-left text-sm">
         <thead className="bg-black/[0.03]">
           <tr>

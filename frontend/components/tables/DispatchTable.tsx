@@ -98,7 +98,7 @@ export default function DispatchTable({
           render: (job) => (
             <div className="flex justify-end gap-2">
               {onEdit && (
-                <button
+                <button data-t1eq-action-button="true"
                   type="button"
                   onClick={() =>
                     onEdit(job)
@@ -110,7 +110,7 @@ export default function DispatchTable({
               )}
 
               {onDelete && (
-                <button
+                <button data-t1eq-action-button="true"
                   type="button"
                   onClick={() =>
                     onDelete(job)

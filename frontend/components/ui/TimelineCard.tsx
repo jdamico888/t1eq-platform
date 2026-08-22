@@ -19,7 +19,7 @@ export default function TimelineCard({
   items,
 }: TimelineCardProps) {
   return (
-    <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
+    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
       <h2 className="mb-6 text-2xl font-semibold">
         {title}
       </h2>
@@ -38,7 +38,7 @@ export default function TimelineCard({
           >
             <div className="absolute left-0 top-1.5 h-3 w-3 rounded-full bg-cyan-500" />
 
-            <div className="rounded-2xl border border-white/5 bg-black/20 p-4">
+            <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/5 bg-black/20 p-4">
               <div className="font-medium">
                 {item.title}
               </div>

@@ -18,7 +18,7 @@ export default function RepairOrderDispatchReadinessPanel({
   const readiness = calculateRepairOrderDispatchReadiness(repairOrder);
 
   return (
-    <section className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+    <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
       <div className="mb-5 flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div>
           <h2 className="text-2xl font-bold text-white">Dispatch Readiness</h2>
@@ -43,7 +43,7 @@ export default function RepairOrderDispatchReadinessPanel({
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4">
           <div className="text-xs uppercase tracking-wide text-white/50">
             Blocking Issues
           </div>
@@ -53,7 +53,7 @@ export default function RepairOrderDispatchReadinessPanel({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4">
           <div className="text-xs uppercase tracking-wide text-white/50">
             Warnings
           </div>
@@ -63,7 +63,7 @@ export default function RepairOrderDispatchReadinessPanel({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4">
           <div className="text-xs uppercase tracking-wide text-white/50">
             Dispatch Status
           </div>

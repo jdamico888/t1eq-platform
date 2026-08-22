@@ -35,7 +35,7 @@ export default function NumberInput({
         </label>
       )}
 
-      <input
+      <input data-t1eq-field="true"
         type="number"
         value={
           typeof value ===

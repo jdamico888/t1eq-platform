@@ -31,7 +31,7 @@ export default function CurrencyInput({
           $
         </div>
 
-        <input
+        <input data-t1eq-field="true"
           type="number"
           step="0.01"
           min="0"

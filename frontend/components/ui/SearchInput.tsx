@@ -12,7 +12,7 @@ export default function SearchInput({
   className = "",
 }: SearchInputProps) {
   return (
-    <input
+    <input data-t1eq-field="true"
       className={`w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 outline-none transition focus:border-cyan-500 ${className}`}
       placeholder={placeholder}
       value={value}

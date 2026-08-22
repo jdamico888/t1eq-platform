@@ -76,16 +76,12 @@ export const navigationItems: NavigationItem[] = [
     href: "/payroll",
   },
   {
-    label: "Scheduling",
+    label: "Appointments/Scheduling",
     href: "/scheduling",
   },
   {
     label: "Suppliers",
     href: "/suppliers",
-  },
-  {
-    label: "Users",
-    href: "/users",
   },
   {
     label: "Settings",

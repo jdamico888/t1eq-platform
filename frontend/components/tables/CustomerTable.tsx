@@ -83,7 +83,7 @@ export default function CustomerTable({
           render: (customer) => (
             <div className="flex justify-end gap-2">
               {onEdit && (
-                <button
+                <button data-t1eq-action-button="true"
                   type="button"
                   onClick={() =>
                     onEdit(customer)
@@ -95,7 +95,7 @@ export default function CustomerTable({
               )}
 
               {onDelete && (
-                <button
+                <button data-t1eq-action-button="true"
                   type="button"
                   onClick={() =>
                     onDelete(customer)

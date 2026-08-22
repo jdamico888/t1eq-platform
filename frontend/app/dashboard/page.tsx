@@ -3,8 +3,6 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
-import { getAppearanceSettings } from "@/services/appearance-settings";
-
 type StoredRecord = Record<string, unknown>;
 
 type DashboardMetrics = {
@@ -42,6 +40,8 @@ type DisplaySubcategory = DashboardSubcategory & {
 
 type SelectedSubcategoryMap = Record<string, string[]>;
 type SubcategoryValueMap = Record<string, Record<string, number>>;
+
+const DASHBOARD_SCOPE = "dashboard";
 
 const DASHBOARD_SUBCATEGORY_STORAGE_KEY =
   "t1eq-dashboard-tile-subcategories-v4";
@@ -402,7 +402,9 @@ function readArrayFromStorage(keys: string[]): StoredRecord[] {
       if (Array.isArray(parsedValue)) {
         return parsedValue.filter(
           (item): item is StoredRecord =>
-            Boolean(item) && typeof item === "object" && !Array.isArray(item)
+            Boolean(item) &&
+            typeof item === "object" &&
+            !Array.isArray(item)
         );
       }
     } catch {
@@ -411,19 +413,6 @@ function readArrayFromStorage(keys: string[]): StoredRecord[] {
   }
 
   return [];
-}
-
-function readDashboardLogoUrl(): string {
-  if (typeof window === "undefined") {
-    return "";
-  }
-
-  try {
-    const settings = getAppearanceSettings();
-    return typeof settings.logoUrl === "string" ? settings.logoUrl.trim() : "";
-  } catch {
-    return "";
-  }
 }
 
 function getText(record: StoredRecord, keys: string[]): string {
@@ -438,7 +427,11 @@ function getText(record: StoredRecord, keys: string[]): string {
   return "";
 }
 
-function getNumber(record: StoredRecord, keys: string[], fallback = 0): number {
+function getNumber(
+  record: StoredRecord,
+  keys: string[],
+  fallback = 0
+): number {
   for (const key of keys) {
     const parsedValue = Number(record[key]);
 
@@ -461,7 +454,9 @@ function countNestedArrays(records: StoredRecord[], keys: string[]): number {
       keys.reduce((nestedTotal, key) => {
         const value = record[key];
 
-        return Array.isArray(value) ? nestedTotal + value.length : nestedTotal;
+        return Array.isArray(value)
+          ? nestedTotal + value.length
+          : nestedTotal;
       }, 0)
     );
   }, 0);
@@ -521,34 +516,42 @@ function hasActionType(repairOrder: StoredRecord, actionType: string): boolean {
 function readDashboardData() {
   return {
     customers: readArrayFromStorage(["t1eq-customers", "customers"]),
+
     equipment: readArrayFromStorage([
       "t1eq-equipment",
       "t1eq-equipment-items",
       "equipment",
     ]),
+
     repairOrders: readArrayFromStorage([
       "t1eq-repair-orders",
       "repair-orders",
     ]),
+
     inventory: readArrayFromStorage([
       "t1eq-inventory-items",
       "t1eq-inventory",
       "inventory-items",
     ]),
+
     inventoryTransactions: readArrayFromStorage([
       "t1eq-inventory-transactions",
       "inventory-transactions",
     ]),
+
     trucks: readArrayFromStorage([
       "t1eq-trucks",
       "t1eq-truck-stock",
       "trucks",
     ]),
+
     purchaseOrders: readArrayFromStorage([
       "t1eq-purchase-orders",
       "purchase-orders",
     ]),
+
     suppliers: readArrayFromStorage(["t1eq-suppliers", "suppliers"]),
+
     invoices: readArrayFromStorage(["t1eq-invoices", "invoices"]),
   };
 }
@@ -594,14 +597,17 @@ function calculateDashboardState(): {
   const subcategoryValues: SubcategoryValueMap = {
     customers: {
       accounts: data.customers.length,
+
       contacts: data.customers.filter((customer) =>
         hasAnyText(customer, ["contactName", "phone", "email"])
       ).length,
+
       locations:
         countNestedArrays(data.customers, ["sites", "locations", "addresses"]) ||
         data.customers.filter((customer) =>
           hasAnyText(customer, ["serviceAddress", "billingAddress", "address"])
         ).length,
+
       history: data.repairOrders.filter((repairOrder) =>
         hasAnyText(repairOrder, ["customerId", "customerName"])
       ).length,
@@ -609,6 +615,7 @@ function calculateDashboardState(): {
 
     equipment: {
       assets: data.equipment.length,
+
       "model-serial": data.equipment.filter((equipment) =>
         hasAnyText(equipment, [
           "model",
@@ -617,9 +624,11 @@ function calculateDashboardState(): {
           "assetNumber",
         ])
       ).length,
+
       locations: data.equipment.filter((equipment) =>
         hasAnyText(equipment, ["siteName", "locationName", "currentLocation"])
       ).length,
+
       "service-history": data.repairOrders.filter((repairOrder) =>
         hasAnyText(repairOrder, ["equipmentId", "equipmentName"])
       ).length,
@@ -627,19 +636,23 @@ function calculateDashboardState(): {
 
     "repair-orders": {
       open: openRepairOrders.length,
+
       diagnosis: data.repairOrders.filter(
         (repairOrder) =>
           hasAnyText(repairOrder, ["diagnosis", "initialFindings"]) ||
           hasActionType(repairOrder, "diagnosis")
       ).length,
+
       labor:
         countNestedArrays(data.repairOrders, ["laborEntries"]) +
         countNestedArrays(data.repairOrders, ["actionItems"]),
+
       parts:
         countNestedArrays(data.repairOrders, ["partEntries"]) +
         data.repairOrders.filter((repairOrder) =>
           hasActionType(repairOrder, "parts")
         ).length,
+
       photos: countNestedArrays(data.repairOrders, ["photos"]),
     },
 
@@ -649,12 +662,15 @@ function calculateDashboardState(): {
           statusIncludes(repairOrder, "scheduled") ||
           hasAnyText(repairOrder, ["scheduledDate"])
       ).length,
+
       "in-progress": openRepairOrders.filter((repairOrder) =>
         statusIncludes(repairOrder, "progress")
       ).length,
+
       "waiting-parts": openRepairOrders.filter((repairOrder) =>
         statusIncludes(repairOrder, "parts")
       ).length,
+
       "waiting-approval": openRepairOrders.filter((repairOrder) =>
         statusIncludes(repairOrder, "approval")
       ).length,
@@ -662,12 +678,15 @@ function calculateDashboardState(): {
 
     inventory: {
       warehouse: data.inventory.length,
+
       "part-lookup": data.inventory.filter((item) =>
         hasAnyText(item, ["partNumber", "sku", "description"])
       ).length,
+
       transactions:
         data.inventoryTransactions.length +
         countNestedArrays(data.inventory, ["transactions"]),
+
       pricing: data.inventory.filter((item) =>
         Number.isFinite(
           Number(item.cost ?? item.unitCost ?? item.sellPrice ?? item.price)
@@ -677,14 +696,20 @@ function calculateDashboardState(): {
 
     "low-inventory": {
       reorder: lowInventoryItems.length,
+
       minimums: data.inventory.filter(
         (item) =>
-          getNumber(item, ["minimumQuantity", "minimumStock", "reorderPoint"], 0) >
-          0
+          getNumber(
+            item,
+            ["minimumQuantity", "minimumStock", "reorderPoint"],
+            0
+          ) > 0
       ).length,
+
       "supplier-review": lowInventoryItems.filter((item) =>
         hasAnyText(item, ["supplierId", "supplierName", "vendorName"])
       ).length,
+
       "truck-shortage": lowInventoryItems.filter((item) =>
         hasAnyText(item, ["truckId", "truckName", "assignedTruckId"])
       ).length,
@@ -692,6 +717,7 @@ function calculateDashboardState(): {
 
     "truck-stock": {
       trucks: data.trucks.length,
+
       technicians: data.trucks.filter((truck) =>
         hasAnyText(truck, [
           "technicianId",
@@ -699,11 +725,13 @@ function calculateDashboardState(): {
           "assignedTechnicianName",
         ])
       ).length,
+
       transfers: data.inventoryTransactions.filter((transaction) =>
         getText(transaction, ["type", "transactionType"])
           .toLowerCase()
           .includes("transfer")
       ).length,
+
       "field-stock": countNestedArrays(data.trucks, [
         "stock",
         "inventory",
@@ -713,13 +741,16 @@ function calculateDashboardState(): {
 
     "purchase-orders": {
       suppliers: data.suppliers.length,
+
       orders: data.purchaseOrders.length,
+
       receiving: data.purchaseOrders.filter(
         (purchaseOrder) =>
           statusIncludes(purchaseOrder, "received") ||
           statusIncludes(purchaseOrder, "partial") ||
           hasAnyText(purchaseOrder, ["receivedDate"])
       ).length,
+
       discrepancies: data.purchaseOrders.filter(
         (purchaseOrder) =>
           statusIncludes(purchaseOrder, "discrep") ||
@@ -729,15 +760,18 @@ function calculateDashboardState(): {
 
     invoices: {
       drafts: countByStatus(data.invoices, ["draft"]),
+
       issued: data.invoices.filter(
         (invoice) =>
           statusIncludes(invoice, "issued") ||
           statusIncludes(invoice, "sent") ||
           hasAnyText(invoice, ["issuedDate", "sentDate"])
       ).length,
+
       "repair-order-billing": data.invoices.filter((invoice) =>
         hasAnyText(invoice, ["repairOrderId", "repairOrderNumber"])
       ).length,
+
       paid: countByStatus(data.invoices, ["paid"]),
     },
   };
@@ -782,10 +816,16 @@ function resolveSelectedIdsForTile(
     .map((subcategory) => subcategory.id);
 }
 
-function resolveSelectedMap(input?: SelectedSubcategoryMap): SelectedSubcategoryMap {
+function resolveSelectedMap(
+  input?: SelectedSubcategoryMap
+): SelectedSubcategoryMap {
   return DASHBOARD_TILE_DEFINITIONS.reduce<SelectedSubcategoryMap>(
     (selectedMap, tile) => {
-      selectedMap[tile.id] = resolveSelectedIdsForTile(tile, input?.[tile.id]);
+      selectedMap[tile.id] = resolveSelectedIdsForTile(
+        tile,
+        input?.[tile.id]
+      );
+
       return selectedMap;
     },
     {}
@@ -798,13 +838,17 @@ function readSelectedSubcategories(): SelectedSubcategoryMap {
   }
 
   try {
-    const storedValue = localStorage.getItem(DASHBOARD_SUBCATEGORY_STORAGE_KEY);
+    const storedValue = localStorage.getItem(
+      DASHBOARD_SUBCATEGORY_STORAGE_KEY
+    );
 
     if (!storedValue) {
       return createDefaultSelectedSubcategories();
     }
 
-    return resolveSelectedMap(JSON.parse(storedValue) as SelectedSubcategoryMap);
+    return resolveSelectedMap(
+      JSON.parse(storedValue) as SelectedSubcategoryMap
+    );
   } catch {
     return createDefaultSelectedSubcategories();
   }
@@ -821,11 +865,32 @@ function saveSelectedSubcategories(selectedMap: SelectedSubcategoryMap) {
   );
 }
 
-function InfoBalloon({ description }: { description: string }) {
+function InfoBalloon({
+  id,
+  description,
+}: {
+  id: string;
+  description: string;
+}) {
   return (
-    <div className="pointer-events-none absolute bottom-full left-1/2 z-[9999] mb-4 hidden w-80 -translate-x-1/2 rounded-2xl border border-orange-300/40 bg-slate-950 px-4 py-3 text-left text-sm font-semibold leading-6 text-white shadow-2xl shadow-black/80 group-hover:block group-focus-within:block">
-      <div className="absolute -bottom-2 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 border-b border-r border-orange-300/40 bg-slate-950" />
-      {description}
+    <div
+      data-t1eq-balloon-region="true"
+      className="pointer-events-none absolute bottom-full left-1/2 z-[9999] hidden w-80 -translate-x-1/2 pb-4 group-hover:block group-focus-within:block"
+    >
+      <div
+        data-t1eq-balloon="true"
+        data-t1eq-qbit-type="information-balloon"
+        data-t1eq-qbit-id={id}
+        data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+        className="relative rounded-2xl border border-orange-300/40 bg-slate-950 px-4 py-3 text-left text-sm font-semibold leading-6 text-white shadow-2xl shadow-black/80"
+      >
+        <div
+          data-t1eq-balloon-arrow="true"
+          className="absolute -bottom-2 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 border-b border-r border-orange-300/40 bg-slate-950"
+        />
+
+        {description}
+      </div>
     </div>
   );
 }
@@ -842,51 +907,95 @@ function DashboardTile({
   return (
     <Link
       data-t1eq-tile="true"
+      data-t1eq-qbit-type="tile"
+      data-t1eq-qbit-id={`dashboard-tile-${tile.id}`}
+      data-t1eq-qbit-scope={DASHBOARD_SCOPE}
       href={tile.href}
       aria-label={`${tile.label}. ${tile.description}`}
       className="group relative z-0 overflow-visible rounded-[28px] border border-slate-700 bg-slate-900 p-5 text-white shadow-2xl shadow-black/30 outline-none transition hover:z-50 hover:-translate-y-1 hover:border-orange-300 focus-visible:z-50 focus-visible:border-orange-300"
     >
-      <div className={`mb-5 h-1.5 w-20 rounded-full ${tile.accentClass}`} />
+      <div
+        data-t1eq-qbit-type="section"
+        data-t1eq-qbit-id={`dashboard-tile-${tile.id}-accent`}
+        data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+        className={`mb-5 h-1.5 w-20 rounded-full ${tile.accentClass}`}
+      />
 
-      <div>
-        <p className="text-xs font-black uppercase tracking-[0.22em] text-slate-400">
+      <div
+        data-t1eq-qbit-type="section"
+        data-t1eq-qbit-id={`dashboard-tile-${tile.id}-metric`}
+        data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+      >
+        <p
+          data-t1eq-qbit-type="text"
+          data-t1eq-qbit-id={`dashboard-tile-${tile.id}-label`}
+          data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+          className="text-xs font-black uppercase tracking-[0.22em] text-slate-400"
+        >
           {tile.label}
         </p>
-        <p className="mt-3 text-4xl font-black tracking-tight text-white">
+
+        <p
+          data-t1eq-qbit-type="text"
+          data-t1eq-qbit-id={`dashboard-tile-${tile.id}-value`}
+          data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+          className="mt-3 text-4xl font-black tracking-tight text-white"
+        >
           {value}
         </p>
       </div>
 
-      <div className="mt-5 grid grid-cols-3 gap-3">
+      <div
+        data-t1eq-qbit-type="section"
+        data-t1eq-qbit-id={`dashboard-tile-${tile.id}-subcategories`}
+        data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+        className="mt-5 grid grid-cols-3 gap-3"
+      >
         {selectedSubcategories.map((subcategory) => (
           <div
             key={subcategory.id}
+            data-t1eq-page-card="true"
+            data-t1eq-qbit-type="page-card"
+            data-t1eq-qbit-id={`dashboard-tile-${tile.id}-subcategory-${subcategory.id}`}
+            data-t1eq-qbit-scope={DASHBOARD_SCOPE}
             className="rounded-2xl border border-slate-700 bg-slate-800/80 px-3 py-3 text-center"
           >
-            <p className="text-2xl font-black leading-none text-white">
+            <p
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id={`dashboard-tile-${tile.id}-subcategory-${subcategory.id}-value`}
+              data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+              className="text-2xl font-black leading-none text-white"
+            >
               {subcategory.value}
             </p>
-            <p className="mt-2 text-[10px] font-black uppercase tracking-wide text-slate-300">
+
+            <p
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id={`dashboard-tile-${tile.id}-subcategory-${subcategory.id}-label`}
+              data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+              className="mt-2 text-[10px] font-black uppercase tracking-wide text-slate-300"
+            >
               {subcategory.label}
             </p>
           </div>
         ))}
       </div>
 
-      <p className="mt-4 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
-        Hover for details
-      </p>
-
-      <InfoBalloon description={tile.description} />
+      <InfoBalloon
+        id={`dashboard-tile-${tile.id}-information-balloon`}
+        description={tile.description}
+      />
     </Link>
   );
 }
 
 function ActionTile({
+  id,
   title,
   description,
   href,
 }: {
+  id: string;
   title: string;
   description: string;
   href: string;
@@ -894,55 +1003,66 @@ function ActionTile({
   return (
     <Link
       data-t1eq-tile="true"
+      data-t1eq-qbit-type="tile"
+      data-t1eq-qbit-id={`dashboard-quick-action-${id}`}
+      data-t1eq-qbit-scope={DASHBOARD_SCOPE}
       href={href}
       aria-label={`${title}. ${description}`}
       className="group relative z-0 overflow-visible rounded-[24px] border border-slate-700 bg-slate-900 p-5 text-white shadow-xl shadow-black/20 outline-none transition hover:z-50 hover:-translate-y-1 hover:border-orange-300 focus-visible:z-50 focus-visible:border-orange-300"
     >
-      <h3 className="text-base font-black text-white">{title}</h3>
+      <h3
+        data-t1eq-qbit-type="text"
+        data-t1eq-qbit-id={`dashboard-quick-action-${id}-title`}
+        data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+        className="text-base font-black text-white"
+      >
+        {title}
+      </h3>
 
-      <p className="mt-3 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
-        Hover for details
-      </p>
-
-      <InfoBalloon description={description} />
+      <InfoBalloon
+        id={`dashboard-quick-action-${id}-information-balloon`}
+        description={description}
+      />
     </Link>
   );
 }
 
 export default function DashboardPage() {
   const [metrics, setMetrics] = useState<DashboardMetrics>(DEFAULT_METRICS);
-  const [dashboardLogoUrl, setDashboardLogoUrl] = useState("");
-  const [logoLoadFailed, setLogoLoadFailed] = useState(false);
+
   const [subcategoryValues, setSubcategoryValues] =
     useState<SubcategoryValueMap>({});
+
   const [savedSubcategories, setSavedSubcategories] =
-    useState<SelectedSubcategoryMap>(() => createDefaultSelectedSubcategories());
+    useState<SelectedSubcategoryMap>(() =>
+      createDefaultSelectedSubcategories()
+    );
+
   const [draftSubcategories, setDraftSubcategories] =
-    useState<SelectedSubcategoryMap>(() => createDefaultSelectedSubcategories());
+    useState<SelectedSubcategoryMap>(() =>
+      createDefaultSelectedSubcategories()
+    );
+
   const [subcategoryMessage, setSubcategoryMessage] = useState("");
+
   const [isSubcategoryChooserOpen, setIsSubcategoryChooserOpen] =
     useState(false);
 
   useEffect(() => {
     const storedSubcategories = readSelectedSubcategories();
     const dashboardState = calculateDashboardState();
-    const logoUrl = readDashboardLogoUrl();
 
     setMetrics(dashboardState.metrics);
     setSubcategoryValues(dashboardState.subcategoryValues);
+
     setSavedSubcategories(storedSubcategories);
     setDraftSubcategories(storedSubcategories);
-    setDashboardLogoUrl(logoUrl);
-    setLogoLoadFailed(false);
 
     function refreshDashboard() {
       const refreshedDashboardState = calculateDashboardState();
-      const refreshedLogoUrl = readDashboardLogoUrl();
 
       setMetrics(refreshedDashboardState.metrics);
       setSubcategoryValues(refreshedDashboardState.subcategoryValues);
-      setDashboardLogoUrl(refreshedLogoUrl);
-      setLogoLoadFailed(false);
     }
 
     window.addEventListener("storage", refreshDashboard);
@@ -953,16 +1073,25 @@ export default function DashboardPage() {
     window.addEventListener("t1eq-trucks-changed", refreshDashboard);
     window.addEventListener("t1eq-purchase-orders-changed", refreshDashboard);
     window.addEventListener("t1eq-invoices-changed", refreshDashboard);
-    window.addEventListener("t1eq-appearance-settings-changed", refreshDashboard);
+    window.addEventListener(
+      "t1eq-appearance-settings-changed",
+      refreshDashboard
+    );
 
     return () => {
       window.removeEventListener("storage", refreshDashboard);
       window.removeEventListener("t1eq-customers-changed", refreshDashboard);
       window.removeEventListener("t1eq-equipment-changed", refreshDashboard);
-      window.removeEventListener("t1eq-repair-orders-changed", refreshDashboard);
+      window.removeEventListener(
+        "t1eq-repair-orders-changed",
+        refreshDashboard
+      );
       window.removeEventListener("t1eq-inventory-changed", refreshDashboard);
       window.removeEventListener("t1eq-trucks-changed", refreshDashboard);
-      window.removeEventListener("t1eq-purchase-orders-changed", refreshDashboard);
+      window.removeEventListener(
+        "t1eq-purchase-orders-changed",
+        refreshDashboard
+      );
       window.removeEventListener("t1eq-invoices-changed", refreshDashboard);
       window.removeEventListener(
         "t1eq-appearance-settings-changed",
@@ -996,7 +1125,9 @@ export default function DashboardPage() {
 
     setSavedSubcategories(resolvedDraft);
     setDraftSubcategories(resolvedDraft);
+
     saveSelectedSubcategories(resolvedDraft);
+
     setSubcategoryMessage("Subcategory choices saved.");
     setIsSubcategoryChooserOpen(false);
   }
@@ -1006,7 +1137,9 @@ export default function DashboardPage() {
 
     setDraftSubcategories(defaultSelection);
     setSavedSubcategories(defaultSelection);
+
     saveSelectedSubcategories(defaultSelection);
+
     setSubcategoryMessage("Subcategory choices reset to defaults.");
     setIsSubcategoryChooserOpen(false);
   }
@@ -1056,85 +1189,109 @@ export default function DashboardPage() {
 
   return (
     <main
+      data-t1eq-page-background="true"
+      data-t1eq-qbit-type="background"
+      data-t1eq-qbit-id="dashboard-background"
+      data-t1eq-qbit-scope={DASHBOARD_SCOPE}
       className="min-h-screen px-6 py-8 text-white"
       style={{
-        background: "#020617",
-        color: "#ffffff",
         opacity: 1,
         filter: "none",
       }}
     >
-      <div className="mx-auto max-w-7xl space-y-8 overflow-visible">
+      <div
+        data-t1eq-qbit-type="section"
+        data-t1eq-qbit-id="dashboard-content-container"
+        data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+        className="mx-auto max-w-7xl space-y-8 overflow-visible"
+      >
         <section
           data-t1eq-tile="true"
           data-t1eq-tile-id="operations-dashboard-card"
+          data-t1eq-qbit-type="tile"
+          data-t1eq-qbit-id="dashboard-operations-hero"
+          data-t1eq-qbit-scope={DASHBOARD_SCOPE}
           aria-label="Operations Dashboard. Main dashboard overview card."
           className="group relative z-0 min-h-[250px] overflow-visible rounded-[32px] border border-slate-700 bg-slate-900 p-8 text-white shadow-2xl shadow-black/40 outline-none transition hover:z-50 hover:border-orange-300 focus-visible:z-50 focus-visible:border-orange-300"
         >
-          
-          {dashboardLogoUrl && !logoLoadFailed && (
-            <div className="pointer-events-none absolute inset-y-0 right-0 z-[4] flex w-[58%] items-center justify-end overflow-visible pr-8">
-              <img
-                src={dashboardLogoUrl}
-                alt=""
-                aria-hidden="true"
-                draggable={false}
-                onLoad={() => setLogoLoadFailed(false)}
-                onError={() => setLogoLoadFailed(true)}
-                className="h-64 max-h-[96%] w-auto max-w-full object-contain opacity-100 drop-shadow-[0_0_44px_rgba(251,146,60,0.72)]"
-              />
-            </div>
-          )}
+          <div
+            data-t1eq-qbit-type="section"
+            data-t1eq-qbit-id="dashboard-operations-hero-overlay"
+            data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+            className="pointer-events-none absolute inset-y-0 left-0 z-[5] w-[58%] rounded-l-[32px] bg-gradient-to-r from-black/45 via-black/25 to-transparent"
+          />
 
-          <div className="pointer-events-none absolute inset-y-0 left-0 z-[5] w-[58%] rounded-l-[32px] bg-gradient-to-r from-black/45 via-black/25 to-transparent" />
-
-          <div className="relative z-10 max-w-3xl">
-            <p className="text-xs font-black uppercase tracking-[0.28em] text-orange-300">
+          <div
+            data-t1eq-qbit-type="section"
+            data-t1eq-qbit-id="dashboard-operations-hero-content"
+            data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+            className="relative z-10 max-w-3xl"
+          >
+            <p
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="dashboard-company-label"
+              data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+              className="text-xs font-black uppercase tracking-[0.28em] text-orange-300"
+            >
               Tier One Equipment
             </p>
 
-            <div className="mt-3">
-              <h1 className="text-4xl font-black tracking-tight text-white">
-                Operations Dashboard
-              </h1>
-              <p className="mt-3 text-sm font-semibold leading-6 text-slate-300">
-                Manage customers, sites, equipment, repair orders, inventory,
-                truck stock, purchase orders, invoices, and field operations.
-              </p>
-            </div>
+            <h1
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="dashboard-title"
+              data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+              className="mt-3 text-4xl font-black tracking-tight text-white"
+            >
+              Operations Dashboard
+            </h1>
+
+            <p
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="dashboard-description"
+              data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+              className="mt-3 text-sm font-semibold leading-6 text-slate-300"
+            >
+              Manage customers, optional multi-site locations, equipment,
+              repair orders, inventory, truck stock, purchase orders, invoices,
+              and field operations.
+            </p>
           </div>
-
-          {!dashboardLogoUrl && (
-            <div className="pointer-events-none absolute right-8 top-1/2 z-[6] -translate-y-1/2 rounded-2xl border border-orange-300/60 bg-orange-500/20 px-4 py-3 text-xs font-black uppercase tracking-wide text-orange-100 shadow-2xl shadow-black/40">
-              Logo URL Empty
-            </div>
-          )}
-
-          {dashboardLogoUrl && logoLoadFailed && (
-            <div className="pointer-events-none absolute right-8 top-1/2 z-[6] max-w-xs -translate-y-1/2 rounded-2xl border border-red-300/70 bg-red-500/20 px-4 py-3 text-xs font-black uppercase tracking-wide text-red-100 shadow-2xl shadow-black/40">
-              Logo Not Loading
-            </div>
-          )}
         </section>
 
         {isSubcategoryChooserOpen && (
-          <section className="rounded-[28px] border border-slate-700 bg-slate-900 p-6 shadow-2xl shadow-black/30">
-            <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <section
+            data-t1eq-page-card="true"
+            data-t1eq-qbit-type="page-card"
+            data-t1eq-qbit-id="dashboard-subcategory-chooser"
+            data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+            className="rounded-[28px] border border-slate-700 bg-slate-900 p-6 shadow-2xl shadow-black/30"
+          >
+            <div
+              data-t1eq-qbit-type="section"
+              data-t1eq-qbit-id="dashboard-subcategory-chooser-header"
+              data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+              className="mb-5 flex flex-col gap-3 md:flex-row md:items-end md:justify-between"
+            >
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.24em] text-slate-400">
                   Tile Subcategories
                 </p>
+
                 <h2 className="mt-1 text-2xl font-black text-white">
                   Choose Up To 3 Per Tile
                 </h2>
+
                 <p className="mt-2 text-sm font-semibold text-slate-300">
-                  Choose the subcategories, then press Save Subcategory Choices
-                  to lock them onto the dashboard tiles.
+                  Choose the subcategories, then save them to the dashboard.
                 </p>
               </div>
 
               <div className="flex flex-wrap gap-3">
                 <button
+                  data-t1eq-action-button="true"
+                  data-t1eq-qbit-type="action-button"
+                  data-t1eq-qbit-id="dashboard-subcategory-save-button"
+                  data-t1eq-qbit-scope={DASHBOARD_SCOPE}
                   type="button"
                   onClick={saveSubcategoryChoices}
                   className="rounded-2xl bg-orange-500 px-4 py-3 text-xs font-black uppercase tracking-wide text-white shadow-xl shadow-black/30 transition hover:bg-orange-400"
@@ -1143,6 +1300,10 @@ export default function DashboardPage() {
                 </button>
 
                 <button
+                  data-t1eq-action-button="true"
+                  data-t1eq-qbit-type="action-button"
+                  data-t1eq-qbit-id="dashboard-subcategory-cancel-button"
+                  data-t1eq-qbit-scope={DASHBOARD_SCOPE}
                   type="button"
                   onClick={() => setIsSubcategoryChooserOpen(false)}
                   className="rounded-2xl border border-slate-600 bg-slate-800 px-4 py-3 text-xs font-black uppercase tracking-wide text-white transition hover:border-orange-300"
@@ -1151,6 +1312,10 @@ export default function DashboardPage() {
                 </button>
 
                 <button
+                  data-t1eq-action-button="true"
+                  data-t1eq-qbit-type="action-button"
+                  data-t1eq-qbit-id="dashboard-subcategory-reset-button"
+                  data-t1eq-qbit-scope={DASHBOARD_SCOPE}
                   type="button"
                   onClick={resetSubcategories}
                   className="rounded-2xl border border-slate-600 bg-slate-800 px-4 py-3 text-xs font-black uppercase tracking-wide text-white transition hover:border-orange-300"
@@ -1160,19 +1325,29 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="grid gap-4 lg:grid-cols-3">
+            <div
+              data-t1eq-qbit-type="section"
+              data-t1eq-qbit-id="dashboard-subcategory-chooser-grid"
+              data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+              className="grid gap-4 lg:grid-cols-3"
+            >
               {DASHBOARD_TILE_DEFINITIONS.map((tile) => {
                 const selectedIds = draftSubcategories[tile.id] ?? [];
 
                 return (
                   <div
                     key={tile.id}
+                    data-t1eq-page-card="true"
+                    data-t1eq-qbit-type="page-card"
+                    data-t1eq-qbit-id={`dashboard-subcategory-chooser-${tile.id}`}
+                    data-t1eq-qbit-scope={DASHBOARD_SCOPE}
                     className="rounded-2xl border border-slate-700 bg-slate-950 p-4"
                   >
                     <div className="mb-3 flex items-center justify-between gap-3">
                       <h3 className="text-sm font-black text-white">
                         {tile.label}
                       </h3>
+
                       <span className="rounded-full bg-slate-800 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-slate-300">
                         {selectedIds.length}/{MAX_VISIBLE_SUBCATEGORIES}
                       </span>
@@ -1180,9 +1355,8 @@ export default function DashboardPage() {
 
                     <div className="flex flex-wrap gap-2">
                       {tile.subcategories.map((subcategory) => {
-                        const isSelected = selectedIds.includes(
-                          subcategory.id
-                        );
+                        const isSelected = selectedIds.includes(subcategory.id);
+
                         const isDisabled =
                           !isSelected &&
                           selectedIds.length >= MAX_VISIBLE_SUBCATEGORIES;
@@ -1190,6 +1364,10 @@ export default function DashboardPage() {
                         return (
                           <button
                             key={subcategory.id}
+                            data-t1eq-action-button="true"
+                            data-t1eq-qbit-type="action-button"
+                            data-t1eq-qbit-id={`dashboard-subcategory-choice-${tile.id}-${subcategory.id}`}
+                            data-t1eq-qbit-scope={DASHBOARD_SCOPE}
                             type="button"
                             disabled={isDisabled}
                             onClick={() =>
@@ -1216,12 +1394,23 @@ export default function DashboardPage() {
           </section>
         )}
 
-        <section className="overflow-visible">
-          <div className="mb-4 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <section
+          data-t1eq-qbit-type="section"
+          data-t1eq-qbit-id="dashboard-command-tiles-section"
+          data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+          className="overflow-visible"
+        >
+          <div
+            data-t1eq-qbit-type="section"
+            data-t1eq-qbit-id="dashboard-command-tiles-header"
+            data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+            className="mb-4 flex flex-col gap-4 md:flex-row md:items-end md:justify-between"
+          >
             <div>
               <p className="text-xs font-black uppercase tracking-[0.24em] text-slate-400">
                 Command Tiles
               </p>
+
               <h2 className="mt-1 text-2xl font-black text-white">
                 System Overview
               </h2>
@@ -1229,15 +1418,25 @@ export default function DashboardPage() {
 
             <div className="flex flex-col items-start gap-2 md:items-end">
               {subcategoryMessage && !isSubcategoryChooserOpen && (
-                <p className="rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 text-xs font-black uppercase tracking-wide text-emerald-200">
+                <p
+                  data-t1eq-qbit-type="information-balloon"
+                  data-t1eq-qbit-id="dashboard-subcategory-status-message"
+                  data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+                  className="rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 text-xs font-black uppercase tracking-wide text-emerald-200"
+                >
                   {subcategoryMessage}
                 </p>
               )}
 
               <button
+                data-t1eq-action-button="true"
+                data-t1eq-accent-button="true"
+                data-t1eq-qbit-type="action-button"
+                data-t1eq-qbit-id="dashboard-edit-subcategories-button"
+                data-t1eq-qbit-scope={DASHBOARD_SCOPE}
                 type="button"
                 onClick={openSubcategoryChooser}
-                className="rounded-2xl border border-slate-600 bg-slate-800 px-4 py-3 text-xs font-black uppercase tracking-wide text-white transition hover:border-orange-300"
+                className="rounded-2xl border px-4 py-3 text-xs font-black uppercase tracking-wide transition"
               >
                 Edit Tile Subcategories
               </button>
@@ -1248,7 +1447,13 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="grid overflow-visible gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          <div
+            data-t1eq-tile-grid="true"
+            data-t1eq-qbit-type="section"
+            data-t1eq-qbit-id="dashboard-command-tiles-grid"
+            data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+            className="grid overflow-visible gap-5 sm:grid-cols-2 xl:grid-cols-3"
+          >
             {dashboardTiles.map(({ tile, value, selectedSubcategories }) => (
               <DashboardTile
                 key={tile.id}
@@ -1260,68 +1465,93 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        <section className="overflow-visible">
-          <div className="mb-4">
+        <section
+          data-t1eq-qbit-type="section"
+          data-t1eq-qbit-id="dashboard-quick-actions-section"
+          data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+          className="overflow-visible"
+        >
+          <div
+            data-t1eq-qbit-type="section"
+            data-t1eq-qbit-id="dashboard-quick-actions-header"
+            data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+            className="mb-4"
+          >
             <p className="text-xs font-black uppercase tracking-[0.24em] text-slate-400">
               Quick Actions
             </p>
+
             <h2 className="mt-1 text-2xl font-black text-white">
               Start Common Workflows
             </h2>
           </div>
 
-          <div className="grid overflow-visible gap-5 md:grid-cols-2 xl:grid-cols-3">
+          <div
+            data-t1eq-qbit-type="section"
+            data-t1eq-qbit-id="dashboard-quick-actions-grid"
+            data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+            className="grid overflow-visible gap-5 md:grid-cols-2 xl:grid-cols-3"
+          >
             <ActionTile
+              id="create-repair-order"
               title="Create Repair Order"
               description="Start a new repair order with customer concern, equipment assignment, technician routing, labor, parts, photos, and billing workflow."
               href="/repair-orders"
             />
 
             <ActionTile
+              id="add-customer"
               title="Add Customer"
-              description="Create or update customer account information, contacts, billing data, and service-location records."
+              description="Create or update customer account information, contacts, billing data, and optional service-location records."
               href="/customers"
             />
 
             <ActionTile
+              id="add-equipment"
               title="Add Equipment"
               description="Create a customer equipment record with model, serial, asset data, location, and future inspection or repair history."
               href="/equipment"
             />
 
             <ActionTile
+              id="add-inventory-item"
               title="Add Inventory Item"
               description="Create warehouse inventory with part numbers, pictures, cross references, cost, sell price, quantity, and minimum stock levels."
               href="/inventory"
             />
 
             <ActionTile
+              id="inventory-transactions"
               title="Inventory Transactions"
               description="Review warehouse receipts, repair-order consumption, returns, adjustments, references, and full inventory audit history."
               href="/inventory/transactions"
             />
 
             <ActionTile
+              id="purchase-orders"
               title="Purchase Orders"
               description="Begin procurement workflow for supplier orders, receiving, incoming quantity tracking, discrepancy review, and inventory replenishment."
               href="/purchase-orders"
             />
 
             <ActionTile
+              id="truck-stock"
               title="Truck Stock"
               description="Create service trucks, assign technicians, load inventory from warehouse stock to field vehicles, and review field stock movement."
               href="/truck-stock"
             />
 
             <ActionTile
+              id="dispatch"
               title="Dispatch"
               description="Review scheduling, dispatch workload, assigned technicians, open repair orders, and field service routing."
               href="/dispatch"
             />
 
             <ActionTile
+              id="invoices"
               title="Invoices"
-              description="Generate or review customer invoices from repair-order billing summaries, labor, parts, and other charges."
+              description="Generate or review customer invoices from repair-order billing summaries, inspection charges, repair charges, parts, and other charges."
               href="/invoices"
             />
           </div>

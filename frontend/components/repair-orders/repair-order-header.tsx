@@ -13,7 +13,7 @@ export default function RepairOrderHeader({
   onStatusChange,
 }: RepairOrderHeaderProps) {
   return (
-    <div className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur-xl">
+    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur-xl">
       <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-start">
         <div>
           <div className="text-sm font-semibold uppercase tracking-[0.25em] text-white/50">
@@ -36,7 +36,7 @@ export default function RepairOrderHeader({
         <div className="flex flex-wrap items-center gap-3 lg:justify-end">
           <RepairOrderStatusBadge status={repairOrder.status} />
 
-          <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white/70">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white/70">
             {repairOrder.priority} Priority
           </div>
         </div>
@@ -52,7 +52,7 @@ export default function RepairOrderHeader({
       )}
 
       <div className="mt-6 grid gap-4 md:grid-cols-4">
-        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4">
           <div className="text-xs uppercase tracking-wide text-white/50">
             Technician
           </div>
@@ -62,7 +62,7 @@ export default function RepairOrderHeader({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4">
           <div className="text-xs uppercase tracking-wide text-white/50">
             Scheduled
           </div>
@@ -72,7 +72,7 @@ export default function RepairOrderHeader({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4">
           <div className="text-xs uppercase tracking-wide text-white/50">
             Completed
           </div>
@@ -82,7 +82,7 @@ export default function RepairOrderHeader({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4">
           <div className="text-xs uppercase tracking-wide text-white/50">
             Action Items
           </div>

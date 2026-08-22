@@ -69,7 +69,7 @@ export default function AddPartModal({
               Add Part
             </h2>
 
-            <button
+            <button data-t1eq-action-button="true"
               onClick={onClose}
               className="
                 text-gray-500
@@ -89,7 +89,7 @@ export default function AddPartModal({
                 Part Number
               </label>
 
-              <input
+              <input data-t1eq-field="true"
                 value={partNumber}
                 onChange={(e) =>
                   setPartNumber(
@@ -113,7 +113,7 @@ export default function AddPartModal({
                 Description
               </label>
 
-              <input
+              <input data-t1eq-field="true"
                 value={description}
                 onChange={(e) =>
                   setDescription(
@@ -137,7 +137,7 @@ export default function AddPartModal({
                 Quantity
               </label>
 
-              <input
+              <input data-t1eq-field="true"
                 type="number"
                 value={quantity}
                 onChange={(e) =>
@@ -164,7 +164,7 @@ export default function AddPartModal({
                 Cost
               </label>
 
-              <input
+              <input data-t1eq-field="true"
                 type="number"
                 value={cost}
                 onChange={(e) =>
@@ -191,7 +191,7 @@ export default function AddPartModal({
                 Sale Price
               </label>
 
-              <input
+              <input data-t1eq-field="true"
                 type="number"
                 value={salePrice}
                 onChange={(e) =>
@@ -218,7 +218,7 @@ export default function AddPartModal({
                 Source
               </label>
 
-              <input
+              <input data-t1eq-field="true"
                 value={source}
                 onChange={(e) =>
                   setSource(
@@ -240,7 +240,7 @@ export default function AddPartModal({
 
           <div className="flex justify-end gap-3">
 
-            <button
+            <button data-t1eq-action-button="true"
               onClick={onClose}
               className="
                 px-5

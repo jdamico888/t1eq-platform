@@ -13,7 +13,7 @@ export default function RepairOrderLaborEntries({
 }: RepairOrderLaborEntriesProps) {
   if (laborEntries.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-white/10 bg-white/5 p-8 text-center">
+      <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-dashed border-white/10 bg-white/5 p-8 text-center">
         <div className="text-lg font-semibold text-white">
           No Labor Entries
         </div>

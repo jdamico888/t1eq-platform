@@ -232,7 +232,7 @@ export default function SettingsPage() {
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-8 text-slate-50">
       <div className="mx-auto max-w-6xl space-y-8">
-        <header className="rounded-[28px] border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur">
+        <header data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-[28px] border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur">
           <p className="text-xs font-black uppercase tracking-[0.28em] text-orange-300">
             Tier One Equipment
           </p>
@@ -245,14 +245,14 @@ export default function SettingsPage() {
           </p>
 
           {saveMessage && (
-            <div className="mt-4 rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm font-black text-emerald-200">
+            <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-4 rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm font-black text-emerald-200">
               {saveMessage}
             </div>
           )}
         </header>
 
         <section className="grid gap-6 lg:grid-cols-2">
-          <div className="rounded-[28px] border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-[28px] border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur">
             <div className="mb-6">
               <p className="text-xs font-black uppercase tracking-[0.24em] text-slate-400">
                 Branding
@@ -265,7 +265,7 @@ export default function SettingsPage() {
                 <span className="text-xs font-black uppercase tracking-wide text-slate-400">
                   Company Name
                 </span>
-                <input
+                <input data-t1eq-field="true"
                   value={brandSettings.companyName}
                   onChange={(event) =>
                     setBrandSettings((current) => ({
@@ -281,7 +281,7 @@ export default function SettingsPage() {
                 <span className="text-xs font-black uppercase tracking-wide text-slate-400">
                   Upload Logo
                 </span>
-                <input
+                <input data-t1eq-field="true"
                   type="file"
                   accept="image/*"
                   onChange={handleLogoFileChange}
@@ -289,7 +289,7 @@ export default function SettingsPage() {
                 />
               </label>
 
-              <div className="rounded-2xl border border-white/10 bg-black/30 p-5">
+              <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/30 p-5">
                 <p className="mb-3 text-xs font-black uppercase tracking-wide text-slate-400">
                   Preview
                 </p>
@@ -301,7 +301,7 @@ export default function SettingsPage() {
                     className="max-h-32 max-w-full rounded-xl object-contain"
                   />
                 ) : (
-                  <div className="flex h-32 items-center justify-center rounded-xl border border-dashed border-white/20 text-sm font-bold text-slate-500">
+                  <div data-t1eq-tile="true" data-t1eq-page-card="true" className="flex h-32 items-center justify-center rounded-xl border border-dashed border-white/20 text-sm font-bold text-slate-500">
                     No logo selected
                   </div>
                 )}
@@ -313,7 +313,7 @@ export default function SettingsPage() {
                 )}
               </div>
 
-              <button
+              <button data-t1eq-action-button="true"
                 type="button"
                 onClick={handleSaveLogo}
                 className="w-full rounded-2xl bg-orange-500 px-5 py-3 text-sm font-black uppercase tracking-wide text-white shadow-xl shadow-orange-950/30 hover:bg-orange-400"
@@ -323,7 +323,7 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-[28px] border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur">
             <div className="mb-6">
               <p className="text-xs font-black uppercase tracking-[0.24em] text-slate-400">
                 Interface
@@ -336,7 +336,7 @@ export default function SettingsPage() {
                 <span className="text-xs font-black uppercase tracking-wide text-slate-400">
                   Theme Name
                 </span>
-                <input
+                <input data-t1eq-field="true"
                   value={appearanceSettings.themeName}
                   onChange={(event) =>
                     updateAppearance("themeName", event.target.value)
@@ -350,7 +350,7 @@ export default function SettingsPage() {
                   <span className="text-xs font-black uppercase tracking-wide text-slate-400">
                     Accent
                   </span>
-                  <input
+                  <input data-t1eq-field="true"
                     type="color"
                     value={appearanceSettings.accentColor}
                     onChange={(event) =>
@@ -364,7 +364,7 @@ export default function SettingsPage() {
                   <span className="text-xs font-black uppercase tracking-wide text-slate-400">
                     Background
                   </span>
-                  <input
+                  <input data-t1eq-field="true"
                     type="color"
                     value={appearanceSettings.backgroundColor}
                     onChange={(event) =>
@@ -378,7 +378,7 @@ export default function SettingsPage() {
                   <span className="text-xs font-black uppercase tracking-wide text-slate-400">
                     Panel
                   </span>
-                  <input
+                  <input data-t1eq-field="true"
                     type="color"
                     value={appearanceSettings.panelColor}
                     onChange={(event) =>
@@ -392,7 +392,7 @@ export default function SettingsPage() {
                   <span className="text-xs font-black uppercase tracking-wide text-slate-400">
                     Text
                   </span>
-                  <input
+                  <input data-t1eq-field="true"
                     type="color"
                     value={appearanceSettings.textColor}
                     onChange={(event) =>
@@ -407,7 +407,7 @@ export default function SettingsPage() {
                 <span className="text-xs font-black uppercase tracking-wide text-slate-400">
                   Border Radius
                 </span>
-                <select
+                <select data-t1eq-field="true"
                   value={appearanceSettings.borderRadius}
                   onChange={(event) =>
                     updateAppearance("borderRadius", event.target.value)
@@ -425,7 +425,7 @@ export default function SettingsPage() {
                 <span className="text-xs font-black uppercase tracking-wide text-slate-400">
                   Glass Opacity
                 </span>
-                <input
+                <input data-t1eq-field="true"
                   type="range"
                   min="0.25"
                   max="1"
@@ -439,7 +439,7 @@ export default function SettingsPage() {
               </label>
 
               <div className="grid gap-3 sm:grid-cols-2">
-                <button
+                <button data-t1eq-action-button="true"
                   type="button"
                   onClick={handleSaveAppearance}
                   className="rounded-2xl bg-orange-500 px-5 py-3 text-sm font-black uppercase tracking-wide text-white shadow-xl shadow-orange-950/30 hover:bg-orange-400"
@@ -447,7 +447,7 @@ export default function SettingsPage() {
                   Save Appearance
                 </button>
 
-                <button
+                <button data-t1eq-action-button="true"
                   type="button"
                   onClick={handleResetAppearance}
                   className="rounded-2xl border border-white/10 bg-white/10 px-5 py-3 text-sm font-black uppercase tracking-wide text-white hover:bg-white/20"
@@ -459,7 +459,7 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        <section
+        <section data-t1eq-tile="true" data-t1eq-page-card="true"
           className="rounded-[28px] border border-white/10 p-6 shadow-2xl"
           style={{
             backgroundColor: appearanceSettings.panelColor,
@@ -486,7 +486,7 @@ export default function SettingsPage() {
             >
               Accent Sample
             </span>
-            <span className="rounded-full border border-white/20 px-4 py-2 text-xs font-black uppercase tracking-wide">
+            <span data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-full border border-white/20 px-4 py-2 text-xs font-black uppercase tracking-wide">
               Panel Sample
             </span>
           </div>

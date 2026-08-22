@@ -25,52 +25,124 @@ export default function RootLayout({
       <body>
         <AppearanceThemeClient />
 
-        <div className="flex min-h-screen bg-zinc-100 text-black">
+        <div
+          data-t1eq-qbit-type="section"
+          data-t1eq-qbit-id="app-shell"
+          data-t1eq-qbit-scope="global"
+          className="flex min-h-screen bg-zinc-100 text-black"
+        >
           <aside
             data-t1eq-sidebar="true"
+            data-t1eq-qbit-type="sidebar"
+            data-t1eq-qbit-id="main-sidebar"
+            data-t1eq-qbit-scope="global"
             className="sticky top-0 hidden h-screen w-72 shrink-0 overflow-y-auto border-r border-zinc-800 bg-zinc-950 p-5 text-white lg:block"
           >
             <div
-              data-t1eq-business-card="true"
-              className="mb-6 rounded-2xl border border-white/10 bg-white/5 bg-cover bg-center p-4"
+              data-t1eq-tile="true"
+              data-t1eq-page-card="true"
+              data-t1eq-qbit-type="tile"
+              data-t1eq-qbit-id="sidebar-brand-card"
+              data-t1eq-qbit-scope="global"
+              className="mb-6 rounded-2xl border border-white/10 bg-white/5 p-4 text-center"
             >
-              <div className="flex items-center gap-3">
-                <div
-                  data-t1eq-logo-box="true"
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white bg-contain bg-center bg-no-repeat text-sm font-bold text-black"
+              <div
+                data-t1eq-logo-box="true"
+                data-t1eq-qbit-type="logo"
+                data-t1eq-qbit-id="sidebar-logo"
+                data-t1eq-qbit-scope="global"
+                className="flex h-[11.5rem] w-full items-center justify-center rounded-xl bg-white bg-contain bg-center bg-no-repeat text-sm font-bold text-black"
+              >
+                <span
+                  data-t1eq-logo-fallback="true"
+                  data-t1eq-qbit-type="text"
+                  data-t1eq-qbit-id="sidebar-logo-fallback"
+                  data-t1eq-qbit-scope="global"
                 >
-                  <span data-t1eq-logo-fallback="true">T1</span>
-                </div>
+                  T1
+                </span>
+              </div>
 
-                <div>
-                  <div className="text-lg font-bold">Tier One Equipment</div>
-                  <div className="text-xs font-semibold uppercase tracking-wide text-white/50">
-                    Operations Platform
-                  </div>
-                </div>
+              <div
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="sidebar-company-name"
+                data-t1eq-qbit-scope="global"
+                className="mt-3 text-lg font-bold"
+              >
+                Tier One Equipment
+              </div>
+
+              <div
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="sidebar-platform-label"
+                data-t1eq-qbit-scope="global"
+                className="mt-1 text-xs font-semibold uppercase tracking-wide text-white/50"
+              >
+                Operations Platform
               </div>
             </div>
 
-            <SidebarNav />
+            <div
+              data-t1eq-qbit-type="section"
+              data-t1eq-qbit-id="sidebar-navigation"
+              data-t1eq-qbit-scope="global"
+            >
+              <SidebarNav />
+            </div>
           </aside>
 
-          <div className="flex min-w-0 flex-1 flex-col">
-            <header className="flex items-center justify-between border-b border-zinc-200 bg-white px-5 py-3 lg:hidden">
-              <Link href="/dashboard" className="text-lg font-bold">
+          <div
+            data-t1eq-qbit-type="section"
+            data-t1eq-qbit-id="app-content-column"
+            data-t1eq-qbit-scope="global"
+            className="flex min-w-0 flex-1 flex-col"
+          >
+            <header
+              data-t1eq-page-card="true"
+              data-t1eq-qbit-type="page-card"
+              data-t1eq-qbit-id="mobile-header"
+              data-t1eq-qbit-scope="global"
+              className="flex items-center justify-between border-b border-zinc-200 bg-white px-5 py-3 lg:hidden"
+            >
+              <Link
+                href="/dashboard"
+                data-t1eq-qbit-type="action-button"
+                data-t1eq-qbit-id="mobile-dashboard-link"
+                data-t1eq-qbit-scope="global"
+                className="text-lg font-bold"
+              >
                 Tier One Equipment
               </Link>
 
               <Link
                 href="/settings"
+                data-t1eq-action-button="true"
+                data-t1eq-qbit-type="action-button"
+                data-t1eq-qbit-id="mobile-menu-button"
+                data-t1eq-qbit-scope="global"
                 className="rounded-lg border border-zinc-300 px-3 py-1 text-sm font-semibold"
               >
                 Menu
               </Link>
             </header>
 
-            <CategorySubnavigation />
+            <div
+              data-t1eq-qbit-type="section"
+              data-t1eq-qbit-id="category-subnavigation-container"
+              data-t1eq-qbit-scope="global"
+            >
+              <CategorySubnavigation />
+            </div>
 
-            <main className="min-w-0 flex-1">{children}</main>
+            <main
+              data-t1eq-page-background="true"
+              data-t1eq-qbit-type="background"
+              data-t1eq-qbit-id="main-page-background"
+              data-t1eq-qbit-scope="global"
+              className="min-w-0 flex-1"
+            >
+              {children}
+            </main>
           </div>
         </div>
 

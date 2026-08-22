@@ -25,7 +25,7 @@ export default function MobileSidebar() {
           </div>
         </div>
 
-        <button
+        <button data-t1eq-action-button="true"
           type="button"
           onClick={() =>
             setIsOpen(!isOpen)
@@ -50,7 +50,7 @@ export default function MobileSidebar() {
                 </div>
               </div>
 
-              <button
+              <button data-t1eq-action-button="true"
                 type="button"
                 onClick={() =>
                   setIsOpen(false)

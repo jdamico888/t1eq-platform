@@ -16,7 +16,7 @@ export default function LiveActivityTicker({
   items,
 }: LiveActivityTickerProps) {
   return (
-    <div className="overflow-hidden rounded-3xl border border-cyan-500/20 bg-gradient-to-r from-cyan-500/10 to-white/5 backdrop-blur-xl">
+    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="overflow-hidden rounded-3xl border border-cyan-500/20 bg-gradient-to-r from-cyan-500/10 to-white/5 backdrop-blur-xl">
       <div className="border-b border-white/10 px-6 py-4">
         <h2 className="text-xl font-semibold">
           Live Activity

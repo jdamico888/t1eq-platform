@@ -358,7 +358,7 @@ export default function AppearanceSettingsPage() {
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <button
+            <button data-t1eq-action-button="true"
               type="button"
               onClick={handleSave}
               className={primaryButtonClass}
@@ -366,7 +366,7 @@ export default function AppearanceSettingsPage() {
               Save Appearance
             </button>
 
-            <button
+            <button data-t1eq-action-button="true"
               type="button"
               onClick={handleReset}
               className={dangerButtonClass}
@@ -377,7 +377,7 @@ export default function AppearanceSettingsPage() {
         </div>
 
         {statusMessage && (
-          <div className="mt-4 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-bold text-green-800">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-4 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-bold text-green-800">
             {statusMessage}
           </div>
         )}
@@ -395,7 +395,7 @@ export default function AppearanceSettingsPage() {
           <div className="mt-5 grid gap-4">
             <label className="space-y-2">
               <span className={labelClass}>Upload Logo</span>
-              <input
+              <input data-t1eq-field="true"
                 type="file"
                 accept="image/*"
                 onChange={handleLogoUpload}
@@ -405,7 +405,7 @@ export default function AppearanceSettingsPage() {
 
             <label className="space-y-2">
               <span className={labelClass}>Logo URL / Data URL</span>
-              <textarea
+              <textarea data-t1eq-field="true"
                 value={settings.logoUrl}
                 onChange={(event) =>
                   updateDraft({
@@ -419,7 +419,7 @@ export default function AppearanceSettingsPage() {
             </label>
 
             <div className="flex flex-wrap gap-3">
-              <button
+              <button data-t1eq-action-button="true"
                 type="button"
                 onClick={handleSave}
                 className={primaryButtonClass}
@@ -427,7 +427,7 @@ export default function AppearanceSettingsPage() {
                 Save Logo
               </button>
 
-              <button
+              <button data-t1eq-action-button="true"
                 type="button"
                 onClick={handleRemoveLogo}
                 className={secondaryButtonClass}
@@ -441,8 +441,8 @@ export default function AppearanceSettingsPage() {
         <aside data-t1eq-page-card="true" className={sectionClass}>
           <h2 className="text-2xl font-black text-black">Logo Preview</h2>
 
-          <div className="mt-5 rounded-3xl border border-zinc-200 bg-zinc-950 p-5 text-white">
-            <div
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-5 rounded-3xl border border-zinc-200 bg-zinc-950 p-5 text-white">
+            <div data-t1eq-tile="true" data-t1eq-page-card="true"
               data-t1eq-business-card="true"
               className="rounded-2xl border border-white/10 bg-white/5 bg-cover bg-center p-4"
               style={
@@ -484,7 +484,7 @@ export default function AppearanceSettingsPage() {
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             <label className="space-y-2">
               <span className={labelClass}>Tile Orientation</span>
-              <select
+              <select data-t1eq-field="true"
                 value={settings.tileOrientation}
                 onChange={(event) =>
                   updateDraft({
@@ -503,7 +503,7 @@ export default function AppearanceSettingsPage() {
 
             <label className="space-y-2">
               <span className={labelClass}>Tile Size</span>
-              <select
+              <select data-t1eq-field="true"
                 value={settings.tileSize}
                 onChange={(event) =>
                   updateDraft({
@@ -528,7 +528,7 @@ export default function AppearanceSettingsPage() {
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             <label className="space-y-2">
               <span className={labelClass}>Font Family</span>
-              <select
+              <select data-t1eq-field="true"
                 value={settings.fontFamily}
                 onChange={(event) =>
                   updateDraft({
@@ -547,7 +547,7 @@ export default function AppearanceSettingsPage() {
 
             <label className="space-y-2">
               <span className={labelClass}>Font Size</span>
-              <select
+              <select data-t1eq-field="true"
                 value={settings.fontSize}
                 onChange={(event) =>
                   updateDraft({
@@ -572,7 +572,7 @@ export default function AppearanceSettingsPage() {
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             <label className="space-y-2">
               <span className={labelClass}>Sidebar Depth</span>
-              <select
+              <select data-t1eq-field="true"
                 value={settings.sidebarThreeDEffect}
                 onChange={(event) =>
                   updateDraft({
@@ -592,7 +592,7 @@ export default function AppearanceSettingsPage() {
 
             <label className="space-y-2">
               <span className={labelClass}>Page Card Depth</span>
-              <select
+              <select data-t1eq-field="true"
                 value={settings.pageThreeDEffect}
                 onChange={(event) =>
                   updateDraft({
@@ -664,7 +664,7 @@ export default function AppearanceSettingsPage() {
 
           <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {settings.qBitScopes.map((scope) => (
-              <div
+              <div data-t1eq-tile="true" data-t1eq-page-card="true"
                 key={scope.id}
                 className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4"
               >
@@ -678,7 +678,7 @@ export default function AppearanceSettingsPage() {
                     </h3>
                   </div>
 
-                  <span className="rounded-full border border-zinc-300 bg-white px-3 py-1 text-xs font-black text-zinc-700">
+                  <span data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-full border border-zinc-300 bg-white px-3 py-1 text-xs font-black text-zinc-700">
                     {scope.editableGroups.length} groups
                   </span>
                 </div>
@@ -714,7 +714,7 @@ export default function AppearanceSettingsPage() {
               </p>
             </div>
 
-            <button
+            <button data-t1eq-action-button="true"
               type="button"
               onClick={handleSave}
               className={primaryButtonClass}
@@ -732,7 +732,7 @@ export default function AppearanceSettingsPage() {
               );
 
               return (
-                <div
+                <div data-t1eq-tile="true" data-t1eq-page-card="true"
                   key={template.scope}
                   className="rounded-3xl border border-zinc-200 bg-zinc-50 p-5"
                 >
@@ -749,8 +749,8 @@ export default function AppearanceSettingsPage() {
                       </p>
                     </div>
 
-                    <label className="flex items-center gap-2 rounded-full border border-zinc-300 bg-white px-3 py-2 text-sm font-black text-black">
-                      <input
+                    <label data-t1eq-tile="true" data-t1eq-page-card="true" className="flex items-center gap-2 rounded-full border border-zinc-300 bg-white px-3 py-2 text-sm font-black text-black">
+                      <input data-t1eq-field="true"
                         type="checkbox"
                         checked={template.enabled}
                         onChange={(event) =>
@@ -766,7 +766,7 @@ export default function AppearanceSettingsPage() {
                   <div className="mt-5 grid gap-4 md:grid-cols-2">
                     <label className="space-y-2">
                       <span className={smallLabelClass}>Header Layout</span>
-                      <select
+                      <select data-t1eq-field="true"
                         value={template.headerLayout}
                         onChange={(event) =>
                           updateOutputTemplate(template.scope, {
@@ -786,7 +786,7 @@ export default function AppearanceSettingsPage() {
 
                     <label className="space-y-2">
                       <span className={smallLabelClass}>Footer Layout</span>
-                      <select
+                      <select data-t1eq-field="true"
                         value={template.footerLayout}
                         onChange={(event) =>
                           updateOutputTemplate(template.scope, {
@@ -806,7 +806,7 @@ export default function AppearanceSettingsPage() {
 
                     <label className="space-y-2">
                       <span className={smallLabelClass}>Density</span>
-                      <select
+                      <select data-t1eq-field="true"
                         value={template.density}
                         onChange={(event) =>
                           updateOutputTemplate(template.scope, {
@@ -828,7 +828,7 @@ export default function AppearanceSettingsPage() {
                       <span className={smallLabelClass}>
                         Advertising Placement
                       </span>
-                      <select
+                      <select data-t1eq-field="true"
                         value={template.advertisingPlacement}
                         onChange={(event) =>
                           updateOutputTemplate(template.scope, {
@@ -858,11 +858,11 @@ export default function AppearanceSettingsPage() {
                       ["showTerms", "Terms"],
                       ["showSignatureLine", "Signature Line"],
                     ].map(([key, label]) => (
-                      <label
+                      <label data-t1eq-tile="true" data-t1eq-page-card="true"
                         key={`${template.scope}-${key}`}
                         className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-bold text-zinc-700"
                       >
-                        <input
+                        <input data-t1eq-field="true"
                           type="checkbox"
                           checked={
                             template[
@@ -889,7 +889,7 @@ export default function AppearanceSettingsPage() {
                     ))}
                   </div>
 
-                  <div className="mt-5 rounded-2xl border border-zinc-200 bg-white p-4">
+                  <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-5 rounded-2xl border border-zinc-200 bg-white p-4">
                     <p className={smallLabelClass}>Selected Advertising</p>
 
                     {selectableAdvertisingBlocks.length === 0 ? (
@@ -900,11 +900,11 @@ export default function AppearanceSettingsPage() {
                     ) : (
                       <div className="mt-3 grid gap-2">
                         {selectableAdvertisingBlocks.map((block) => (
-                          <label
+                          <label data-t1eq-tile="true" data-t1eq-page-card="true"
                             key={`${template.scope}-${block.id}`}
                             className="flex items-start gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm font-bold text-zinc-700"
                           >
-                            <input
+                            <input data-t1eq-field="true"
                               type="checkbox"
                               checked={template.activeAdvertisingBlockIds.includes(
                                 block.id
@@ -951,7 +951,7 @@ export default function AppearanceSettingsPage() {
               </p>
             </div>
 
-            <button
+            <button data-t1eq-action-button="true"
               type="button"
               onClick={addAdvertisingBlock}
               className={secondaryButtonClass}
@@ -961,7 +961,7 @@ export default function AppearanceSettingsPage() {
           </div>
 
           {settings.advertisingBlocks.length === 0 ? (
-            <div className="mt-5 rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-8 text-center">
+            <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-5 rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-8 text-center">
               <h3 className="text-xl font-black text-black">
                 No advertising blocks yet
               </h3>
@@ -973,7 +973,7 @@ export default function AppearanceSettingsPage() {
           ) : (
             <div className="mt-5 grid gap-5">
               {settings.advertisingBlocks.map((block) => (
-                <div
+                <div data-t1eq-tile="true" data-t1eq-page-card="true"
                   key={block.id}
                   className="rounded-3xl border border-zinc-200 bg-zinc-50 p-5"
                 >
@@ -992,8 +992,8 @@ export default function AppearanceSettingsPage() {
                     </div>
 
                     <div className="flex flex-wrap gap-2">
-                      <label className="flex items-center gap-2 rounded-full border border-zinc-300 bg-white px-3 py-2 text-sm font-black text-black">
-                        <input
+                      <label data-t1eq-tile="true" data-t1eq-page-card="true" className="flex items-center gap-2 rounded-full border border-zinc-300 bg-white px-3 py-2 text-sm font-black text-black">
+                        <input data-t1eq-field="true"
                           type="checkbox"
                           checked={block.isActive}
                           onChange={(event) =>
@@ -1005,7 +1005,7 @@ export default function AppearanceSettingsPage() {
                         Active
                       </label>
 
-                      <button
+                      <button data-t1eq-action-button="true"
                         type="button"
                         onClick={() => deleteAdvertisingBlock(block.id)}
                         className={dangerButtonClass}
@@ -1018,7 +1018,7 @@ export default function AppearanceSettingsPage() {
                   <div className="mt-5 grid gap-4 md:grid-cols-2">
                     <label className="space-y-2">
                       <span className={smallLabelClass}>Title</span>
-                      <input
+                      <input data-t1eq-field="true"
                         type="text"
                         value={block.title}
                         onChange={(event) =>
@@ -1032,7 +1032,7 @@ export default function AppearanceSettingsPage() {
 
                     <label className="space-y-2">
                       <span className={smallLabelClass}>Placement</span>
-                      <select
+                      <select data-t1eq-field="true"
                         value={block.placement}
                         onChange={(event) =>
                           updateAdvertisingBlock(block.id, {
@@ -1052,7 +1052,7 @@ export default function AppearanceSettingsPage() {
 
                     <label className="space-y-2">
                       <span className={smallLabelClass}>Headline</span>
-                      <input
+                      <input data-t1eq-field="true"
                         type="text"
                         value={block.headline}
                         onChange={(event) =>
@@ -1066,7 +1066,7 @@ export default function AppearanceSettingsPage() {
 
                     <label className="space-y-2">
                       <span className={smallLabelClass}>Call To Action</span>
-                      <input
+                      <input data-t1eq-field="true"
                         type="text"
                         value={block.callToAction}
                         onChange={(event) =>
@@ -1080,7 +1080,7 @@ export default function AppearanceSettingsPage() {
 
                     <label className="space-y-2">
                       <span className={smallLabelClass}>Expiration Date</span>
-                      <input
+                      <input data-t1eq-field="true"
                         type="date"
                         value={block.expirationDate}
                         onChange={(event) =>
@@ -1094,7 +1094,7 @@ export default function AppearanceSettingsPage() {
 
                     <label className="space-y-2">
                       <span className={smallLabelClass}>Image Upload</span>
-                      <input
+                      <input data-t1eq-field="true"
                         type="file"
                         accept="image/*"
                         onChange={(event) =>
@@ -1108,7 +1108,7 @@ export default function AppearanceSettingsPage() {
                   <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_260px]">
                     <label className="space-y-2">
                       <span className={smallLabelClass}>Body Text</span>
-                      <textarea
+                      <textarea data-t1eq-field="true"
                         value={block.bodyText}
                         onChange={(event) =>
                           updateAdvertisingBlock(block.id, {
@@ -1120,18 +1120,18 @@ export default function AppearanceSettingsPage() {
                       />
                     </label>
 
-                    <div className="rounded-2xl border border-zinc-200 bg-white p-4">
+                    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-zinc-200 bg-white p-4">
                       <p className={smallLabelClass}>Preview</p>
 
                       {block.imageUrl ? (
-                        <div
+                        <div data-t1eq-tile="true" data-t1eq-page-card="true"
                           className="mt-3 h-28 rounded-xl border border-zinc-200 bg-cover bg-center"
                           style={{
                             backgroundImage: `url("${block.imageUrl}")`,
                           }}
                         />
                       ) : (
-                        <div className="mt-3 flex h-28 items-center justify-center rounded-xl border border-dashed border-zinc-300 bg-zinc-50 text-xs font-black uppercase tracking-wide text-zinc-400">
+                        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-3 flex h-28 items-center justify-center rounded-xl border border-dashed border-zinc-300 bg-zinc-50 text-xs font-black uppercase tracking-wide text-zinc-400">
                           No Image
                         </div>
                       )}

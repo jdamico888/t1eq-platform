@@ -8,12 +8,12 @@ import Button from "../ui/Button";
 import type { Equipment } from "../../../types/equipment";
 import type { RepairOrder } from "../../../types/repair-orders";
 import type { Truck } from "../../../types/truck-stock";
-import type { User } from "../../../types/user";
+import type { TechnicianProfile } from "../../../types/technician-profile";
 
 import { getEquipment } from "../../../services/equipment";
 import { createRepairOrder } from "../../../services/repair-orders";
 import { getTrucks } from "../../../services/truck-stock";
-import { getUserFullName, getUsers } from "../../../services/users";
+import { getActiveTechnicianProfiles } from "../../../services/technician-profiles";
 
 type Props = {
   onClose: () => void;
@@ -24,10 +24,9 @@ export default function CreateROModal({ onClose, onCreated }: Props) {
   const equipment = getEquipment();
   const trucks = getTrucks();
 
-  const technicians = getUsers().filter(
-    (user) =>
-      user.status === "Active" &&
-      (user.role === "Technician" || user.role === "Inspector")
+  const technicians = getActiveTechnicianProfiles().filter(
+    (technician) =>
+      technician.role === "Technician" || technician.role === "Inspector"
   );
 
   const [selectedEquipmentId, setSelectedEquipmentId] = useState("");
@@ -44,8 +43,9 @@ export default function CreateROModal({ onClose, onCreated }: Props) {
     }
 
     const selectedTechnician =
-      technicians.find((user: User) => user.id === selectedTechnicianId) ??
-      null;
+      technicians.find(
+        (technician: TechnicianProfile) => technician.id === selectedTechnicianId
+      ) ?? null;
 
     const selectedTruck =
       trucks.find((truck: Truck) => truck.id === selectedTruckId) ?? null;
@@ -61,13 +61,15 @@ export default function CreateROModal({ onClose, onCreated }: Props) {
       equipmentName: `${selectedEquipment.manufacturer} ${selectedEquipment.model}`,
       equipmentDescription: selectedEquipment.serialNumber,
 
-      assignedUserId: "",
-      assignedUserName: "",
+      assignedUserId: selectedTechnician?.userId ?? "",
+      assignedUserName: selectedTechnician?.displayName ?? "",
 
       assignedTechnicianId: selectedTechnician?.id ?? "",
-      assignedTechnicianName: selectedTechnician
-        ? getUserFullName(selectedTechnician)
-        : "",
+      assignedTechnicianName: selectedTechnician?.displayName ?? "",
+
+      assignedEmployeeProfileId: selectedTechnician?.id ?? "",
+      assignedEmployeeDisplayName: selectedTechnician?.displayName ?? "",
+      assignedEmployeeRole: selectedTechnician?.role ?? "",
 
       assignedTruckId: selectedTruck?.id ?? "",
       assignedTruckName: selectedTruck?.name ?? "",
@@ -109,7 +111,7 @@ export default function CreateROModal({ onClose, onCreated }: Props) {
             Equipment
           </label>
 
-          <select
+          <select data-t1eq-field="true"
             value={selectedEquipmentId}
             onChange={(event) => setSelectedEquipmentId(event.target.value)}
             className="w-full rounded-xl border p-3"
@@ -129,7 +131,7 @@ export default function CreateROModal({ onClose, onCreated }: Props) {
             Assigned Technician / Inspector
           </label>
 
-          <select
+          <select data-t1eq-field="true"
             value={selectedTechnicianId}
             onChange={(event) => setSelectedTechnicianId(event.target.value)}
             className="w-full rounded-xl border p-3"
@@ -138,8 +140,10 @@ export default function CreateROModal({ onClose, onCreated }: Props) {
 
             {technicians.map((technician) => (
               <option key={technician.id} value={technician.id}>
-                {getUserFullName(technician)}
-                {technician.employeeId ? ` — ${technician.employeeId}` : ""}
+                {technician.displayName}
+                {technician.employeeNumber
+                  ? ` — ${technician.employeeNumber}`
+                  : ""}
                 {technician.role ? ` — ${technician.role}` : ""}
               </option>
             ))}
@@ -147,8 +151,9 @@ export default function CreateROModal({ onClose, onCreated }: Props) {
 
           {technicians.length === 0 && (
             <p className="mt-2 text-sm text-black/60">
-              No active technicians or inspectors found. Add users first, or
-              assign the technician later from the repair order workspace.
+              No active technicians or inspectors found. Add employees in
+              Employee Setup first, or assign the technician later from the
+              repair order workspace.
             </p>
           )}
         </div>
@@ -158,7 +163,7 @@ export default function CreateROModal({ onClose, onCreated }: Props) {
             Assigned Truck
           </label>
 
-          <select
+          <select data-t1eq-field="true"
             value={selectedTruckId}
             onChange={(event) => setSelectedTruckId(event.target.value)}
             className="w-full rounded-xl border p-3"
@@ -176,7 +181,7 @@ export default function CreateROModal({ onClose, onCreated }: Props) {
           </select>
         </div>
 
-        <div className="rounded-xl border border-black/10 bg-black/5 p-4 text-sm text-black/70">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-black/10 bg-black/5 p-4 text-sm text-black/70">
           Repair orders can now be created with assigned equipment, technician,
           and truck. Parts added later will use truck stock first, then fall
           back to warehouse inventory.

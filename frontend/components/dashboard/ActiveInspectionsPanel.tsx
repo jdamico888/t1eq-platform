@@ -26,7 +26,7 @@ export default function ActiveInspectionsPanel({
   inspections,
 }: ActiveInspectionsPanelProps) {
   return (
-    <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
+    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-2xl font-semibold">
           Active Inspections

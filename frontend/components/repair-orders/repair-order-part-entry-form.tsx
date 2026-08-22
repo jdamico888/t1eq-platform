@@ -113,13 +113,13 @@ export function RepairOrderPartEntryForm(props: RepairOrderPartEntryFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-zinc-200 bg-white p-4">
+    <form data-t1eq-tile="true" data-t1eq-page-card="true" onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-zinc-200 bg-white p-4">
       <div className="grid gap-4 md:grid-cols-2">
         <label className="block">
           <span className="text-xs font-black uppercase tracking-wide text-zinc-500">
             Part Number
           </span>
-          <input
+          <input data-t1eq-field="true"
             value={partNumberValue}
             onChange={(event) => setPartNumberValue(event.target.value)}
             className="mt-1 w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm font-semibold outline-none focus:border-black"
@@ -130,7 +130,7 @@ export function RepairOrderPartEntryForm(props: RepairOrderPartEntryFormProps) {
           <span className="text-xs font-black uppercase tracking-wide text-zinc-500">
             Description
           </span>
-          <input
+          <input data-t1eq-field="true"
             value={descriptionValue}
             onChange={(event) => setDescriptionValue(event.target.value)}
             className="mt-1 w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm font-semibold outline-none focus:border-black"
@@ -141,7 +141,7 @@ export function RepairOrderPartEntryForm(props: RepairOrderPartEntryFormProps) {
           <span className="text-xs font-black uppercase tracking-wide text-zinc-500">
             Quantity
           </span>
-          <input
+          <input data-t1eq-field="true"
             type="number"
             min="0"
             step="1"
@@ -155,7 +155,7 @@ export function RepairOrderPartEntryForm(props: RepairOrderPartEntryFormProps) {
           <span className="text-xs font-black uppercase tracking-wide text-zinc-500">
             Cost
           </span>
-          <input
+          <input data-t1eq-field="true"
             type="number"
             min="0"
             step="0.01"
@@ -169,7 +169,7 @@ export function RepairOrderPartEntryForm(props: RepairOrderPartEntryFormProps) {
           <span className="text-xs font-black uppercase tracking-wide text-zinc-500">
             Sell Price
           </span>
-          <input
+          <input data-t1eq-field="true"
             type="number"
             min="0"
             step="0.01"
@@ -183,7 +183,7 @@ export function RepairOrderPartEntryForm(props: RepairOrderPartEntryFormProps) {
           <span className="text-xs font-black uppercase tracking-wide text-zinc-500">
             Part Image URL
           </span>
-          <input
+          <input data-t1eq-field="true"
             value={partImageUrlValue}
             onChange={(event) => setPartImageUrlValue(event.target.value)}
             className="mt-1 w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm font-semibold outline-none focus:border-black"
@@ -195,7 +195,7 @@ export function RepairOrderPartEntryForm(props: RepairOrderPartEntryFormProps) {
         <span className="text-xs font-black uppercase tracking-wide text-zinc-500">
           Notes
         </span>
-        <textarea
+        <textarea data-t1eq-field="true"
           value={notes}
           onChange={(event) => setNotes(event.target.value)}
           rows={3}
@@ -204,7 +204,7 @@ export function RepairOrderPartEntryForm(props: RepairOrderPartEntryFormProps) {
       </label>
 
       <div className="flex gap-3">
-        <button
+        <button data-t1eq-action-button="true"
           type="submit"
           className="rounded-xl bg-black px-4 py-2 text-sm font-black text-white"
         >
@@ -212,7 +212,7 @@ export function RepairOrderPartEntryForm(props: RepairOrderPartEntryFormProps) {
         </button>
 
         {onCancel && (
-          <button
+          <button data-t1eq-action-button="true"
             type="button"
             onClick={onCancel}
             className="rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm font-black text-black"

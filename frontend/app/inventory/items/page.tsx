@@ -541,7 +541,7 @@ export default function InventoryItemsPage() {
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <button
+            <button data-t1eq-action-button="true"
               type="button"
               onClick={refreshInventoryItems}
               className={secondaryButtonClass}
@@ -549,7 +549,7 @@ export default function InventoryItemsPage() {
               Refresh
             </button>
 
-            <button
+            <button data-t1eq-action-button="true"
               type="button"
               onClick={beginCreateItem}
               className={primaryButtonClass}
@@ -560,7 +560,7 @@ export default function InventoryItemsPage() {
         </div>
 
         {statusMessage && (
-          <div className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm font-bold text-zinc-700">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm font-bold text-zinc-700">
             {statusMessage}
           </div>
         )}
@@ -578,7 +578,7 @@ export default function InventoryItemsPage() {
             </p>
           </div>
 
-          <div className="mb-6 rounded-2xl border-2 border-orange-300 bg-orange-50 p-4">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mb-6 rounded-2xl border-2 border-orange-300 bg-orange-50 p-4">
             <div className="text-sm font-black uppercase tracking-wide text-orange-800">
               Required Item Photo
             </div>
@@ -593,7 +593,7 @@ export default function InventoryItemsPage() {
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <label className="space-y-2">
               <span className={labelClass}>Take Picture With Camera</span>
-              <input
+              <input data-t1eq-field="true"
                 type="file"
                 accept="image/*"
                 capture="environment"
@@ -606,7 +606,7 @@ export default function InventoryItemsPage() {
 
             <label className="space-y-2">
               <span className={labelClass}>Upload Image From Computer</span>
-              <input
+              <input data-t1eq-field="true"
                 type="file"
                 accept="image/*"
                 onChange={(event) =>
@@ -620,7 +620,7 @@ export default function InventoryItemsPage() {
               <span className={labelClass}>Item Photo Preview</span>
 
               {formState.imageUrl ? (
-                <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white">
+                <div data-t1eq-tile="true" data-t1eq-page-card="true" className="overflow-hidden rounded-2xl border border-zinc-200 bg-white">
                   <img
                     src={formState.imageUrl}
                     alt="Inventory item preview"
@@ -632,7 +632,7 @@ export default function InventoryItemsPage() {
                   </div>
                 </div>
               ) : (
-                <div className="flex h-56 items-center justify-center rounded-2xl border-2 border-dashed border-red-300 bg-red-50 text-sm font-black text-red-700">
+                <div data-t1eq-tile="true" data-t1eq-page-card="true" className="flex h-56 items-center justify-center rounded-2xl border-2 border-dashed border-red-300 bg-red-50 text-sm font-black text-red-700">
                   Required photo missing
                 </div>
               )}
@@ -640,7 +640,7 @@ export default function InventoryItemsPage() {
 
             <label className="space-y-2">
               <span className={labelClass}>Part Number</span>
-              <input
+              <input data-t1eq-field="true"
                 value={formState.partNumber}
                 onChange={(event) =>
                   updateFormState({
@@ -653,7 +653,7 @@ export default function InventoryItemsPage() {
 
             <label className="space-y-2 xl:col-span-2">
               <span className={labelClass}>Item Name</span>
-              <input
+              <input data-t1eq-field="true"
                 value={formState.name}
                 onChange={(event) =>
                   updateFormState({
@@ -666,7 +666,7 @@ export default function InventoryItemsPage() {
 
             <label className="space-y-2">
               <span className={labelClass}>Quantity On Hand</span>
-              <input
+              <input data-t1eq-field="true"
                 type="number"
                 value={formState.quantityOnHand}
                 onChange={(event) =>
@@ -680,7 +680,7 @@ export default function InventoryItemsPage() {
 
             <label className="space-y-2">
               <span className={labelClass}>Minimum Quantity</span>
-              <input
+              <input data-t1eq-field="true"
                 type="number"
                 value={formState.minimumQuantity}
                 onChange={(event) =>
@@ -694,7 +694,7 @@ export default function InventoryItemsPage() {
 
             <label className="space-y-2">
               <span className={labelClass}>Ideal Stock</span>
-              <input
+              <input data-t1eq-field="true"
                 type="number"
                 value={formState.idealStock}
                 onChange={(event) =>
@@ -708,7 +708,7 @@ export default function InventoryItemsPage() {
 
             <label className="space-y-2">
               <span className={labelClass}>Cost</span>
-              <input
+              <input data-t1eq-field="true"
                 type="number"
                 value={formState.cost}
                 onChange={(event) =>
@@ -722,7 +722,7 @@ export default function InventoryItemsPage() {
 
             <label className="space-y-2">
               <span className={labelClass}>Sell Price</span>
-              <input
+              <input data-t1eq-field="true"
                 type="number"
                 value={formState.sellPrice}
                 onChange={(event) =>
@@ -736,7 +736,7 @@ export default function InventoryItemsPage() {
 
             <label className="space-y-2">
               <span className={labelClass}>Location</span>
-              <input
+              <input data-t1eq-field="true"
                 value={formState.location}
                 onChange={(event) =>
                   updateFormState({
@@ -749,7 +749,7 @@ export default function InventoryItemsPage() {
 
             <label className="space-y-2">
               <span className={labelClass}>Bin Location</span>
-              <input
+              <input data-t1eq-field="true"
                 value={formState.binLocation}
                 onChange={(event) =>
                   updateFormState({
@@ -762,7 +762,7 @@ export default function InventoryItemsPage() {
 
             <label className="space-y-2">
               <span className={labelClass}>Manufacturer</span>
-              <input
+              <input data-t1eq-field="true"
                 value={formState.manufacturer}
                 onChange={(event) =>
                   updateFormState({
@@ -775,7 +775,7 @@ export default function InventoryItemsPage() {
 
             <label className="space-y-2">
               <span className={labelClass}>Supplier</span>
-              <input
+              <input data-t1eq-field="true"
                 value={formState.supplierName}
                 onChange={(event) =>
                   updateFormState({
@@ -788,7 +788,7 @@ export default function InventoryItemsPage() {
 
             <label className="space-y-2">
               <span className={labelClass}>OEM Part Number</span>
-              <input
+              <input data-t1eq-field="true"
                 value={formState.oemPartNumber}
                 onChange={(event) =>
                   updateFormState({
@@ -801,7 +801,7 @@ export default function InventoryItemsPage() {
 
             <label className="space-y-2">
               <span className={labelClass}>Vendor Part Number</span>
-              <input
+              <input data-t1eq-field="true"
                 value={formState.vendorPartNumber}
                 onChange={(event) =>
                   updateFormState({
@@ -814,7 +814,7 @@ export default function InventoryItemsPage() {
 
             <label className="space-y-2 md:col-span-2">
               <span className={labelClass}>Cross References</span>
-              <input
+              <input data-t1eq-field="true"
                 value={formState.crossReferencePartNumbers}
                 onChange={(event) =>
                   updateFormState({
@@ -828,7 +828,7 @@ export default function InventoryItemsPage() {
 
             <label className="space-y-2 md:col-span-2">
               <span className={labelClass}>Superseded Part Numbers</span>
-              <input
+              <input data-t1eq-field="true"
                 value={formState.supersededPartNumbers}
                 onChange={(event) =>
                   updateFormState({
@@ -842,7 +842,7 @@ export default function InventoryItemsPage() {
 
             <label className="space-y-2">
               <span className={labelClass}>Manufacturer Camera Image</span>
-              <input
+              <input data-t1eq-field="true"
                 type="file"
                 accept="image/*"
                 capture="environment"
@@ -853,7 +853,7 @@ export default function InventoryItemsPage() {
 
             <label className="space-y-2">
               <span className={labelClass}>Upload Manufacturer Image</span>
-              <input
+              <input data-t1eq-field="true"
                 type="file"
                 accept="image/*"
                 onChange={handleManufacturerImageUpload}
@@ -865,7 +865,7 @@ export default function InventoryItemsPage() {
               <span className={labelClass}>Manufacturer Image Preview</span>
 
               {formState.manufacturerImageUrl ? (
-                <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white">
+                <div data-t1eq-tile="true" data-t1eq-page-card="true" className="overflow-hidden rounded-2xl border border-zinc-200 bg-white">
                   <img
                     src={formState.manufacturerImageUrl}
                     alt="Manufacturer preview"
@@ -873,7 +873,7 @@ export default function InventoryItemsPage() {
                   />
                 </div>
               ) : (
-                <div className="flex h-40 items-center justify-center rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 text-sm font-bold text-zinc-500">
+                <div data-t1eq-tile="true" data-t1eq-page-card="true" className="flex h-40 items-center justify-center rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 text-sm font-bold text-zinc-500">
                   Optional
                 </div>
               )}
@@ -881,7 +881,7 @@ export default function InventoryItemsPage() {
 
             <label className="space-y-2 md:col-span-2 xl:col-span-4">
               <span className={labelClass}>Description</span>
-              <textarea
+              <textarea data-t1eq-field="true"
                 value={formState.description}
                 onChange={(event) =>
                   updateFormState({
@@ -895,7 +895,7 @@ export default function InventoryItemsPage() {
 
             <label className="space-y-2 md:col-span-2 xl:col-span-4">
               <span className={labelClass}>Notes</span>
-              <textarea
+              <textarea data-t1eq-field="true"
                 value={formState.notes}
                 onChange={(event) =>
                   updateFormState({
@@ -909,7 +909,7 @@ export default function InventoryItemsPage() {
           </div>
 
           <div className="mt-5 flex flex-wrap gap-3">
-            <button
+            <button data-t1eq-action-button="true"
               type="button"
               onClick={handleSaveItem}
               className={primaryButtonClass}
@@ -917,7 +917,7 @@ export default function InventoryItemsPage() {
               {editingItem ? "Save Changes" : "Create Item"}
             </button>
 
-            <button
+            <button data-t1eq-action-button="true"
               type="button"
               onClick={cancelForm}
               className={secondaryButtonClass}
@@ -987,7 +987,7 @@ export default function InventoryItemsPage() {
           <label className="space-y-2">
             <span className={labelClass}>Search Inventory</span>
 
-            <input
+            <input data-t1eq-field="true"
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               className={inputClass}
@@ -997,11 +997,11 @@ export default function InventoryItemsPage() {
         </div>
 
         {filteredItems.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-8 text-center text-sm font-bold text-zinc-500">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-8 text-center text-sm font-bold text-zinc-500">
             No inventory items found.
           </div>
         ) : (
-          <div className="overflow-hidden rounded-2xl border border-zinc-200">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="overflow-hidden rounded-2xl border border-zinc-200">
             <table className="w-full border-collapse bg-white">
               <thead>
                 <tr>
@@ -1025,7 +1025,7 @@ export default function InventoryItemsPage() {
                   <tr key={item.id} className="transition hover:bg-zinc-50">
                     <td className={tableCellClass}>
                       {item.thumbnailUrl || item.imageUrl ? (
-                        <img
+                        <img data-t1eq-tile="true" data-t1eq-page-card="true"
                           src={item.thumbnailUrl || item.imageUrl}
                           alt={item.partNumber}
                           className="h-14 w-14 rounded-xl border border-zinc-200 object-cover"
@@ -1097,7 +1097,7 @@ export default function InventoryItemsPage() {
 
                     <td className={tableCellClass}>
                       <div className="flex flex-wrap gap-2">
-                        <button
+                        <button data-t1eq-action-button="true"
                           type="button"
                           onClick={() => beginEditItem(item)}
                           className={secondaryButtonClass}
@@ -1105,7 +1105,7 @@ export default function InventoryItemsPage() {
                           Edit
                         </button>
 
-                        <button
+                        <button data-t1eq-action-button="true"
                           type="button"
                           onClick={() => handleDeleteItem(item.id)}
                           className={dangerButtonClass}

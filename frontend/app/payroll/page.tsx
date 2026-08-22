@@ -109,7 +109,7 @@ export default function PayrollPage() {
 
           <div className="space-y-4">
             {payrollSummaries.map((summary) => (
-              <div
+              <div data-t1eq-tile="true" data-t1eq-page-card="true"
                 key={summary.technicianId}
                 className="rounded-2xl border border-black/10 bg-black/[0.03] p-5"
               >

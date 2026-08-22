@@ -58,7 +58,7 @@ export default function InvoiceDetailPage() {
   if (!invoice) {
     return (
       <main className="min-h-screen bg-slate-950 p-6 text-white">
-        <div className="rounded-3xl border border-white/10 bg-white/10 p-8 shadow-2xl backdrop-blur-xl">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-8 shadow-2xl backdrop-blur-xl">
           <div className="text-sm font-semibold uppercase tracking-[0.25em] text-white/50">
             Invoice
           </div>
@@ -69,7 +69,7 @@ export default function InvoiceDetailPage() {
             The requested invoice could not be found in local storage.
           </p>
 
-          <button
+          <button data-t1eq-action-button="true"
             type="button"
             onClick={() => router.push("/invoices")}
             className="mt-6 rounded-xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
@@ -84,7 +84,7 @@ export default function InvoiceDetailPage() {
   return (
     <main className="min-h-screen bg-slate-950 p-6 text-white">
       <div className="mx-auto max-w-5xl space-y-6">
-        <button
+        <button data-t1eq-action-button="true"
           type="button"
           onClick={() => router.push("/invoices")}
           className="rounded-xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
@@ -92,7 +92,7 @@ export default function InvoiceDetailPage() {
           ← Back to Invoices
         </button>
 
-        <section className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
             <div>
               <div className="text-sm font-semibold uppercase tracking-[0.25em] text-white/50">
@@ -108,7 +108,7 @@ export default function InvoiceDetailPage() {
               </p>
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-right">
+            <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4 text-right">
               <div className="text-xs uppercase tracking-wide text-white/50">
                 Total
               </div>
@@ -125,7 +125,7 @@ export default function InvoiceDetailPage() {
         </section>
 
         <section className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-white/5 p-5">
             <div className="text-xs uppercase tracking-wide text-white/50">
               Issued Date
             </div>
@@ -135,7 +135,7 @@ export default function InvoiceDetailPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-white/5 p-5">
             <div className="text-xs uppercase tracking-wide text-white/50">
               Due Date
             </div>
@@ -145,7 +145,7 @@ export default function InvoiceDetailPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-white/5 p-5">
             <div className="text-xs uppercase tracking-wide text-white/50">
               Paid Date
             </div>
@@ -156,7 +156,7 @@ export default function InvoiceDetailPage() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
           <h2 className="text-2xl font-bold text-white">
             Invoice Details
           </h2>
@@ -186,12 +186,12 @@ export default function InvoiceDetailPage() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
           <h2 className="text-2xl font-bold text-white">
             Line Items
           </h2>
 
-          <div className="mt-5 overflow-hidden rounded-2xl border border-white/10">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-5 overflow-hidden rounded-2xl border border-white/10">
             <table className="w-full text-left text-sm">
               <thead className="bg-white/10 text-white/70">
                 <tr>
@@ -230,7 +230,7 @@ export default function InvoiceDetailPage() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
           <div className="ml-auto max-w-sm space-y-3">
             <div className="flex justify-between text-white/70">
               <span>Subtotal</span>
@@ -250,7 +250,7 @@ export default function InvoiceDetailPage() {
         </section>
 
         {invoice.notes && (
-          <section className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+          <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
             <h2 className="text-2xl font-bold text-white">Notes</h2>
 
             <p className="mt-3 text-sm leading-6 text-white/70">

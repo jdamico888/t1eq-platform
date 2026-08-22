@@ -671,7 +671,7 @@ export default function EmployeeSchedulePage() {
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-8 text-white">
       <div className="mx-auto max-w-7xl space-y-6">
-        <header className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/30">
+        <header data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/30">
           <p className="text-xs font-black uppercase tracking-[0.26em] text-orange-300">
             Employee Schedule
           </p>
@@ -686,7 +686,7 @@ export default function EmployeeSchedulePage() {
         </header>
 
         {employees.length === 0 ? (
-          <section className="rounded-3xl border border-dashed border-white/15 bg-black/20 p-8">
+          <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-dashed border-white/15 bg-black/20 p-8">
             <h2 className="text-2xl font-black">No employees found.</h2>
             <p className="mt-2 text-sm font-bold text-slate-400">
               Create an employee record first, then return to Employee Schedule.
@@ -695,7 +695,7 @@ export default function EmployeeSchedulePage() {
         ) : (
           <>
             <section className="grid gap-4 lg:grid-cols-[1fr_0.75fr]">
-              <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
+              <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
                 <h2 className="text-lg font-black">Schedule Control</h2>
 
                 <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -718,7 +718,7 @@ export default function EmployeeSchedulePage() {
                 </div>
               </div>
 
-              <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
+              <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
                 <h2 className="text-lg font-black">Daily Snapshot</h2>
 
                 {dailySnapshot ? (
@@ -783,7 +783,7 @@ export default function EmployeeSchedulePage() {
             )}
 
             <section className="grid gap-6 xl:grid-cols-2">
-              <form
+              <form data-t1eq-tile="true" data-t1eq-page-card="true"
                 onSubmit={handleAvailabilitySubmit}
                 className="rounded-3xl border border-white/10 bg-white/[0.04] p-5"
               >
@@ -879,7 +879,7 @@ export default function EmployeeSchedulePage() {
                 <SubmitButton label="Save Availability Rule" />
               </form>
 
-              <form
+              <form data-t1eq-tile="true" data-t1eq-page-card="true"
                 onSubmit={handleHolidaySubmit}
                 className="rounded-3xl border border-white/10 bg-white/[0.04] p-5"
               >
@@ -971,7 +971,7 @@ export default function EmployeeSchedulePage() {
                 <SubmitButton label="Save Holiday" />
               </form>
 
-              <form
+              <form data-t1eq-tile="true" data-t1eq-page-card="true"
                 onSubmit={handleVacationLedgerSubmit}
                 className="rounded-3xl border border-white/10 bg-white/[0.04] p-5"
               >
@@ -1053,7 +1053,7 @@ export default function EmployeeSchedulePage() {
                 <SubmitButton label="Save Vacation Ledger Entry" />
               </form>
 
-              <form
+              <form data-t1eq-tile="true" data-t1eq-page-card="true"
                 onSubmit={handleAbsenceSubmit}
                 className="rounded-3xl border border-white/10 bg-white/[0.04] p-5"
               >
@@ -1281,7 +1281,7 @@ function MetricCard({
   subValue: string;
 }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
       <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
         {label}
       </p>
@@ -1307,18 +1307,18 @@ function RecordList({
   }[];
 }) {
   return (
-    <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
+    <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
       <h2 className="text-lg font-black">{title}</h2>
 
       <div className="mt-4 space-y-3">
         {records.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-white/15 bg-black/20 p-5 text-sm font-bold text-slate-400">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-dashed border-white/15 bg-black/20 p-5 text-sm font-bold text-slate-400">
             {emptyText}
           </div>
         )}
 
         {records.map((record) => (
-          <article
+          <article data-t1eq-tile="true" data-t1eq-page-card="true"
             key={record.id}
             className="rounded-2xl border border-white/10 bg-black/20 p-4"
           >
@@ -1337,7 +1337,7 @@ function RecordList({
                 )}
               </div>
 
-              <button
+              <button data-t1eq-action-button="true"
                 type="button"
                 onClick={record.onDelete}
                 className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-black uppercase tracking-wide text-red-300 transition hover:bg-red-500/20"
@@ -1354,7 +1354,7 @@ function RecordList({
 
 function SubmitButton({ label }: { label: string }) {
   return (
-    <button
+    <button data-t1eq-action-button="true"
       type="submit"
       className="mt-4 rounded-xl bg-orange-500 px-5 py-3 text-xs font-black uppercase tracking-wide text-white transition hover:bg-orange-400"
     >
@@ -1379,7 +1379,7 @@ function InputField({
       <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
         {label}
       </span>
-      <input
+      <input data-t1eq-field="true"
         type={type}
         value={value}
         onChange={onChange}
@@ -1403,7 +1403,7 @@ function NumberField({
       <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
         {label}
       </span>
-      <input
+      <input data-t1eq-field="true"
         type="number"
         step="0.01"
         value={value}
@@ -1428,7 +1428,7 @@ function TextareaField({
       <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
         {label}
       </span>
-      <textarea
+      <textarea data-t1eq-field="true"
         value={value}
         onChange={onChange}
         rows={3}
@@ -1454,7 +1454,7 @@ function SelectField({
       <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
         {label}
       </span>
-      <select
+      <select data-t1eq-field="true"
         value={value}
         onChange={(event) => onChange(event.target.value)}
         className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm font-bold text-white outline-none focus:border-orange-400"
@@ -1490,8 +1490,8 @@ function CheckboxField({
   onChange: (checked: boolean) => void;
 }) {
   return (
-    <label className="flex items-center gap-3 rounded-xl border border-white/10 bg-black/20 p-3">
-      <input
+    <label data-t1eq-tile="true" data-t1eq-page-card="true" className="flex items-center gap-3 rounded-xl border border-white/10 bg-black/20 p-3">
+      <input data-t1eq-field="true"
         type="checkbox"
         checked={checked}
         onChange={(event) => onChange(event.target.checked)}

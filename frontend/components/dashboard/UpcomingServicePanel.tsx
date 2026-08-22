@@ -18,7 +18,7 @@ export default function UpcomingServicePanel({
   items,
 }: UpcomingServicePanelProps) {
   return (
-    <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
+    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-2xl font-semibold">
           Upcoming Service
@@ -37,7 +37,7 @@ export default function UpcomingServicePanel({
         )}
 
         {items.map((item) => (
-          <div
+          <div data-t1eq-tile="true" data-t1eq-page-card="true"
             key={item.id}
             className="rounded-2xl border border-white/5 bg-black/20 p-4"
           >

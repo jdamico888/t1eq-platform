@@ -23,7 +23,7 @@ export default function Input({
   ...props
 }: InputProps) {
   return (
-    <input
+    <input data-t1eq-field="true"
       type={type}
       value={value}
       disabled={disabled}

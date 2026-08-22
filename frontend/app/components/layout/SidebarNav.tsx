@@ -3,62 +3,105 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import type { NavigationItem } from "@/constants/navigation";
-import { navigationItems } from "@/constants/navigation";
+type SidebarItem = {
+  id: string;
+  label: string;
+  href: string;
+};
 
-const navClass = "space-y-2";
-
-const linkClass =
-  "block rounded-xl px-3 py-2 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white";
-
-const activeLinkClass =
-  "block rounded-xl bg-white/10 px-3 py-2 text-sm font-semibold text-white shadow-sm";
-
-function routeMatches(pathname: string, href: string) {
-  if (pathname === href) {
-    return true;
-  }
-
-  if (href === "/") {
-    return false;
-  }
-
-  return pathname.startsWith(`${href}/`);
-}
-
-function navigationItemIsActive(
-  pathname: string,
-  href: string,
-  children?: NavigationItem[]
-) {
-  if (routeMatches(pathname, href)) {
-    return true;
-  }
-
-  if (!children || children.length === 0) {
-    return false;
-  }
-
-  return children.some((child) => routeMatches(pathname, child.href));
-}
+const SIDEBAR_ITEMS: SidebarItem[] = [
+  {
+    id: "dashboard",
+    label: "Dashboard",
+    href: "/dashboard",
+  },
+  {
+    id: "customers",
+    label: "Customers",
+    href: "/customers",
+  },
+  {
+    id: "equipment",
+    label: "Equipment",
+    href: "/equipment",
+  },
+  {
+    id: "repair-orders",
+    label: "Repair Orders",
+    href: "/repair-orders",
+  },
+  {
+    id: "dispatch",
+    label: "Dispatch",
+    href: "/dispatch",
+  },
+  {
+    id: "inventory",
+    label: "Inventory",
+    href: "/inventory",
+  },
+  {
+    id: "truck-stock",
+    label: "Truck Stock",
+    href: "/truck-stock",
+  },
+  {
+    id: "purchase-orders",
+    label: "Purchase Orders",
+    href: "/purchase-orders",
+  },
+  {
+    id: "suppliers",
+    label: "Suppliers",
+    href: "/suppliers",
+  },
+  {
+    id: "invoices",
+    label: "Invoices",
+    href: "/invoices",
+  },
+  {
+    id: "reports",
+    label: "Reports",
+    href: "/reports",
+  },
+  {
+    id: "settings",
+    label: "Settings",
+    href: "/settings",
+  },
+];
 
 export default function SidebarNav() {
   const pathname = usePathname();
 
   return (
-    <nav className={navClass}>
-      {navigationItems.map((item) => {
-        const isActive = navigationItemIsActive(
-          pathname,
-          item.href,
-          item.children
-        );
+    <nav
+      data-t1eq-qbit-type="section"
+      data-t1eq-qbit-id="sidebar-nav-list"
+      data-t1eq-qbit-scope="global"
+      className="space-y-2"
+    >
+      {SIDEBAR_ITEMS.map((item) => {
+        const isActive =
+          pathname === item.href ||
+          (item.href !== "/dashboard" &&
+            pathname.startsWith(item.href));
 
         return (
           <Link
-            key={item.href}
+            key={item.id}
             href={item.href}
-            className={isActive ? activeLinkClass : linkClass}
+            data-t1eq-sidebar-button="true"
+            data-t1eq-sidebar-button-active={isActive ? "true" : undefined}
+            data-t1eq-qbit-type="sidebar-button"
+            data-t1eq-qbit-id={`sidebar-${item.id}`}
+            data-t1eq-qbit-scope="global"
+            className={`block rounded-xl px-4 py-3 text-sm font-semibold transition ${
+              isActive
+                ? "bg-zinc-800 text-white"
+                : "text-zinc-300 hover:bg-zinc-900 hover:text-white"
+            }`}
           >
             {item.label}
           </Link>

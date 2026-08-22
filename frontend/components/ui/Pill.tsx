@@ -12,7 +12,7 @@ export default function Pill({
   onClick,
 }: PillProps) {
   return (
-    <button
+    <button data-t1eq-action-button="true"
       type="button"
       onClick={onClick}
       className={`rounded-full px-4 py-2 text-sm font-medium transition ${

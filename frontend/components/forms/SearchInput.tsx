@@ -1,37 +1,63 @@
 "use client";
 
-type SearchInputProps = {
-  value?: string;
+import type { ChangeEvent } from "react";
 
-  onChange: (
-    value: string
-  ) => void;
+type SearchInputProps = {
+  value: string;
+  onChange: (value: string) => void;
 
   placeholder?: string;
+
+  qbitId?: string;
+  qbitScope?: string;
+
+  className?: string;
 };
 
 export default function SearchInput({
-  value = "",
+  value,
   onChange,
   placeholder = "Search...",
+  qbitId,
+  qbitScope = "global",
+  className = "",
 }: SearchInputProps) {
-  return (
-    <div className="relative">
-      <input
-        type="text"
-        value={value}
-        placeholder={placeholder}
-        onChange={(event) =>
-          onChange(
-            event.target.value
-          )
-        }
-        className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 pr-10 outline-none transition focus:border-cyan-500"
-      />
+  function handleChange(
+    event: ChangeEvent<HTMLInputElement>
+  ) {
+    onChange(event.target.value);
+  }
 
-      <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-500">
-        🔍
-      </div>
+  return (
+    <div
+      data-t1eq-qbit-type={
+        qbitId ? "section" : undefined
+      }
+      data-t1eq-qbit-id={
+        qbitId
+          ? `${qbitId}-wrapper`
+          : undefined
+      }
+      data-t1eq-qbit-scope={
+        qbitId ? qbitScope : undefined
+      }
+      className="relative"
+    >
+      <input
+        type="search"
+        value={value}
+        onChange={handleChange}
+        placeholder={placeholder}
+        data-t1eq-field="true"
+        data-t1eq-qbit-type="field"
+        data-t1eq-qbit-id={
+          qbitId || undefined
+        }
+        data-t1eq-qbit-scope={
+          qbitId ? qbitScope : undefined
+        }
+        className={`w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-sm text-black outline-none transition placeholder:text-black/40 focus:border-cyan-500 ${className}`}
+      />
     </div>
   );
 }

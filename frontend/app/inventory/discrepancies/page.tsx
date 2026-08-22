@@ -172,7 +172,7 @@ export default function InventoryDiscrepanciesPage() {
   return (
     <main className="min-h-screen bg-zinc-100 p-6 text-black">
       <div className="mx-auto max-w-7xl space-y-6">
-        <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
             <div>
               <h1 className="text-5xl font-bold text-black">
@@ -185,7 +185,7 @@ export default function InventoryDiscrepanciesPage() {
               </p>
             </div>
 
-            <button
+            <button data-t1eq-action-button="true"
               type="button"
               onClick={refreshData}
               className={secondaryButtonClass}
@@ -196,7 +196,7 @@ export default function InventoryDiscrepanciesPage() {
         </section>
 
         <section className="grid grid-cols-2 gap-4 md:grid-cols-5">
-          <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
             <div className="text-sm font-semibold uppercase tracking-wide text-black/50">
               Total
             </div>
@@ -204,7 +204,7 @@ export default function InventoryDiscrepanciesPage() {
             <div className="mt-2 text-3xl font-bold">{metrics.total}</div>
           </div>
 
-          <div className="rounded-2xl border border-orange-200 bg-orange-50 p-5 shadow-sm">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-orange-200 bg-orange-50 p-5 shadow-sm">
             <div className="text-sm font-semibold uppercase tracking-wide text-orange-700">
               Open
             </div>
@@ -214,7 +214,7 @@ export default function InventoryDiscrepanciesPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-blue-200 bg-blue-50 p-5 shadow-sm">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-blue-200 bg-blue-50 p-5 shadow-sm">
             <div className="text-sm font-semibold uppercase tracking-wide text-blue-700">
               Under Review
             </div>
@@ -224,7 +224,7 @@ export default function InventoryDiscrepanciesPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-green-200 bg-green-50 p-5 shadow-sm">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-green-200 bg-green-50 p-5 shadow-sm">
             <div className="text-sm font-semibold uppercase tracking-wide text-green-700">
               Resolved
             </div>
@@ -234,7 +234,7 @@ export default function InventoryDiscrepanciesPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
             <div className="text-sm font-semibold uppercase tracking-wide text-black/50">
               Net Qty Delta
             </div>
@@ -245,14 +245,14 @@ export default function InventoryDiscrepanciesPage() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="grid gap-4 md:grid-cols-3">
             <label className="space-y-1">
               <span className="text-sm font-semibold text-black/70">
                 Search
               </span>
 
-              <input
+              <input data-t1eq-field="true"
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="Part, PO, location, bin..."
@@ -265,7 +265,7 @@ export default function InventoryDiscrepanciesPage() {
                 Status
               </span>
 
-              <select
+              <select data-t1eq-field="true"
                 value={statusFilter}
                 onChange={(event) =>
                   setStatusFilter(
@@ -286,11 +286,11 @@ export default function InventoryDiscrepanciesPage() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
           <h2 className="text-3xl font-bold">Discrepancy List</h2>
 
           {filteredDiscrepancies.length === 0 ? (
-            <div className="mt-5 rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-10 text-center">
+            <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-5 rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-10 text-center">
               <div className="text-xl font-bold">
                 No inventory discrepancies found
               </div>
@@ -303,7 +303,7 @@ export default function InventoryDiscrepanciesPage() {
           ) : (
             <div className="mt-5 space-y-4">
               {filteredDiscrepancies.map((discrepancy) => (
-                <article
+                <article data-t1eq-tile="true" data-t1eq-page-card="true"
                   key={discrepancy.id}
                   className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5"
                 >
@@ -349,7 +349,7 @@ export default function InventoryDiscrepanciesPage() {
                   </div>
 
                   <div className="mt-4 grid gap-4 md:grid-cols-4">
-                    <div className="rounded-xl border border-zinc-200 bg-white p-3">
+                    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-zinc-200 bg-white p-3">
                       <div className="text-sm font-semibold text-black/50">
                         Expected On Hand
                       </div>
@@ -359,7 +359,7 @@ export default function InventoryDiscrepanciesPage() {
                       </div>
                     </div>
 
-                    <div className="rounded-xl border border-zinc-200 bg-white p-3">
+                    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-zinc-200 bg-white p-3">
                       <div className="text-sm font-semibold text-black/50">
                         Live Count
                       </div>
@@ -369,7 +369,7 @@ export default function InventoryDiscrepanciesPage() {
                       </div>
                     </div>
 
-                    <div className="rounded-xl border border-zinc-200 bg-white p-3">
+                    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-zinc-200 bg-white p-3">
                       <div className="text-sm font-semibold text-black/50">
                         Difference
                       </div>
@@ -380,7 +380,7 @@ export default function InventoryDiscrepanciesPage() {
                       </div>
                     </div>
 
-                    <div className="rounded-xl border border-zinc-200 bg-white p-3">
+                    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-zinc-200 bg-white p-3">
                       <div className="text-sm font-semibold text-black/50">
                         Location
                       </div>
@@ -396,7 +396,7 @@ export default function InventoryDiscrepanciesPage() {
                   </div>
 
                   {discrepancy.notes && (
-                    <div className="mt-4 rounded-xl border border-zinc-200 bg-white p-3 text-sm text-black/70">
+                    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-4 rounded-xl border border-zinc-200 bg-white p-3 text-sm text-black/70">
                       {discrepancy.notes}
                     </div>
                   )}
@@ -407,7 +407,7 @@ export default function InventoryDiscrepanciesPage() {
                         Status
                       </span>
 
-                      <select
+                      <select data-t1eq-field="true"
                         value={discrepancy.status}
                         onChange={(event) =>
                           handleStatusChange(
@@ -430,7 +430,7 @@ export default function InventoryDiscrepanciesPage() {
                         Resolution Notes
                       </span>
 
-                      <input
+                      <input data-t1eq-field="true"
                         value={resolutionNotesById[discrepancy.id] ?? ""}
                         onChange={(event) =>
                           handleResolutionNoteChange(
@@ -445,7 +445,7 @@ export default function InventoryDiscrepanciesPage() {
                   </div>
 
                   <div className="mt-4 flex flex-wrap gap-3">
-                    <button
+                    <button data-t1eq-action-button="true"
                       type="button"
                       onClick={() => handleResolve(discrepancy)}
                       className={buttonClass}

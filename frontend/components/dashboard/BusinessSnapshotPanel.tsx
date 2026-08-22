@@ -21,7 +21,7 @@ export default function BusinessSnapshotPanel({
   totalInspections,
 }: BusinessSnapshotPanelProps) {
   return (
-    <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-cyan-500/5 p-6 backdrop-blur-xl">
+    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-cyan-500/5 p-6 backdrop-blur-xl">
       <div className="mb-6">
         <h2 className="text-2xl font-semibold">
           Business Snapshot
@@ -33,7 +33,7 @@ export default function BusinessSnapshotPanel({
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <div className="rounded-2xl border border-white/5 bg-black/20 p-5">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/5 bg-black/20 p-5">
           <div className="text-xs uppercase tracking-wide text-slate-400">
             Customers
           </div>
@@ -43,7 +43,7 @@ export default function BusinessSnapshotPanel({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/5 bg-black/20 p-5">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/5 bg-black/20 p-5">
           <div className="text-xs uppercase tracking-wide text-slate-400">
             Equipment
           </div>
@@ -53,7 +53,7 @@ export default function BusinessSnapshotPanel({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/5 bg-black/20 p-5">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/5 bg-black/20 p-5">
           <div className="text-xs uppercase tracking-wide text-slate-400">
             Repair Orders
           </div>
@@ -63,7 +63,7 @@ export default function BusinessSnapshotPanel({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/5 bg-black/20 p-5">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/5 bg-black/20 p-5">
           <div className="text-xs uppercase tracking-wide text-slate-400">
             Invoices
           </div>
@@ -73,7 +73,7 @@ export default function BusinessSnapshotPanel({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/5 bg-black/20 p-5">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/5 bg-black/20 p-5">
           <div className="text-xs uppercase tracking-wide text-slate-400">
             Technicians
           </div>
@@ -83,7 +83,7 @@ export default function BusinessSnapshotPanel({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/5 bg-black/20 p-5">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/5 bg-black/20 p-5">
           <div className="text-xs uppercase tracking-wide text-slate-400">
             Inspections
           </div>

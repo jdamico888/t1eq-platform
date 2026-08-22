@@ -23,7 +23,7 @@ export default function Textarea({
   ...props
 }: TextareaProps) {
   return (
-    <textarea
+    <textarea data-t1eq-field="true"
       value={value}
       rows={rows}
       disabled={disabled}

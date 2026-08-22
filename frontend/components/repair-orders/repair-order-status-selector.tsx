@@ -40,7 +40,7 @@ export default function RepairOrderStatusSelector({
         Workflow Status
       </label>
 
-      <select
+      <select data-t1eq-field="true"
         value={status}
         onChange={handleChange}
         className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm font-semibold text-white outline-none transition focus:border-blue-400/60"

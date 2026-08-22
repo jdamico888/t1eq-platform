@@ -26,6 +26,8 @@ import {
   type SiteInput,
 } from "@/services/site";
 
+const QBIT_SCOPE = "sites";
+
 const emptyForm: SiteInput = {
   customerId: "",
   customerName: "",
@@ -43,6 +45,7 @@ const emptyForm: SiteInput = {
 export default function SitesPage() {
   const [sites, setSites] = useState<Site[]>([]);
   const [editingSiteId, setEditingSiteId] = useState<string | null>(null);
+
   const [search, setSearch] = useState("");
   const [formData, setFormData] = useState<SiteInput>(emptyForm);
 
@@ -100,21 +103,26 @@ export default function SitesPage() {
       customerId: site.customerId,
       customerName: site.customerName,
       name: site.name,
-      address: site.address || "",
-      city: site.city || "",
-      state: site.state || "",
-      zipCode: site.zipCode || "",
-      contactName: site.contactName || "",
-      phone: site.phone || "",
-      email: site.email || "",
-      notes: site.notes || "",
+
+      address: site.address ?? "",
+      city: site.city ?? "",
+      state: site.state ?? "",
+      zipCode: site.zipCode ?? "",
+
+      contactName: site.contactName ?? "",
+      phone: site.phone ?? "",
+      email: site.email ?? "",
+
+      notes: site.notes ?? "",
     });
   }
 
   function handleDelete(site: Site) {
     const confirmed = window.confirm(`Delete ${site.name}?`);
 
-    if (!confirmed) return;
+    if (!confirmed) {
+      return;
+    }
 
     deleteSite(site.id);
     loadSites();
@@ -127,7 +135,9 @@ export default function SitesPage() {
   const filteredSites = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
 
-    if (!normalizedSearch) return sites;
+    if (!normalizedSearch) {
+      return sites;
+    }
 
     return sites.filter((site) => {
       return (
@@ -146,17 +156,31 @@ export default function SitesPage() {
 
   return (
     <ListPageLayout
+      qbitId="sites"
+      qbitScope={QBIT_SCOPE}
       title="Sites"
       description="Manage customer shop locations, service addresses, contacts, and site-specific records."
     >
       <TwoColumnLayout
+        qbitId="sites-workspace"
+        qbitScope={QBIT_SCOPE}
         left={
           <FormCard
+            qbitId="sites-form"
+            qbitScope={QBIT_SCOPE}
             title={editingSiteId ? "Edit Site" : "Add Site"}
             description="Create or update customer service locations."
           >
-            <form className="space-y-4" onSubmit={handleSubmit}>
+            <form
+              data-t1eq-qbit-type="section"
+              data-t1eq-qbit-id="sites-form-fields"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="space-y-4"
+              onSubmit={handleSubmit}
+            >
               <CustomerSelector
+                qbitId="site-customer"
+                qbitScope={QBIT_SCOPE}
                 value={formData.customerName}
                 onChange={(value) =>
                   setFormData((previous) => ({
@@ -167,6 +191,8 @@ export default function SitesPage() {
               />
 
               <FormInput
+                qbitId="site-name"
+                qbitScope={QBIT_SCOPE}
                 name="name"
                 label="Site Name"
                 value={formData.name}
@@ -175,45 +201,62 @@ export default function SitesPage() {
               />
 
               <FormInput
+                qbitId="site-address"
+                qbitScope={QBIT_SCOPE}
                 name="address"
                 label="Address"
-                value={formData.address}
+                value={formData.address ?? ""}
                 onChange={handleTextChange}
               />
 
-              <div className="grid gap-4 md:grid-cols-3">
+              <div
+                data-t1eq-qbit-type="section"
+                data-t1eq-qbit-id="site-location-fields"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="grid gap-4 md:grid-cols-3"
+              >
                 <FormInput
+                  qbitId="site-city"
+                  qbitScope={QBIT_SCOPE}
                   name="city"
                   label="City"
-                  value={formData.city}
+                  value={formData.city ?? ""}
                   onChange={handleTextChange}
                 />
 
                 <FormInput
+                  qbitId="site-state"
+                  qbitScope={QBIT_SCOPE}
                   name="state"
                   label="State"
-                  value={formData.state}
+                  value={formData.state ?? ""}
                   onChange={handleTextChange}
                 />
 
                 <FormInput
+                  qbitId="site-zip"
+                  qbitScope={QBIT_SCOPE}
                   name="zipCode"
                   label="Zip"
-                  value={formData.zipCode}
+                  value={formData.zipCode ?? ""}
                   onChange={handleTextChange}
                 />
               </div>
 
               <FormInput
+                qbitId="site-contact-name"
+                qbitScope={QBIT_SCOPE}
                 name="contactName"
                 label="Contact Name"
-                value={formData.contactName}
+                value={formData.contactName ?? ""}
                 onChange={handleTextChange}
               />
 
               <PhoneInput
+                qbitId="site-phone"
+                qbitScope={QBIT_SCOPE}
                 label="Phone"
-                value={formData.phone}
+                value={formData.phone ?? ""}
                 onChange={(value) =>
                   setFormData((previous) => ({
                     ...previous,
@@ -223,8 +266,10 @@ export default function SitesPage() {
               />
 
               <EmailInput
+                qbitId="site-email"
+                qbitScope={QBIT_SCOPE}
                 label="Email"
-                value={formData.email}
+                value={formData.email ?? ""}
                 onChange={(value) =>
                   setFormData((previous) => ({
                     ...previous,
@@ -234,13 +279,17 @@ export default function SitesPage() {
               />
 
               <FormTextarea
+                qbitId="site-notes"
+                qbitScope={QBIT_SCOPE}
                 name="notes"
                 label="Notes"
-                value={formData.notes}
+                value={formData.notes ?? ""}
                 onChange={handleTextChange}
               />
 
               <FormActions
+                qbitId="sites-form"
+                qbitScope={QBIT_SCOPE}
                 isEditing={Boolean(editingSiteId)}
                 submitLabel="Save Site"
                 updateLabel="Update Site"
@@ -251,21 +300,31 @@ export default function SitesPage() {
         }
         right={
           <TableCard
+            qbitId="sites-directory"
+            qbitScope={QBIT_SCOPE}
             title="Site Directory"
             description="Search and manage customer service locations."
             actions={
               <SearchInput
+                qbitId="sites-search"
+                qbitScope={QBIT_SCOPE}
                 value={search}
                 onChange={setSearch}
                 placeholder="Search sites..."
               />
             }
           >
-            <SiteTable
-              sites={filteredSites}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
+            <div
+              data-t1eq-qbit-type="section"
+              data-t1eq-qbit-id="sites-table-container"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+            >
+              <SiteTable
+                sites={filteredSites}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            </div>
           </TableCard>
         }
       />

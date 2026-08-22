@@ -90,7 +90,7 @@ function HistogramChart({
 
   return (
     <div className="mt-5">
-      <div className="flex h-44 items-end gap-3 rounded-xl border border-zinc-200 bg-zinc-50 p-4">
+      <div data-t1eq-tile="true" data-t1eq-page-card="true" className="flex h-44 items-end gap-3 rounded-xl border border-zinc-200 bg-zinc-50 p-4">
         {data.map((point) => {
           const heightPercentage = Math.max(6, (point.value / maxValue) * 100);
 
@@ -157,7 +157,7 @@ function LineChart({
     .join(" ");
 
   return (
-    <div className="mt-5 rounded-xl border border-zinc-200 bg-zinc-50 p-4">
+    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-5 rounded-xl border border-zinc-200 bg-zinc-50 p-4">
       <svg
         viewBox={`0 0 ${chartWidth} ${chartHeight}`}
         role="img"
@@ -246,7 +246,7 @@ export default function OperationalDashboardChartRenderer({
           )}
         </div>
 
-        <div className="rounded-xl border border-zinc-300 bg-zinc-50 px-3 py-2 text-xs font-black uppercase tracking-wide text-zinc-600">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-zinc-300 bg-zinc-50 px-3 py-2 text-xs font-black uppercase tracking-wide text-zinc-600">
           {chart.chartType}
         </div>
       </div>

@@ -52,7 +52,7 @@ export default function Drawer({
               {title}
             </h2>
 
-            <button
+            <button data-t1eq-action-button="true"
               type="button"
               onClick={onClose}
               className="rounded-xl border border-white/10 px-3 py-2 text-sm transition hover:bg-white/10"

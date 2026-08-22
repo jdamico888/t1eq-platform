@@ -121,7 +121,7 @@ export default function RepairOrderTable({
               </Link>
 
               {onEdit && (
-                <button
+                <button data-t1eq-action-button="true"
                   type="button"
                   onClick={() => onEdit(repairOrder)}
                   className="rounded-lg border border-white/10 px-3 py-2 text-xs font-black uppercase tracking-wide text-slate-200 transition hover:bg-white/10"
@@ -131,7 +131,7 @@ export default function RepairOrderTable({
               )}
 
               {onDelete && (
-                <button
+                <button data-t1eq-action-button="true"
                   type="button"
                   onClick={() => onDelete(repairOrder)}
                   className="rounded-lg border border-red-500/20 px-3 py-2 text-xs font-black uppercase tracking-wide text-red-300 transition hover:bg-red-500/10"

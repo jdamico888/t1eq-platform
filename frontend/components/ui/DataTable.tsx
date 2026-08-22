@@ -24,7 +24,7 @@ export default function DataTable<T>({
   emptyMessage = "No records found.",
 }: DataTableProps<T>) {
   return (
-    <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl">
+    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl">
       <div className="overflow-x-auto">
         <table className="min-w-full">
           <thead className="border-b border-white/10 bg-black/20">

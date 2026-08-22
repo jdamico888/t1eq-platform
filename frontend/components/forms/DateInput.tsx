@@ -26,7 +26,7 @@ export default function DateInput({
         </label>
       )}
 
-      <input
+      <input data-t1eq-field="true"
         type="date"
         value={value}
         required={required}
