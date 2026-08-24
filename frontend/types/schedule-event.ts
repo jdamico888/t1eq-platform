@@ -1,3 +1,5 @@
+import type { RepairOrderActionItem } from "./repair-order";
+
 export type ScheduleEventStatus =
   | "Draft"
   | "Scheduled"
@@ -39,6 +41,8 @@ export type ScheduleEvent = {
 
   technicianId?: string;
   technicianName?: string;
+
+  actionItems?: RepairOrderActionItem[];
 
   startDateTime: string;
   endDateTime: string;

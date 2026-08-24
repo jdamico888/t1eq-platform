@@ -51,8 +51,10 @@ export type RepairOrderBillingGroup =
 export type RepairOrderActionBillingGroup = RepairOrderBillingGroup;
 
 export type RepairOrderActionItemType =
+  | "Installation"
   | "Inspection"
   | "Repair"
+  | "Removal"
   | "Diagnosis"
   | "Calibration"
   | "Parts"
@@ -288,6 +290,9 @@ export type RepairOrderActionItem = {
   assignedEmployeeDisplayName?: string;
   assignedEmployeeRole?: string;
 
+  equipmentId?: string;
+  equipmentSnapshot?: RepairOrderEquipmentSnapshot;
+
   partsRequired?: string;
   recommendationNotes?: string;
 
@@ -317,6 +322,7 @@ export type RepairOrderActionItem = {
 
 export type RepairOrderEquipmentSnapshot = {
   equipmentId?: string;
+  equipmentModelId?: string;
   equipmentName?: string;
   equipmentDescription?: string;
   equipmentType?: string;

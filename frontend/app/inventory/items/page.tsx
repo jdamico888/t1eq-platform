@@ -142,6 +142,8 @@ function itemIsLowStock(item: InventoryItem) {
   return getDisplayQuantity(item) <= getMinimumQuantity(item);
 }
 
+const QBIT_SCOPE = "inventory-items";
+
 function itemMatchesSearch(item: InventoryItem, searchTerm: string) {
   const normalizedSearch = searchTerm.trim().toLowerCase();
 
@@ -522,18 +524,18 @@ export default function InventoryItemsPage() {
 
   return (
     <div className={pageClass}>
-      <header data-t1eq-page-card="true" className={headerClass}>
+      <header data-t1eq-page-card="true" data-t1eq-qbit-id="inventory-items-header" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className={headerClass}>
         <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
           <div>
-            <p className="text-sm font-black uppercase tracking-wide text-zinc-500">
+            <p data-t1eq-qbit-id="inventory-items-overline" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-black uppercase tracking-wide text-zinc-500">
               Inventory
             </p>
 
-            <h1 className="mt-2 text-4xl font-black text-black">
+            <h1 data-t1eq-qbit-id="inventory-items-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 text-4xl font-black text-black">
               Inventory Items
             </h1>
 
-            <p className="mt-2 max-w-3xl text-base font-semibold text-zinc-600">
+            <p data-t1eq-qbit-id="inventory-items-description" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 max-w-3xl text-base font-semibold text-zinc-600">
               Manage stocked parts, quantities, locations, minimum stock levels,
               pricing, suppliers, part-number references, and required item
               photos.
@@ -544,6 +546,9 @@ export default function InventoryItemsPage() {
             <button data-t1eq-action-button="true"
               type="button"
               onClick={refreshInventoryItems}
+              data-t1eq-qbit-id="inventory-items-refresh"
+              data-t1eq-qbit-type="action-button"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
               className={secondaryButtonClass}
             >
               Refresh
@@ -552,6 +557,9 @@ export default function InventoryItemsPage() {
             <button data-t1eq-action-button="true"
               type="button"
               onClick={beginCreateItem}
+              data-t1eq-qbit-id="inventory-items-add"
+              data-t1eq-qbit-type="action-button"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
               className={primaryButtonClass}
             >
               Add Inventory Item
@@ -560,30 +568,30 @@ export default function InventoryItemsPage() {
         </div>
 
         {statusMessage && (
-          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm font-bold text-zinc-700">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="inventory-items-status-message" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm font-bold text-zinc-700">
             {statusMessage}
           </div>
         )}
       </header>
 
       {showForm && (
-        <section data-t1eq-page-card="true" className={`${sectionClass} mb-6`}>
+        <section data-t1eq-page-card="true" data-t1eq-qbit-id="inventory-items-form" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className={`${sectionClass} mb-6`}>
           <div className="mb-5">
-            <h2 className="text-2xl font-black text-black">
+            <h2 data-t1eq-qbit-id="inventory-items-form-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-2xl font-black text-black">
               {editingItem ? "Edit Inventory Item" : "Add Inventory Item"}
             </h2>
 
-            <p className="mt-1 text-sm font-semibold text-zinc-600">
+            <p data-t1eq-qbit-id="inventory-items-form-description" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-1 text-sm font-semibold text-zinc-600">
               Required fields: part number, item name, and inventory item photo.
             </p>
           </div>
 
-          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mb-6 rounded-2xl border-2 border-orange-300 bg-orange-50 p-4">
-            <div className="text-sm font-black uppercase tracking-wide text-orange-800">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="inventory-items-photo-note" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="mb-6 rounded-2xl border-2 border-orange-300 bg-orange-50 p-4">
+            <div data-t1eq-qbit-id="inventory-items-photo-note-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-black uppercase tracking-wide text-orange-800">
               Required Item Photo
             </div>
 
-            <p className="mt-1 text-sm font-semibold text-orange-900">
+            <p data-t1eq-qbit-id="inventory-items-photo-note-description" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-1 text-sm font-semibold text-orange-900">
               Each inventory item must have a picture before it can be saved.
               The app records whether the image came from the camera or a
               desktop upload.
@@ -592,7 +600,7 @@ export default function InventoryItemsPage() {
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <label className="space-y-2">
-              <span className={labelClass}>Take Picture With Camera</span>
+              <span data-t1eq-qbit-id="inventory-items-camera-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className={labelClass}>Take Picture With Camera</span>
               <input data-t1eq-field="true"
                 type="file"
                 accept="image/*"
@@ -600,46 +608,52 @@ export default function InventoryItemsPage() {
                 onChange={(event) =>
                   handleInventoryImageUpload(event, "Camera")
                 }
+                data-t1eq-qbit-id="inventory-items-camera-input"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 className={inputClass}
               />
             </label>
 
             <label className="space-y-2">
-              <span className={labelClass}>Upload Image From Computer</span>
+              <span data-t1eq-qbit-id="inventory-items-upload-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className={labelClass}>Upload Image From Computer</span>
               <input data-t1eq-field="true"
                 type="file"
                 accept="image/*"
                 onChange={(event) =>
                   handleInventoryImageUpload(event, "Desktop Upload")
                 }
+                data-t1eq-qbit-id="inventory-items-upload-input"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 className={inputClass}
               />
             </label>
 
             <div className="space-y-2 md:col-span-2">
-              <span className={labelClass}>Item Photo Preview</span>
+              <span data-t1eq-qbit-id="inventory-items-photo-preview-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className={labelClass}>Item Photo Preview</span>
 
               {formState.imageUrl ? (
-                <div data-t1eq-tile="true" data-t1eq-page-card="true" className="overflow-hidden rounded-2xl border border-zinc-200 bg-white">
+                <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="inventory-items-photo-preview" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="overflow-hidden rounded-2xl border border-zinc-200 bg-white">
                   <img
                     src={formState.imageUrl}
                     alt="Inventory item preview"
                     className="h-56 w-full object-contain"
                   />
 
-                  <div className="border-t border-zinc-200 bg-zinc-50 px-4 py-2 text-xs font-black uppercase tracking-wide text-zinc-600">
+                  <div data-t1eq-qbit-id="inventory-items-photo-preview-source" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="border-t border-zinc-200 bg-zinc-50 px-4 py-2 text-xs font-black uppercase tracking-wide text-zinc-600">
                     Source: {formState.requiredPhotoSource}
                   </div>
                 </div>
               ) : (
-                <div data-t1eq-tile="true" data-t1eq-page-card="true" className="flex h-56 items-center justify-center rounded-2xl border-2 border-dashed border-red-300 bg-red-50 text-sm font-black text-red-700">
+                <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="inventory-items-photo-preview-missing" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="flex h-56 items-center justify-center rounded-2xl border-2 border-dashed border-red-300 bg-red-50 text-sm font-black text-red-700">
                   Required photo missing
                 </div>
               )}
             </div>
 
             <label className="space-y-2">
-              <span className={labelClass}>Part Number</span>
+              <span data-t1eq-qbit-id="inventory-items-part-number-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className={labelClass}>Part Number</span>
               <input data-t1eq-field="true"
                 value={formState.partNumber}
                 onChange={(event) =>
@@ -647,12 +661,15 @@ export default function InventoryItemsPage() {
                     partNumber: event.target.value,
                   })
                 }
+                data-t1eq-qbit-id="inventory-items-part-number"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 className={inputClass}
               />
             </label>
 
             <label className="space-y-2 xl:col-span-2">
-              <span className={labelClass}>Item Name</span>
+              <span data-t1eq-qbit-id="inventory-items-name-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className={labelClass}>Item Name</span>
               <input data-t1eq-field="true"
                 value={formState.name}
                 onChange={(event) =>
@@ -660,12 +677,15 @@ export default function InventoryItemsPage() {
                     name: event.target.value,
                   })
                 }
+                data-t1eq-qbit-id="inventory-items-name"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 className={inputClass}
               />
             </label>
 
             <label className="space-y-2">
-              <span className={labelClass}>Quantity On Hand</span>
+              <span data-t1eq-qbit-id="inventory-items-quantity-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className={labelClass}>Quantity On Hand</span>
               <input data-t1eq-field="true"
                 type="number"
                 value={formState.quantityOnHand}
@@ -674,12 +694,15 @@ export default function InventoryItemsPage() {
                     quantityOnHand: event.target.value,
                   })
                 }
+                data-t1eq-qbit-id="inventory-items-quantity"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 className={inputClass}
               />
             </label>
 
             <label className="space-y-2">
-              <span className={labelClass}>Minimum Quantity</span>
+              <span data-t1eq-qbit-id="inventory-items-min-quantity-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className={labelClass}>Minimum Quantity</span>
               <input data-t1eq-field="true"
                 type="number"
                 value={formState.minimumQuantity}
@@ -688,12 +711,15 @@ export default function InventoryItemsPage() {
                     minimumQuantity: event.target.value,
                   })
                 }
+                data-t1eq-qbit-id="inventory-items-min-quantity"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 className={inputClass}
               />
             </label>
 
             <label className="space-y-2">
-              <span className={labelClass}>Ideal Stock</span>
+              <span data-t1eq-qbit-id="inventory-items-ideal-stock-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className={labelClass}>Ideal Stock</span>
               <input data-t1eq-field="true"
                 type="number"
                 value={formState.idealStock}
@@ -702,12 +728,15 @@ export default function InventoryItemsPage() {
                     idealStock: event.target.value,
                   })
                 }
+                data-t1eq-qbit-id="inventory-items-ideal-stock"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 className={inputClass}
               />
             </label>
 
             <label className="space-y-2">
-              <span className={labelClass}>Cost</span>
+              <span data-t1eq-qbit-id="inventory-items-cost-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className={labelClass}>Cost</span>
               <input data-t1eq-field="true"
                 type="number"
                 value={formState.cost}
@@ -716,12 +745,15 @@ export default function InventoryItemsPage() {
                     cost: event.target.value,
                   })
                 }
+                data-t1eq-qbit-id="inventory-items-cost"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 className={inputClass}
               />
             </label>
 
             <label className="space-y-2">
-              <span className={labelClass}>Sell Price</span>
+              <span data-t1eq-qbit-id="inventory-items-sell-price-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className={labelClass}>Sell Price</span>
               <input data-t1eq-field="true"
                 type="number"
                 value={formState.sellPrice}
@@ -730,12 +762,15 @@ export default function InventoryItemsPage() {
                     sellPrice: event.target.value,
                   })
                 }
+                data-t1eq-qbit-id="inventory-items-sell-price"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 className={inputClass}
               />
             </label>
 
             <label className="space-y-2">
-              <span className={labelClass}>Location</span>
+              <span data-t1eq-qbit-id="inventory-items-location-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className={labelClass}>Location</span>
               <input data-t1eq-field="true"
                 value={formState.location}
                 onChange={(event) =>
@@ -743,12 +778,15 @@ export default function InventoryItemsPage() {
                     location: event.target.value,
                   })
                 }
+                data-t1eq-qbit-id="inventory-items-location"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 className={inputClass}
               />
             </label>
 
             <label className="space-y-2">
-              <span className={labelClass}>Bin Location</span>
+              <span data-t1eq-qbit-id="inventory-items-bin-location-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className={labelClass}>Bin Location</span>
               <input data-t1eq-field="true"
                 value={formState.binLocation}
                 onChange={(event) =>
@@ -756,12 +794,15 @@ export default function InventoryItemsPage() {
                     binLocation: event.target.value,
                   })
                 }
+                data-t1eq-qbit-id="inventory-items-bin-location"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 className={inputClass}
               />
             </label>
 
             <label className="space-y-2">
-              <span className={labelClass}>Manufacturer</span>
+              <span data-t1eq-qbit-id="inventory-items-manufacturer-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className={labelClass}>Manufacturer</span>
               <input data-t1eq-field="true"
                 value={formState.manufacturer}
                 onChange={(event) =>
@@ -769,12 +810,15 @@ export default function InventoryItemsPage() {
                     manufacturer: event.target.value,
                   })
                 }
+                data-t1eq-qbit-id="inventory-items-manufacturer"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 className={inputClass}
               />
             </label>
 
             <label className="space-y-2">
-              <span className={labelClass}>Supplier</span>
+              <span data-t1eq-qbit-id="inventory-items-supplier-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className={labelClass}>Supplier</span>
               <input data-t1eq-field="true"
                 value={formState.supplierName}
                 onChange={(event) =>
@@ -782,12 +826,15 @@ export default function InventoryItemsPage() {
                     supplierName: event.target.value,
                   })
                 }
+                data-t1eq-qbit-id="inventory-items-supplier"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 className={inputClass}
               />
             </label>
 
             <label className="space-y-2">
-              <span className={labelClass}>OEM Part Number</span>
+              <span data-t1eq-qbit-id="inventory-items-oem-part-number-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className={labelClass}>OEM Part Number</span>
               <input data-t1eq-field="true"
                 value={formState.oemPartNumber}
                 onChange={(event) =>
@@ -795,12 +842,15 @@ export default function InventoryItemsPage() {
                     oemPartNumber: event.target.value,
                   })
                 }
+                data-t1eq-qbit-id="inventory-items-oem-part-number"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 className={inputClass}
               />
             </label>
 
             <label className="space-y-2">
-              <span className={labelClass}>Vendor Part Number</span>
+              <span data-t1eq-qbit-id="inventory-items-vendor-part-number-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className={labelClass}>Vendor Part Number</span>
               <input data-t1eq-field="true"
                 value={formState.vendorPartNumber}
                 onChange={(event) =>
@@ -808,12 +858,15 @@ export default function InventoryItemsPage() {
                     vendorPartNumber: event.target.value,
                   })
                 }
+                data-t1eq-qbit-id="inventory-items-vendor-part-number"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 className={inputClass}
               />
             </label>
 
             <label className="space-y-2 md:col-span-2">
-              <span className={labelClass}>Cross References</span>
+              <span data-t1eq-qbit-id="inventory-items-cross-references-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className={labelClass}>Cross References</span>
               <input data-t1eq-field="true"
                 value={formState.crossReferencePartNumbers}
                 onChange={(event) =>
@@ -821,13 +874,16 @@ export default function InventoryItemsPage() {
                     crossReferencePartNumbers: event.target.value,
                   })
                 }
+                data-t1eq-qbit-id="inventory-items-cross-references"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 className={inputClass}
                 placeholder="Separate multiple part numbers with commas."
               />
             </label>
 
             <label className="space-y-2 md:col-span-2">
-              <span className={labelClass}>Superseded Part Numbers</span>
+              <span data-t1eq-qbit-id="inventory-items-superseded-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className={labelClass}>Superseded Part Numbers</span>
               <input data-t1eq-field="true"
                 value={formState.supersededPartNumbers}
                 onChange={(event) =>
@@ -835,37 +891,46 @@ export default function InventoryItemsPage() {
                     supersededPartNumbers: event.target.value,
                   })
                 }
+                data-t1eq-qbit-id="inventory-items-superseded"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 className={inputClass}
                 placeholder="Separate multiple part numbers with commas."
               />
             </label>
 
             <label className="space-y-2">
-              <span className={labelClass}>Manufacturer Camera Image</span>
+              <span data-t1eq-qbit-id="inventory-items-manufacturer-camera-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className={labelClass}>Manufacturer Camera Image</span>
               <input data-t1eq-field="true"
                 type="file"
                 accept="image/*"
                 capture="environment"
                 onChange={handleManufacturerImageUpload}
+                data-t1eq-qbit-id="inventory-items-manufacturer-camera-input"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 className={inputClass}
               />
             </label>
 
             <label className="space-y-2">
-              <span className={labelClass}>Upload Manufacturer Image</span>
+              <span data-t1eq-qbit-id="inventory-items-manufacturer-upload-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className={labelClass}>Upload Manufacturer Image</span>
               <input data-t1eq-field="true"
                 type="file"
                 accept="image/*"
                 onChange={handleManufacturerImageUpload}
+                data-t1eq-qbit-id="inventory-items-manufacturer-upload-input"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 className={inputClass}
               />
             </label>
 
             <div className="space-y-2 md:col-span-2">
-              <span className={labelClass}>Manufacturer Image Preview</span>
+              <span data-t1eq-qbit-id="inventory-items-manufacturer-preview-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className={labelClass}>Manufacturer Image Preview</span>
 
               {formState.manufacturerImageUrl ? (
-                <div data-t1eq-tile="true" data-t1eq-page-card="true" className="overflow-hidden rounded-2xl border border-zinc-200 bg-white">
+                <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="inventory-items-manufacturer-preview" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="overflow-hidden rounded-2xl border border-zinc-200 bg-white">
                   <img
                     src={formState.manufacturerImageUrl}
                     alt="Manufacturer preview"
@@ -873,14 +938,14 @@ export default function InventoryItemsPage() {
                   />
                 </div>
               ) : (
-                <div data-t1eq-tile="true" data-t1eq-page-card="true" className="flex h-40 items-center justify-center rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 text-sm font-bold text-zinc-500">
+                <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="inventory-items-manufacturer-preview-missing" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="flex h-40 items-center justify-center rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 text-sm font-bold text-zinc-500">
                   Optional
                 </div>
               )}
             </div>
 
             <label className="space-y-2 md:col-span-2 xl:col-span-4">
-              <span className={labelClass}>Description</span>
+              <span data-t1eq-qbit-id="inventory-items-description-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className={labelClass}>Description</span>
               <textarea data-t1eq-field="true"
                 value={formState.description}
                 onChange={(event) =>
@@ -889,12 +954,15 @@ export default function InventoryItemsPage() {
                   })
                 }
                 rows={3}
+                data-t1eq-qbit-id="inventory-items-description"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 className={inputClass}
               />
             </label>
 
             <label className="space-y-2 md:col-span-2 xl:col-span-4">
-              <span className={labelClass}>Notes</span>
+              <span data-t1eq-qbit-id="inventory-items-notes-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className={labelClass}>Notes</span>
               <textarea data-t1eq-field="true"
                 value={formState.notes}
                 onChange={(event) =>
@@ -903,6 +971,9 @@ export default function InventoryItemsPage() {
                   })
                 }
                 rows={3}
+                data-t1eq-qbit-id="inventory-items-notes"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 className={inputClass}
               />
             </label>
@@ -912,6 +983,9 @@ export default function InventoryItemsPage() {
             <button data-t1eq-action-button="true"
               type="button"
               onClick={handleSaveItem}
+              data-t1eq-qbit-id="inventory-items-save"
+              data-t1eq-qbit-type="action-button"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
               className={primaryButtonClass}
             >
               {editingItem ? "Save Changes" : "Create Item"}
@@ -920,6 +994,9 @@ export default function InventoryItemsPage() {
             <button data-t1eq-action-button="true"
               type="button"
               onClick={cancelForm}
+              data-t1eq-qbit-id="inventory-items-cancel"
+              data-t1eq-qbit-type="action-button"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
               className={secondaryButtonClass}
             >
               Cancel
@@ -928,17 +1005,20 @@ export default function InventoryItemsPage() {
         </section>
       )}
 
-      <section data-t1eq-page-card="true" className={sectionClass}>
+      <section data-t1eq-page-card="true" data-t1eq-qbit-id="inventory-items-list" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className={sectionClass}>
         <div data-t1eq-tile-grid="true" className={metricGridClass}>
           <div
             data-t1eq-tile="true"
             data-t1eq-page-card="true"
+            data-t1eq-qbit-id="inventory-items-metric-total"
+            data-t1eq-qbit-type="page-card"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
             className={metricCardClass}
           >
-            <div className="text-sm font-black uppercase tracking-wide text-zinc-500">
+            <div data-t1eq-qbit-id="inventory-items-metric-total-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-black uppercase tracking-wide text-zinc-500">
               Total Items
             </div>
-            <div className="mt-2 text-4xl font-black text-black">
+            <div data-t1eq-qbit-id="inventory-items-metric-total-value" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 text-4xl font-black text-black">
               {inventoryItems.length}
             </div>
           </div>
@@ -946,12 +1026,15 @@ export default function InventoryItemsPage() {
           <div
             data-t1eq-tile="true"
             data-t1eq-page-card="true"
+            data-t1eq-qbit-id="inventory-items-metric-low-stock"
+            data-t1eq-qbit-type="page-card"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
             className={metricCardClass}
           >
-            <div className="text-sm font-black uppercase tracking-wide text-zinc-500">
+            <div data-t1eq-qbit-id="inventory-items-metric-low-stock-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-black uppercase tracking-wide text-zinc-500">
               Low Stock
             </div>
-            <div className="mt-2 text-4xl font-black text-black">
+            <div data-t1eq-qbit-id="inventory-items-metric-low-stock-value" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 text-4xl font-black text-black">
               {lowStockItems.length}
             </div>
           </div>
@@ -959,12 +1042,15 @@ export default function InventoryItemsPage() {
           <div
             data-t1eq-tile="true"
             data-t1eq-page-card="true"
+            data-t1eq-qbit-id="inventory-items-metric-value"
+            data-t1eq-qbit-type="page-card"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
             className={metricCardClass}
           >
-            <div className="text-sm font-black uppercase tracking-wide text-zinc-500">
+            <div data-t1eq-qbit-id="inventory-items-metric-value-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-black uppercase tracking-wide text-zinc-500">
               Inventory Value
             </div>
-            <div className="mt-2 text-4xl font-black text-black">
+            <div data-t1eq-qbit-id="inventory-items-metric-value-value" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 text-4xl font-black text-black">
               {formatCurrency(totalInventoryValue)}
             </div>
           </div>
@@ -972,12 +1058,15 @@ export default function InventoryItemsPage() {
           <div
             data-t1eq-tile="true"
             data-t1eq-page-card="true"
+            data-t1eq-qbit-id="inventory-items-metric-search-results"
+            data-t1eq-qbit-type="page-card"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
             className={metricCardClass}
           >
-            <div className="text-sm font-black uppercase tracking-wide text-zinc-500">
+            <div data-t1eq-qbit-id="inventory-items-metric-search-results-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-black uppercase tracking-wide text-zinc-500">
               Search Results
             </div>
-            <div className="mt-2 text-4xl font-black text-black">
+            <div data-t1eq-qbit-id="inventory-items-metric-search-results-value" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 text-4xl font-black text-black">
               {filteredItems.length}
             </div>
           </div>
@@ -985,11 +1074,14 @@ export default function InventoryItemsPage() {
 
         <div className="mb-5">
           <label className="space-y-2">
-            <span className={labelClass}>Search Inventory</span>
+            <span data-t1eq-qbit-id="inventory-items-search-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className={labelClass}>Search Inventory</span>
 
             <input data-t1eq-field="true"
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
+              data-t1eq-qbit-id="inventory-items-search-input"
+              data-t1eq-qbit-type="field"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
               className={inputClass}
               placeholder="Search part number, name, supplier, manufacturer, location, bin, OEM, vendor, or cross reference."
             />
@@ -997,11 +1089,11 @@ export default function InventoryItemsPage() {
         </div>
 
         {filteredItems.length === 0 ? (
-          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-8 text-center text-sm font-bold text-zinc-500">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="inventory-items-empty" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-8 text-center text-sm font-bold text-zinc-500">
             No inventory items found.
           </div>
         ) : (
-          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="overflow-hidden rounded-2xl border border-zinc-200">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="inventory-items-table" data-t1eq-qbit-type="section" data-t1eq-qbit-scope={QBIT_SCOPE} className="overflow-hidden rounded-2xl border border-zinc-200">
             <table className="w-full border-collapse bg-white">
               <thead>
                 <tr>
@@ -1021,13 +1113,19 @@ export default function InventoryItemsPage() {
               </thead>
 
               <tbody>
-                {filteredItems.map((item) => (
-                  <tr key={item.id} className="transition hover:bg-zinc-50">
+                {filteredItems.map((item) => {
+                  const inventoryItemQbitId = `inventory-item-${item.id}`;
+
+                  return (
+                  <tr key={item.id} data-t1eq-qbit-id={inventoryItemQbitId} data-t1eq-qbit-type="tile" data-t1eq-qbit-scope={QBIT_SCOPE} className="transition hover:bg-zinc-50">
                     <td className={tableCellClass}>
                       {item.thumbnailUrl || item.imageUrl ? (
                         <img data-t1eq-tile="true" data-t1eq-page-card="true"
                           src={item.thumbnailUrl || item.imageUrl}
                           alt={item.partNumber}
+                          data-t1eq-qbit-id={`${inventoryItemQbitId}-photo`}
+                          data-t1eq-qbit-type="text"
+                          data-t1eq-qbit-scope={QBIT_SCOPE}
                           className="h-14 w-14 rounded-xl border border-zinc-200 object-cover"
                         />
                       ) : (
@@ -1100,6 +1198,9 @@ export default function InventoryItemsPage() {
                         <button data-t1eq-action-button="true"
                           type="button"
                           onClick={() => beginEditItem(item)}
+                          data-t1eq-qbit-id={`${inventoryItemQbitId}-edit`}
+                          data-t1eq-qbit-type="action-button"
+                          data-t1eq-qbit-scope={QBIT_SCOPE}
                           className={secondaryButtonClass}
                         >
                           Edit
@@ -1108,6 +1209,9 @@ export default function InventoryItemsPage() {
                         <button data-t1eq-action-button="true"
                           type="button"
                           onClick={() => handleDeleteItem(item.id)}
+                          data-t1eq-qbit-id={`${inventoryItemQbitId}-delete`}
+                          data-t1eq-qbit-type="action-button"
+                          data-t1eq-qbit-scope={QBIT_SCOPE}
                           className={dangerButtonClass}
                         >
                           Delete
@@ -1115,7 +1219,8 @@ export default function InventoryItemsPage() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>

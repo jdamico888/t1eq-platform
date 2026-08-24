@@ -20,6 +20,7 @@ export type TechnicianScheduleLoad = {
   technicianName?: string;
 
   eventCount: number;
+  lineCount: number;
   totalScheduledHours: number;
 };
 
@@ -164,11 +165,17 @@ export const getTechnicianScheduleLoad = (
     0
   );
 
+  const lineCount = technicianEvents.reduce(
+    (total, scheduleEvent) => total + (scheduleEvent.actionItems?.length ?? 0),
+    0
+  );
+
   return {
     technicianId,
     technicianName: technicianEvents[0]?.technicianName,
 
     eventCount: technicianEvents.length,
+    lineCount,
     totalScheduledHours,
   };
 };

@@ -37,6 +37,8 @@ type ChartFormState = {
   sortOrder: string;
 };
 
+const QBIT_SCOPE = "operational-dashboard-charts";
+
 const pageClass = "min-h-screen bg-zinc-100 p-6 text-black";
 
 const headerClass =
@@ -275,18 +277,37 @@ export default function OperationalDashboardChartsSettingsPage() {
 
   return (
     <div className={pageClass}>
-      <header data-t1eq-page-card="true" className={headerClass}>
+      <header data-t1eq-page-card="true"
+        data-t1eq-qbit-type="page-card"
+        data-t1eq-qbit-id="operational-dashboard-charts-header"
+        data-t1eq-qbit-scope={QBIT_SCOPE}
+        className={headerClass}>
         <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
           <div>
-            <p className="text-sm font-black uppercase tracking-wide text-zinc-500">
+            <p
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="operational-dashboard-charts-overline"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="text-sm font-black uppercase tracking-wide text-zinc-500"
+            >
               Settings
             </p>
 
-            <h1 className="mt-2 text-4xl font-black text-black">
+            <h1
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="operational-dashboard-charts-title"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-2 text-4xl font-black text-black"
+            >
               Operational Dashboard Charts
             </h1>
 
-            <p className="mt-2 max-w-4xl text-base font-semibold text-zinc-600">
+            <p
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="operational-dashboard-charts-description"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-2 max-w-4xl text-base font-semibold text-zinc-600"
+            >
               Build dashboard charts for measurable operational information.
               Charts can be bar charts, line charts, or histograms and can be
               shown directly on the Operations Dashboard.
@@ -294,11 +315,19 @@ export default function OperationalDashboardChartsSettingsPage() {
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <a href="/dashboard" className={secondaryButtonClass}>
+            <a href="/dashboard"
+              data-t1eq-qbit-type="action-button"
+              data-t1eq-qbit-id="operational-dashboard-charts-open-dashboard"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className={secondaryButtonClass}
+            >
               Open Dashboard
             </a>
 
             <button data-t1eq-action-button="true"
+              data-t1eq-qbit-type="action-button"
+              data-t1eq-qbit-id="operational-dashboard-charts-add"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
               type="button"
               onClick={beginCreateChart}
               className={primaryButtonClass}
@@ -307,6 +336,9 @@ export default function OperationalDashboardChartsSettingsPage() {
             </button>
 
             <button data-t1eq-action-button="true"
+              data-t1eq-qbit-type="action-button"
+              data-t1eq-qbit-id="operational-dashboard-charts-reset-defaults"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
               type="button"
               onClick={handleResetCharts}
               className={secondaryButtonClass}
@@ -317,20 +349,38 @@ export default function OperationalDashboardChartsSettingsPage() {
         </div>
 
         {statusMessage && (
-          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm font-bold text-zinc-700">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true"
+            data-t1eq-qbit-type="text"
+            data-t1eq-qbit-id="operational-dashboard-charts-status-message"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm font-bold text-zinc-700">
             {statusMessage}
           </div>
         )}
       </header>
 
       {showForm && (
-        <section data-t1eq-page-card="true" className={`${sectionClass} mb-6`}>
+        <section data-t1eq-page-card="true"
+          data-t1eq-qbit-type="page-card"
+          data-t1eq-qbit-id="operational-dashboard-charts-form"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className={`${sectionClass} mb-6`}>
           <div className="mb-5">
-            <h2 className="text-2xl font-black text-black">
+            <h2
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="operational-dashboard-charts-form-title"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="text-2xl font-black text-black"
+            >
               {editingChart ? "Edit Dashboard Chart" : "Add Dashboard Chart"}
             </h2>
 
-            <p className="mt-1 text-sm font-semibold text-zinc-600">
+            <p
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="operational-dashboard-charts-form-description"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-1 text-sm font-semibold text-zinc-600"
+            >
               Select the chart type, metric, grouping, size, and whether it
               should appear on the Operations Dashboard.
             </p>
@@ -338,8 +388,18 @@ export default function OperationalDashboardChartsSettingsPage() {
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <label className="space-y-2 md:col-span-2">
-              <span className={labelClass}>Chart Title</span>
+              <span
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="operational-dashboard-charts-field-title-label"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className={labelClass}
+              >
+                Chart Title
+              </span>
               <input data-t1eq-field="true"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-id="operational-dashboard-charts-field-title"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 value={formState.title}
                 onChange={(event) =>
                   updateFormState({
@@ -352,8 +412,18 @@ export default function OperationalDashboardChartsSettingsPage() {
             </label>
 
             <label className="space-y-2">
-              <span className={labelClass}>Chart Type</span>
+              <span
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="operational-dashboard-charts-field-chart-type-label"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className={labelClass}
+              >
+                Chart Type
+              </span>
               <select data-t1eq-field="true"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-id="operational-dashboard-charts-field-chart-type"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 value={formState.chartType}
                 onChange={(event) =>
                   updateFormState({
@@ -371,8 +441,18 @@ export default function OperationalDashboardChartsSettingsPage() {
             </label>
 
             <label className="space-y-2">
-              <span className={labelClass}>Size</span>
+              <span
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="operational-dashboard-charts-field-size-label"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className={labelClass}
+              >
+                Size
+              </span>
               <select data-t1eq-field="true"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-id="operational-dashboard-charts-field-size"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 value={formState.size}
                 onChange={(event) =>
                   updateFormState({
@@ -390,8 +470,18 @@ export default function OperationalDashboardChartsSettingsPage() {
             </label>
 
             <label className="space-y-2 md:col-span-2">
-              <span className={labelClass}>Metric</span>
+              <span
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="operational-dashboard-charts-field-metric-label"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className={labelClass}
+              >
+                Metric
+              </span>
               <select data-t1eq-field="true"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-id="operational-dashboard-charts-field-metric"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 value={formState.metric}
                 onChange={(event) =>
                   updateFormState({
@@ -410,8 +500,18 @@ export default function OperationalDashboardChartsSettingsPage() {
             </label>
 
             <label className="space-y-2">
-              <span className={labelClass}>Time Range</span>
+              <span
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="operational-dashboard-charts-field-time-range-label"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className={labelClass}
+              >
+                Time Range
+              </span>
               <select data-t1eq-field="true"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-id="operational-dashboard-charts-field-time-range"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 value={formState.timeRange}
                 onChange={(event) =>
                   updateFormState({
@@ -430,8 +530,18 @@ export default function OperationalDashboardChartsSettingsPage() {
             </label>
 
             <label className="space-y-2">
-              <span className={labelClass}>Group By</span>
+              <span
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="operational-dashboard-charts-field-group-by-label"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className={labelClass}
+              >
+                Group By
+              </span>
               <select data-t1eq-field="true"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-id="operational-dashboard-charts-field-group-by"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 value={formState.groupBy}
                 onChange={(event) =>
                   updateFormState({
@@ -449,8 +559,18 @@ export default function OperationalDashboardChartsSettingsPage() {
             </label>
 
             <label className="space-y-2">
-              <span className={labelClass}>Sort Order</span>
+              <span
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="operational-dashboard-charts-field-sort-order-label"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className={labelClass}
+              >
+                Sort Order
+              </span>
               <input data-t1eq-field="true"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-id="operational-dashboard-charts-field-sort-order"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 type="number"
                 value={formState.sortOrder}
                 onChange={(event) =>
@@ -463,8 +583,18 @@ export default function OperationalDashboardChartsSettingsPage() {
             </label>
 
             <label className="space-y-2 md:col-span-2 xl:col-span-4">
-              <span className={labelClass}>Description</span>
+              <span
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="operational-dashboard-charts-field-description-label"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className={labelClass}
+              >
+                Description
+              </span>
               <textarea data-t1eq-field="true"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-id="operational-dashboard-charts-field-description"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 value={formState.description}
                 onChange={(event) =>
                   updateFormState({
@@ -477,7 +607,11 @@ export default function OperationalDashboardChartsSettingsPage() {
               />
             </label>
 
-            <label data-t1eq-tile="true" data-t1eq-page-card="true" className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-4 md:col-span-2 xl:col-span-4">
+            <label data-t1eq-tile="true" data-t1eq-page-card="true"
+              data-t1eq-qbit-type="field"
+              data-t1eq-qbit-id="operational-dashboard-charts-field-show-on-dashboard"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-4 md:col-span-2 xl:col-span-4">
               <input data-t1eq-field="true"
                 type="checkbox"
                 checked={formState.showOnOperationsDashboard}
@@ -497,6 +631,9 @@ export default function OperationalDashboardChartsSettingsPage() {
 
           <div className="mt-5 flex flex-wrap gap-3">
             <button data-t1eq-action-button="true"
+              data-t1eq-qbit-type="action-button"
+              data-t1eq-qbit-id="operational-dashboard-charts-form-save"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
               type="button"
               onClick={handleSaveChart}
               className={primaryButtonClass}
@@ -505,6 +642,9 @@ export default function OperationalDashboardChartsSettingsPage() {
             </button>
 
             <button data-t1eq-action-button="true"
+              data-t1eq-qbit-type="action-button"
+              data-t1eq-qbit-id="operational-dashboard-charts-form-cancel"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
               type="button"
               onClick={cancelForm}
               className={secondaryButtonClass}
@@ -515,22 +655,46 @@ export default function OperationalDashboardChartsSettingsPage() {
         </section>
       )}
 
-      <section data-t1eq-page-card="true" className={sectionClass}>
+      <section data-t1eq-page-card="true"
+        data-t1eq-qbit-type="page-card"
+        data-t1eq-qbit-id="operational-dashboard-charts-list"
+        data-t1eq-qbit-scope={QBIT_SCOPE}
+        className={sectionClass}>
         <div className="mb-5 flex flex-col justify-between gap-3 md:flex-row md:items-center">
           <div>
-            <h2 className="text-2xl font-black text-black">
+            <h2
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="operational-dashboard-charts-list-title"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="text-2xl font-black text-black"
+            >
               Saved Dashboard Charts
             </h2>
 
-            <p className="mt-1 text-sm font-semibold text-zinc-600">
+            <p
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="operational-dashboard-charts-list-description"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-1 text-sm font-semibold text-zinc-600"
+            >
               Manage the chart definitions that can appear on the Operations
               Dashboard.
             </p>
           </div>
 
           <label className="w-full space-y-2 md:w-96">
-            <span className={labelClass}>Search Charts</span>
+            <span
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="operational-dashboard-charts-search-label"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className={labelClass}
+            >
+              Search Charts
+            </span>
             <input data-t1eq-field="true"
+              data-t1eq-qbit-type="field"
+              data-t1eq-qbit-id="operational-dashboard-charts-search"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               className={inputClass}
@@ -540,11 +704,19 @@ export default function OperationalDashboardChartsSettingsPage() {
         </div>
 
         {filteredCharts.length === 0 ? (
-          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-8 text-center text-sm font-bold text-zinc-500">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true"
+            data-t1eq-qbit-type="page-card"
+            data-t1eq-qbit-id="operational-dashboard-charts-empty"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-8 text-center text-sm font-bold text-zinc-500">
             No dashboard charts found.
           </div>
         ) : (
-          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="overflow-hidden rounded-2xl border border-zinc-200">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true"
+            data-t1eq-qbit-type="section"
+            data-t1eq-qbit-id="operational-dashboard-charts-table"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="overflow-hidden rounded-2xl border border-zinc-200">
             <table className="w-full border-collapse bg-white">
               <thead>
                 <tr>
@@ -562,7 +734,11 @@ export default function OperationalDashboardChartsSettingsPage() {
 
               <tbody>
                 {filteredCharts.map((chart) => (
-                  <tr key={chart.id} className="transition hover:bg-zinc-50">
+                  <tr key={chart.id}
+                    data-t1eq-qbit-type="tile"
+                    data-t1eq-qbit-id={`operational-dashboard-chart-${chart.id}`}
+                    data-t1eq-qbit-scope={QBIT_SCOPE}
+                    className="transition hover:bg-zinc-50">
                     <td className={tableCellClass}>
                       <div className="font-black text-black">{chart.title}</div>
 
@@ -602,6 +778,9 @@ export default function OperationalDashboardChartsSettingsPage() {
                     <td className={tableCellClass}>
                       <div className="flex flex-wrap gap-2">
                         <button data-t1eq-action-button="true"
+                          data-t1eq-qbit-type="action-button"
+                          data-t1eq-qbit-id={`operational-dashboard-chart-${chart.id}-edit`}
+                          data-t1eq-qbit-scope={QBIT_SCOPE}
                           type="button"
                           onClick={() => beginEditChart(chart)}
                           className={secondaryButtonClass}
@@ -610,6 +789,9 @@ export default function OperationalDashboardChartsSettingsPage() {
                         </button>
 
                         <button data-t1eq-action-button="true"
+                          data-t1eq-qbit-type="action-button"
+                          data-t1eq-qbit-id={`operational-dashboard-chart-${chart.id}-toggle-visibility`}
+                          data-t1eq-qbit-scope={QBIT_SCOPE}
                           type="button"
                           onClick={() =>
                             handleToggleDashboardVisibility(chart)
@@ -620,6 +802,9 @@ export default function OperationalDashboardChartsSettingsPage() {
                         </button>
 
                         <button data-t1eq-action-button="true"
+                          data-t1eq-qbit-type="action-button"
+                          data-t1eq-qbit-id={`operational-dashboard-chart-${chart.id}-delete`}
+                          data-t1eq-qbit-scope={QBIT_SCOPE}
                           type="button"
                           onClick={() => handleDeleteChart(chart)}
                           className={dangerButtonClass}

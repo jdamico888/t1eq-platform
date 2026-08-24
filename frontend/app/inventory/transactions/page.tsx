@@ -8,6 +8,8 @@ import {
   updateInventoryDiscrepancy,
 } from "@/services/inventory-discrepancies";
 
+const QBIT_SCOPE = "inventory-transactions";
+
 const pageClass = "min-h-screen bg-zinc-100 p-6 text-black";
 const headerClass =
   "mb-6 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm";
@@ -181,24 +183,46 @@ export default function InventoryTransactionsPage() {
 
   return (
     <div className={pageClass}>
-      <header data-t1eq-page-card="true" className={headerClass}>
+      <header data-t1eq-page-card="true"
+        data-t1eq-qbit-type="page-card"
+        data-t1eq-qbit-id="inventory-transactions-header"
+        data-t1eq-qbit-scope={QBIT_SCOPE}
+        className={headerClass}>
         <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
           <div>
-            <p className="text-sm font-black uppercase tracking-wide text-zinc-500">
+            <p
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="inventory-transactions-overline"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="text-sm font-black uppercase tracking-wide text-zinc-500"
+            >
               Inventory
             </p>
 
-            <h1 className="mt-2 text-4xl font-black text-black">
+            <h1
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="inventory-transactions-title"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-2 text-4xl font-black text-black"
+            >
               Inventory Transactions
             </h1>
 
-            <p className="mt-2 max-w-3xl text-base font-semibold text-zinc-600">
+            <p
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="inventory-transactions-description"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-2 max-w-3xl text-base font-semibold text-zinc-600"
+            >
               Review inventory movements, correction history, receiving issues,
               and inventory discrepancies from one transaction-control page.
             </p>
           </div>
 
           <button data-t1eq-action-button="true"
+            data-t1eq-qbit-type="action-button"
+            data-t1eq-qbit-id="inventory-transactions-refresh"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
             type="button"
             onClick={refreshDiscrepancies}
             className={secondaryButtonClass}
@@ -208,23 +232,50 @@ export default function InventoryTransactionsPage() {
         </div>
 
         {statusMessage && (
-          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm font-bold text-zinc-700">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true"
+            data-t1eq-qbit-type="text"
+            data-t1eq-qbit-id="inventory-transactions-status-message"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm font-bold text-zinc-700">
             {statusMessage}
           </div>
         )}
       </header>
 
-      <section data-t1eq-page-card="true" className={sectionClass}>
-        <div data-t1eq-tile-grid="true" className={metricGridClass}>
+      <section data-t1eq-page-card="true"
+        data-t1eq-qbit-type="page-card"
+        data-t1eq-qbit-id="inventory-transactions-body"
+        data-t1eq-qbit-scope={QBIT_SCOPE}
+        className={sectionClass}>
+        <div
+          data-t1eq-tile-grid="true"
+          data-t1eq-qbit-type="section"
+          data-t1eq-qbit-id="inventory-transactions-metrics"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className={metricGridClass}
+        >
           <div
             data-t1eq-tile="true"
             data-t1eq-page-card="true"
+            data-t1eq-qbit-type="page-card"
+            data-t1eq-qbit-id="inventory-transactions-metric-total"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
             className={metricCardClass}
           >
-            <div className="text-sm font-black uppercase tracking-wide text-zinc-500">
+            <div
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="inventory-transactions-metric-total-label"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="text-sm font-black uppercase tracking-wide text-zinc-500"
+            >
               Total Discrepancies
             </div>
-            <div className="mt-2 text-4xl font-black text-black">
+            <div
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="inventory-transactions-metric-total-value"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-2 text-4xl font-black text-black"
+            >
               {inventoryDiscrepancies.length}
             </div>
           </div>
@@ -232,12 +283,25 @@ export default function InventoryTransactionsPage() {
           <div
             data-t1eq-tile="true"
             data-t1eq-page-card="true"
+            data-t1eq-qbit-type="page-card"
+            data-t1eq-qbit-id="inventory-transactions-metric-open"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
             className={metricCardClass}
           >
-            <div className="text-sm font-black uppercase tracking-wide text-zinc-500">
+            <div
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="inventory-transactions-metric-open-label"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="text-sm font-black uppercase tracking-wide text-zinc-500"
+            >
               Open / Review
             </div>
-            <div className="mt-2 text-4xl font-black text-black">
+            <div
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="inventory-transactions-metric-open-value"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-2 text-4xl font-black text-black"
+            >
               {openDiscrepancies.length}
             </div>
           </div>
@@ -245,12 +309,25 @@ export default function InventoryTransactionsPage() {
           <div
             data-t1eq-tile="true"
             data-t1eq-page-card="true"
+            data-t1eq-qbit-type="page-card"
+            data-t1eq-qbit-id="inventory-transactions-metric-resolved"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
             className={metricCardClass}
           >
-            <div className="text-sm font-black uppercase tracking-wide text-zinc-500">
+            <div
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="inventory-transactions-metric-resolved-label"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="text-sm font-black uppercase tracking-wide text-zinc-500"
+            >
               Resolved
             </div>
-            <div className="mt-2 text-4xl font-black text-black">
+            <div
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="inventory-transactions-metric-resolved-value"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-2 text-4xl font-black text-black"
+            >
               {resolvedDiscrepancies.length}
             </div>
           </div>
@@ -258,12 +335,25 @@ export default function InventoryTransactionsPage() {
           <div
             data-t1eq-tile="true"
             data-t1eq-page-card="true"
+            data-t1eq-qbit-type="page-card"
+            data-t1eq-qbit-id="inventory-transactions-metric-dismissed"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
             className={metricCardClass}
           >
-            <div className="text-sm font-black uppercase tracking-wide text-zinc-500">
+            <div
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="inventory-transactions-metric-dismissed-label"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="text-sm font-black uppercase tracking-wide text-zinc-500"
+            >
               Dismissed
             </div>
-            <div className="mt-2 text-4xl font-black text-black">
+            <div
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="inventory-transactions-metric-dismissed-value"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-2 text-4xl font-black text-black"
+            >
               {dismissedDiscrepancies.length}
             </div>
           </div>
@@ -271,11 +361,19 @@ export default function InventoryTransactionsPage() {
 
         <div className="mb-5">
           <label className="space-y-2">
-            <span className="text-sm font-black uppercase tracking-wide text-zinc-500">
+            <span
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="inventory-transactions-search-label"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="text-sm font-black uppercase tracking-wide text-zinc-500"
+            >
               Search Transactions / Discrepancies
             </span>
 
             <input data-t1eq-field="true"
+              data-t1eq-qbit-type="field"
+              data-t1eq-qbit-id="inventory-transactions-search"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               className={inputClass}
@@ -285,11 +383,19 @@ export default function InventoryTransactionsPage() {
         </div>
 
         {filteredDiscrepancies.length === 0 ? (
-          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-8 text-center text-sm font-bold text-zinc-500">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true"
+            data-t1eq-qbit-type="page-card"
+            data-t1eq-qbit-id="inventory-transactions-empty"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-8 text-center text-sm font-bold text-zinc-500">
             No inventory discrepancies found.
           </div>
         ) : (
-          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="overflow-hidden rounded-2xl border border-zinc-200">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true"
+            data-t1eq-qbit-type="section"
+            data-t1eq-qbit-id="inventory-transactions-table"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="overflow-hidden rounded-2xl border border-zinc-200">
             <table className="w-full border-collapse bg-white">
               <thead>
                 <tr>
@@ -310,6 +416,9 @@ export default function InventoryTransactionsPage() {
                 {filteredDiscrepancies.map((discrepancy) => (
                   <tr
                     key={discrepancy.id}
+                    data-t1eq-qbit-type="tile"
+                    data-t1eq-qbit-id={`inventory-discrepancy-${discrepancy.id}`}
+                    data-t1eq-qbit-scope={QBIT_SCOPE}
                     className="transition hover:bg-zinc-50"
                   >
                     <td className={tableCellClass}>
@@ -366,6 +475,9 @@ export default function InventoryTransactionsPage() {
                       <div className="flex flex-wrap gap-2">
                         {discrepancy.status === "Open" && (
                           <button data-t1eq-action-button="true"
+                            data-t1eq-qbit-type="action-button"
+                            data-t1eq-qbit-id={`inventory-discrepancy-${discrepancy.id}-review`}
+                            data-t1eq-qbit-scope={QBIT_SCOPE}
                             type="button"
                             onClick={() =>
                               handleMarkUnderReview(discrepancy)
@@ -378,6 +490,9 @@ export default function InventoryTransactionsPage() {
 
                         {discrepancy.status !== "Resolved" && (
                           <button data-t1eq-action-button="true"
+                            data-t1eq-qbit-type="action-button"
+                            data-t1eq-qbit-id={`inventory-discrepancy-${discrepancy.id}-resolve`}
+                            data-t1eq-qbit-scope={QBIT_SCOPE}
                             type="button"
                             onClick={() =>
                               handleResolveDiscrepancy(discrepancy)
@@ -390,6 +505,9 @@ export default function InventoryTransactionsPage() {
 
                         {discrepancy.status !== "Dismissed" && (
                           <button data-t1eq-action-button="true"
+                            data-t1eq-qbit-type="action-button"
+                            data-t1eq-qbit-id={`inventory-discrepancy-${discrepancy.id}-dismiss`}
+                            data-t1eq-qbit-scope={QBIT_SCOPE}
                             type="button"
                             onClick={() =>
                               handleDismissDiscrepancy(discrepancy)

@@ -21,6 +21,8 @@ export type Equipment = {
   model?: string;
   serialNumber?: string;
 
+  equipmentModelId?: string;
+
   location?: string;
   status: EquipmentStatus;
 

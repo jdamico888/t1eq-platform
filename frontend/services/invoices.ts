@@ -205,6 +205,9 @@ function normalizeInvoice(invoice: InvoiceInput): Invoice {
     repairOrderNumber: optionalString(invoice.repairOrderNumber),
     repairOrderRO: optionalString(invoice.repairOrderRO),
 
+    scheduleEventId: optionalString(invoice.scheduleEventId),
+    scheduleEventTitle: optionalString(invoice.scheduleEventTitle),
+
     customerId: safeString(invoice.customerId),
     customerName: safeString(invoice.customerName, "No Customer"),
     customer: optionalString(invoice.customer),
@@ -406,6 +409,14 @@ export function getInvoicesByRepairOrderId(
 ): Invoice[] {
   return getInvoices().filter(
     (invoice) => invoice.repairOrderId === repairOrderId
+  );
+}
+
+export function getInvoicesByScheduleEventId(
+  scheduleEventId: string
+): Invoice[] {
+  return getInvoices().filter(
+    (invoice) => invoice.scheduleEventId === scheduleEventId
   );
 }
 

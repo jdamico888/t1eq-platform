@@ -13,6 +13,8 @@ import {
   updateInventoryDiscrepancy,
 } from "../../../services/inventory-discrepancies";
 
+const QBIT_SCOPE = "inventory-discrepancies";
+
 const statusOptions: InventoryDiscrepancyStatus[] = [
   "Open",
   "Under Review",
@@ -172,20 +174,37 @@ export default function InventoryDiscrepanciesPage() {
   return (
     <main className="min-h-screen bg-zinc-100 p-6 text-black">
       <div className="mx-auto max-w-7xl space-y-6">
-        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true"
+          data-t1eq-qbit-type="page-card"
+          data-t1eq-qbit-id="inventory-discrepancies-header"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
             <div>
-              <h1 className="text-5xl font-bold text-black">
+              <h1
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="inventory-discrepancies-title"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="text-5xl font-bold text-black"
+              >
                 Inventory Discrepancies
               </h1>
 
-              <p className="mt-2 text-lg text-black/70">
+              <p
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="inventory-discrepancies-description"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="mt-2 text-lg text-black/70"
+              >
                 Review mismatches between expected quantity on hand and verified
                 live inventory count.
               </p>
             </div>
 
             <button data-t1eq-action-button="true"
+              data-t1eq-qbit-type="action-button"
+              data-t1eq-qbit-id="inventory-discrepancies-refresh"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
               type="button"
               onClick={refreshData}
               className={secondaryButtonClass}
@@ -195,64 +214,153 @@ export default function InventoryDiscrepanciesPage() {
           </div>
         </section>
 
-        <section className="grid grid-cols-2 gap-4 md:grid-cols-5">
-          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-            <div className="text-sm font-semibold uppercase tracking-wide text-black/50">
+        <section
+          data-t1eq-qbit-type="section"
+          data-t1eq-qbit-id="inventory-discrepancies-metrics"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className="grid grid-cols-2 gap-4 md:grid-cols-5"
+        >
+          <div data-t1eq-tile="true" data-t1eq-page-card="true"
+            data-t1eq-qbit-type="page-card"
+            data-t1eq-qbit-id="inventory-discrepancies-metric-total"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+            <div
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="inventory-discrepancies-metric-total-label"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="text-sm font-semibold uppercase tracking-wide text-black/50"
+            >
               Total
             </div>
 
-            <div className="mt-2 text-3xl font-bold">{metrics.total}</div>
+            <div
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="inventory-discrepancies-metric-total-value"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-2 text-3xl font-bold"
+            >
+              {metrics.total}
+            </div>
           </div>
 
-          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-orange-200 bg-orange-50 p-5 shadow-sm">
-            <div className="text-sm font-semibold uppercase tracking-wide text-orange-700">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true"
+            data-t1eq-qbit-type="page-card"
+            data-t1eq-qbit-id="inventory-discrepancies-metric-open"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="rounded-2xl border border-orange-200 bg-orange-50 p-5 shadow-sm">
+            <div
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="inventory-discrepancies-metric-open-label"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="text-sm font-semibold uppercase tracking-wide text-orange-700"
+            >
               Open
             </div>
 
-            <div className="mt-2 text-3xl font-bold text-orange-700">
+            <div
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="inventory-discrepancies-metric-open-value"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-2 text-3xl font-bold text-orange-700"
+            >
               {metrics.open}
             </div>
           </div>
 
-          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-blue-200 bg-blue-50 p-5 shadow-sm">
-            <div className="text-sm font-semibold uppercase tracking-wide text-blue-700">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true"
+            data-t1eq-qbit-type="page-card"
+            data-t1eq-qbit-id="inventory-discrepancies-metric-under-review"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="rounded-2xl border border-blue-200 bg-blue-50 p-5 shadow-sm">
+            <div
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="inventory-discrepancies-metric-under-review-label"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="text-sm font-semibold uppercase tracking-wide text-blue-700"
+            >
               Under Review
             </div>
 
-            <div className="mt-2 text-3xl font-bold text-blue-700">
+            <div
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="inventory-discrepancies-metric-under-review-value"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-2 text-3xl font-bold text-blue-700"
+            >
               {metrics.underReview}
             </div>
           </div>
 
-          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-green-200 bg-green-50 p-5 shadow-sm">
-            <div className="text-sm font-semibold uppercase tracking-wide text-green-700">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true"
+            data-t1eq-qbit-type="page-card"
+            data-t1eq-qbit-id="inventory-discrepancies-metric-resolved"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="rounded-2xl border border-green-200 bg-green-50 p-5 shadow-sm">
+            <div
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="inventory-discrepancies-metric-resolved-label"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="text-sm font-semibold uppercase tracking-wide text-green-700"
+            >
               Resolved
             </div>
 
-            <div className="mt-2 text-3xl font-bold text-green-700">
+            <div
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="inventory-discrepancies-metric-resolved-value"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-2 text-3xl font-bold text-green-700"
+            >
               {metrics.resolved}
             </div>
           </div>
 
-          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-            <div className="text-sm font-semibold uppercase tracking-wide text-black/50">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true"
+            data-t1eq-qbit-type="page-card"
+            data-t1eq-qbit-id="inventory-discrepancies-metric-net-delta"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+            <div
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="inventory-discrepancies-metric-net-delta-label"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="text-sm font-semibold uppercase tracking-wide text-black/50"
+            >
               Net Qty Delta
             </div>
 
-            <div className="mt-2 text-3xl font-bold">
+            <div
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="inventory-discrepancies-metric-net-delta-value"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-2 text-3xl font-bold"
+            >
               {metrics.netDiscrepancyQuantity}
             </div>
           </div>
         </section>
 
-        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true"
+          data-t1eq-qbit-type="page-card"
+          data-t1eq-qbit-id="inventory-discrepancies-filters"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="grid gap-4 md:grid-cols-3">
             <label className="space-y-1">
-              <span className="text-sm font-semibold text-black/70">
+              <span
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="inventory-discrepancies-search-label"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="text-sm font-semibold text-black/70"
+              >
                 Search
               </span>
 
               <input data-t1eq-field="true"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-id="inventory-discrepancies-search"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="Part, PO, location, bin..."
@@ -261,11 +369,19 @@ export default function InventoryDiscrepanciesPage() {
             </label>
 
             <label className="space-y-1">
-              <span className="text-sm font-semibold text-black/70">
+              <span
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="inventory-discrepancies-status-filter-label"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="text-sm font-semibold text-black/70"
+              >
                 Status
               </span>
 
               <select data-t1eq-field="true"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-id="inventory-discrepancies-status-filter"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 value={statusFilter}
                 onChange={(event) =>
                   setStatusFilter(
@@ -286,16 +402,41 @@ export default function InventoryDiscrepanciesPage() {
           </div>
         </section>
 
-        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <h2 className="text-3xl font-bold">Discrepancy List</h2>
+        <section data-t1eq-tile="true" data-t1eq-page-card="true"
+          data-t1eq-qbit-type="page-card"
+          data-t1eq-qbit-id="inventory-discrepancies-list"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+          <h2
+            data-t1eq-qbit-type="text"
+            data-t1eq-qbit-id="inventory-discrepancies-list-title"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="text-3xl font-bold"
+          >
+            Discrepancy List
+          </h2>
 
           {filteredDiscrepancies.length === 0 ? (
-            <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-5 rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-10 text-center">
-              <div className="text-xl font-bold">
+            <div data-t1eq-tile="true" data-t1eq-page-card="true"
+              data-t1eq-qbit-type="page-card"
+              data-t1eq-qbit-id="inventory-discrepancies-empty"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-5 rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-10 text-center">
+              <div
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="inventory-discrepancies-empty-title"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="text-xl font-bold"
+              >
                 No inventory discrepancies found
               </div>
 
-              <p className="mt-2 text-black/60">
+              <p
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="inventory-discrepancies-empty-description"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="mt-2 text-black/60"
+              >
                 Discrepancies will appear here when receiving or inventory count
                 verification finds a mismatch.
               </p>
@@ -305,6 +446,9 @@ export default function InventoryDiscrepanciesPage() {
               {filteredDiscrepancies.map((discrepancy) => (
                 <article data-t1eq-tile="true" data-t1eq-page-card="true"
                   key={discrepancy.id}
+                  data-t1eq-qbit-type="tile"
+                  data-t1eq-qbit-id={`inventory-discrepancy-${discrepancy.id}`}
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
                   className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5"
                 >
                   <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
@@ -349,7 +493,11 @@ export default function InventoryDiscrepanciesPage() {
                   </div>
 
                   <div className="mt-4 grid gap-4 md:grid-cols-4">
-                    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-zinc-200 bg-white p-3">
+                    <div data-t1eq-tile="true" data-t1eq-page-card="true"
+                      data-t1eq-qbit-type="page-card"
+                      data-t1eq-qbit-id={`inventory-discrepancy-${discrepancy.id}-expected`}
+                      data-t1eq-qbit-scope={QBIT_SCOPE}
+                      className="rounded-xl border border-zinc-200 bg-white p-3">
                       <div className="text-sm font-semibold text-black/50">
                         Expected On Hand
                       </div>
@@ -359,7 +507,11 @@ export default function InventoryDiscrepanciesPage() {
                       </div>
                     </div>
 
-                    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-zinc-200 bg-white p-3">
+                    <div data-t1eq-tile="true" data-t1eq-page-card="true"
+                      data-t1eq-qbit-type="page-card"
+                      data-t1eq-qbit-id={`inventory-discrepancy-${discrepancy.id}-live-count`}
+                      data-t1eq-qbit-scope={QBIT_SCOPE}
+                      className="rounded-xl border border-zinc-200 bg-white p-3">
                       <div className="text-sm font-semibold text-black/50">
                         Live Count
                       </div>
@@ -369,7 +521,11 @@ export default function InventoryDiscrepanciesPage() {
                       </div>
                     </div>
 
-                    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-zinc-200 bg-white p-3">
+                    <div data-t1eq-tile="true" data-t1eq-page-card="true"
+                      data-t1eq-qbit-type="page-card"
+                      data-t1eq-qbit-id={`inventory-discrepancy-${discrepancy.id}-difference`}
+                      data-t1eq-qbit-scope={QBIT_SCOPE}
+                      className="rounded-xl border border-zinc-200 bg-white p-3">
                       <div className="text-sm font-semibold text-black/50">
                         Difference
                       </div>
@@ -380,7 +536,11 @@ export default function InventoryDiscrepanciesPage() {
                       </div>
                     </div>
 
-                    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-zinc-200 bg-white p-3">
+                    <div data-t1eq-tile="true" data-t1eq-page-card="true"
+                      data-t1eq-qbit-type="page-card"
+                      data-t1eq-qbit-id={`inventory-discrepancy-${discrepancy.id}-location`}
+                      data-t1eq-qbit-scope={QBIT_SCOPE}
+                      className="rounded-xl border border-zinc-200 bg-white p-3">
                       <div className="text-sm font-semibold text-black/50">
                         Location
                       </div>
@@ -396,7 +556,11 @@ export default function InventoryDiscrepanciesPage() {
                   </div>
 
                   {discrepancy.notes && (
-                    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-4 rounded-xl border border-zinc-200 bg-white p-3 text-sm text-black/70">
+                    <div data-t1eq-tile="true" data-t1eq-page-card="true"
+                      data-t1eq-qbit-type="text"
+                      data-t1eq-qbit-id={`inventory-discrepancy-${discrepancy.id}-notes`}
+                      data-t1eq-qbit-scope={QBIT_SCOPE}
+                      className="mt-4 rounded-xl border border-zinc-200 bg-white p-3 text-sm text-black/70">
                       {discrepancy.notes}
                     </div>
                   )}
@@ -408,6 +572,9 @@ export default function InventoryDiscrepanciesPage() {
                       </span>
 
                       <select data-t1eq-field="true"
+                        data-t1eq-qbit-type="field"
+                        data-t1eq-qbit-id={`inventory-discrepancy-${discrepancy.id}-status`}
+                        data-t1eq-qbit-scope={QBIT_SCOPE}
                         value={discrepancy.status}
                         onChange={(event) =>
                           handleStatusChange(
@@ -431,6 +598,9 @@ export default function InventoryDiscrepanciesPage() {
                       </span>
 
                       <input data-t1eq-field="true"
+                        data-t1eq-qbit-type="field"
+                        data-t1eq-qbit-id={`inventory-discrepancy-${discrepancy.id}-resolution-notes`}
+                        data-t1eq-qbit-scope={QBIT_SCOPE}
                         value={resolutionNotesById[discrepancy.id] ?? ""}
                         onChange={(event) =>
                           handleResolutionNoteChange(
@@ -446,6 +616,9 @@ export default function InventoryDiscrepanciesPage() {
 
                   <div className="mt-4 flex flex-wrap gap-3">
                     <button data-t1eq-action-button="true"
+                      data-t1eq-qbit-type="action-button"
+                      data-t1eq-qbit-id={`inventory-discrepancy-${discrepancy.id}-resolve`}
+                      data-t1eq-qbit-scope={QBIT_SCOPE}
                       type="button"
                       onClick={() => handleResolve(discrepancy)}
                       className={buttonClass}

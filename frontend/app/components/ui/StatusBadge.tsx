@@ -5,11 +5,16 @@ import {
 type Props = {
   label: string;
   tone?: StatusTone;
+
+  qbitId?: string;
+  qbitScope?: string;
 };
 
 export default function StatusBadge({
   label,
   tone = "neutral",
+  qbitId,
+  qbitScope = "global",
 }: Props) {
   const toneClasses: Record<StatusTone, string> = {
     neutral:
@@ -30,6 +35,9 @@ export default function StatusBadge({
 
   return (
     <span
+      data-t1eq-qbit-type={qbitId ? "text" : undefined}
+      data-t1eq-qbit-id={qbitId || undefined}
+      data-t1eq-qbit-scope={qbitId ? qbitScope : undefined}
       className={`
         inline-flex
         items-center

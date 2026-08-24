@@ -6,17 +6,25 @@ type ListCardProps = {
   children: ReactNode;
   className?: string;
   hoverable?: boolean;
+
+  qbitId?: string;
+  qbitScope?: string;
 };
 
 export default function ListCard({
   children,
   className = "",
   hoverable = true,
+  qbitId,
+  qbitScope = "global",
 }: ListCardProps) {
   return (
     <div
       data-t1eq-tile="true"
       data-t1eq-page-card="true"
+      data-t1eq-qbit-type={qbitId ? "page-card" : undefined}
+      data-t1eq-qbit-id={qbitId || undefined}
+      data-t1eq-qbit-scope={qbitId ? qbitScope : undefined}
       className={`
         rounded-xl
         border

@@ -45,8 +45,10 @@ export const REPAIR_ORDER_PRIORITIES: RepairOrderPriority[] = [
 ];
 
 export const REPAIR_ORDER_ACTION_ITEM_TYPES: RepairOrderActionItemType[] = [
+  "Installation",
   "Inspection",
   "Repair",
+  "Removal",
   "Diagnosis",
   "Calibration",
   "Parts",
@@ -55,6 +57,16 @@ export const REPAIR_ORDER_ACTION_ITEM_TYPES: RepairOrderActionItemType[] = [
   "Follow Up",
   "Other",
 ];
+
+/**
+ * The customer-facing request categories offered by default when adding a
+ * new action item (Line) to a repair order or appointment. This is a subset
+ * of RepairOrderActionItemType — the full type list above still supports the
+ * additional internal classifications (Diagnosis, Calibration, etc.) used by
+ * existing action items and billing/scheduling logic.
+ */
+export const REPAIR_ORDER_CUSTOMER_REQUEST_CATEGORIES: RepairOrderActionItemType[] =
+  ["Installation", "Inspection", "Repair", "Removal"];
 
 export const REPAIR_ORDER_ACTION_ITEM_STATUSES: RepairOrderActionItemStatus[] = [
   "Open",
@@ -78,8 +90,10 @@ export const DEFAULT_BILLING_GROUP_BY_ACTION_TYPE: Record<
   RepairOrderActionItemType,
   RepairOrderBillingGroup
 > = {
+  Installation: "Repair Charges",
   Inspection: "Inspection Charges",
   Repair: "Repair Charges",
+  Removal: "Repair Charges",
   Diagnosis: "Repair Charges",
   Calibration: "Repair Charges",
   Parts: "Parts Charges",

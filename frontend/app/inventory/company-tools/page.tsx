@@ -56,6 +56,8 @@ const secondaryButtonClass =
 const dangerButtonClass =
   "rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 active:scale-[0.99]";
 
+const QBIT_SCOPE = "company-tools";
+
 const getStatusClass = (status: CompanyToolStatus) => {
   if (status === "Available") {
     return "border-green-200 bg-green-50 text-green-700";
@@ -216,26 +218,35 @@ export default function CompanyToolsPage() {
   return (
     <main className="min-h-screen bg-zinc-100 p-6 text-black">
       <div className="mx-auto max-w-7xl space-y-6">
-        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="company-tools-header" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
             <div>
-              <h1 className="text-5xl font-bold text-black">
+              <h1 data-t1eq-qbit-id="company-tools-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-5xl font-bold text-black">
                 Company Tools
               </h1>
 
-              <p className="mt-2 text-lg text-black/70">
+              <p data-t1eq-qbit-id="company-tools-description" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 text-lg text-black/70">
                 Track company-owned tools, asset numbers, serial numbers,
                 storage locations, custody, repair status, and retirement.
               </p>
             </div>
 
             <div className="flex flex-wrap gap-3">
-              <a href="/inventory" className={secondaryButtonClass}>
+              <a
+                href="/inventory"
+                data-t1eq-qbit-id="company-tools-inventory-link"
+                data-t1eq-qbit-type="action-button"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className={secondaryButtonClass}
+              >
                 Inventory
               </a>
 
               <a
                 href="/inventory/discrepancies"
+                data-t1eq-qbit-id="company-tools-discrepancies-link"
+                data-t1eq-qbit-type="action-button"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 className={secondaryButtonClass}
               >
                 Inventory Discrepancies
@@ -244,6 +255,9 @@ export default function CompanyToolsPage() {
               <button data-t1eq-action-button="true"
                 type="button"
                 onClick={handleCreateCompanyTool}
+                data-t1eq-qbit-id="company-tools-add"
+                data-t1eq-qbit-type="action-button"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 className={primaryButtonClass}
               >
                 Add Company Tool
@@ -253,59 +267,59 @@ export default function CompanyToolsPage() {
         </section>
 
         <section className="grid grid-cols-2 gap-4 md:grid-cols-5">
-          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-            <div className="text-sm font-semibold uppercase tracking-wide text-black/50">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="company-tools-metric-total" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+            <div data-t1eq-qbit-id="company-tools-metric-total-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-semibold uppercase tracking-wide text-black/50">
               Total Tools
             </div>
 
-            <div className="mt-2 text-3xl font-bold">{metrics.total}</div>
+            <div data-t1eq-qbit-id="company-tools-metric-total-value" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 text-3xl font-bold">{metrics.total}</div>
           </div>
 
-          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-green-200 bg-green-50 p-5 shadow-sm">
-            <div className="text-sm font-semibold uppercase tracking-wide text-green-700">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="company-tools-metric-available" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-2xl border border-green-200 bg-green-50 p-5 shadow-sm">
+            <div data-t1eq-qbit-id="company-tools-metric-available-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-semibold uppercase tracking-wide text-green-700">
               Available
             </div>
 
-            <div className="mt-2 text-3xl font-bold text-green-700">
+            <div data-t1eq-qbit-id="company-tools-metric-available-value" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 text-3xl font-bold text-green-700">
               {metrics.available}
             </div>
           </div>
 
-          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-blue-200 bg-blue-50 p-5 shadow-sm">
-            <div className="text-sm font-semibold uppercase tracking-wide text-blue-700">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="company-tools-metric-assigned" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-2xl border border-blue-200 bg-blue-50 p-5 shadow-sm">
+            <div data-t1eq-qbit-id="company-tools-metric-assigned-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-semibold uppercase tracking-wide text-blue-700">
               Assigned
             </div>
 
-            <div className="mt-2 text-3xl font-bold text-blue-700">
+            <div data-t1eq-qbit-id="company-tools-metric-assigned-value" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 text-3xl font-bold text-blue-700">
               {metrics.assigned}
             </div>
           </div>
 
-          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-orange-200 bg-orange-50 p-5 shadow-sm">
-            <div className="text-sm font-semibold uppercase tracking-wide text-orange-700">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="company-tools-metric-in-repair" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-2xl border border-orange-200 bg-orange-50 p-5 shadow-sm">
+            <div data-t1eq-qbit-id="company-tools-metric-in-repair-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-semibold uppercase tracking-wide text-orange-700">
               In Repair
             </div>
 
-            <div className="mt-2 text-3xl font-bold text-orange-700">
+            <div data-t1eq-qbit-id="company-tools-metric-in-repair-value" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 text-3xl font-bold text-orange-700">
               {metrics.inRepair}
             </div>
           </div>
 
-          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-            <div className="text-sm font-semibold uppercase tracking-wide text-black/50">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="company-tools-metric-value" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+            <div data-t1eq-qbit-id="company-tools-metric-value-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-semibold uppercase tracking-wide text-black/50">
               Tool Value
             </div>
 
-            <div className="mt-2 text-3xl font-bold">
+            <div data-t1eq-qbit-id="company-tools-metric-value-value" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 text-3xl font-bold">
               {formatCurrency(metrics.totalValue)}
             </div>
           </div>
         </section>
 
-        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="company-tools-search" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="grid gap-4 md:grid-cols-3">
             <label className="space-y-1 md:col-span-2">
-              <span className="text-sm font-semibold text-black/70">
+              <span data-t1eq-qbit-id="company-tools-search-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-semibold text-black/70">
                 Search Tools
               </span>
 
@@ -313,6 +327,9 @@ export default function CompanyToolsPage() {
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="Search asset number, tool name, serial, assigned user, location..."
+                data-t1eq-qbit-id="company-tools-search-input"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 className={inputClass}
               />
             </label>
@@ -321,6 +338,9 @@ export default function CompanyToolsPage() {
               <button data-t1eq-action-button="true"
                 type="button"
                 onClick={refreshData}
+                data-t1eq-qbit-id="company-tools-refresh"
+                data-t1eq-qbit-type="action-button"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 className={secondaryButtonClass}
               >
                 Refresh
@@ -329,14 +349,14 @@ export default function CompanyToolsPage() {
           </div>
         </section>
 
-        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <h2 className="text-3xl font-bold">Tool Registry</h2>
+        <section data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="company-tools-registry" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+          <h2 data-t1eq-qbit-id="company-tools-registry-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-3xl font-bold">Tool Registry</h2>
 
           {filteredCompanyTools.length === 0 ? (
-            <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-5 rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-10 text-center">
-              <div className="text-xl font-bold">No company tools found</div>
+            <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="company-tools-empty-state" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-5 rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-10 text-center">
+              <div data-t1eq-qbit-id="company-tools-empty-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-xl font-bold">No company tools found</div>
 
-              <p className="mt-2 text-black/60">
+              <p data-t1eq-qbit-id="company-tools-empty-description" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 text-black/60">
                 Add company tools to begin tracking assets and custody.
               </p>
             </div>
@@ -346,23 +366,27 @@ export default function CompanyToolsPage() {
                 const isEditing = editingToolId === tool.id;
                 const draftTool = draftTools[tool.id] ?? tool;
                 const displayTool = isEditing ? draftTool : tool;
+                const toolQbitId = `company-tool-${tool.id}`;
 
                 return (
                   <article data-t1eq-tile="true" data-t1eq-page-card="true"
                     key={tool.id}
+                    data-t1eq-qbit-id={toolQbitId}
+                    data-t1eq-qbit-type="tile"
+                    data-t1eq-qbit-scope={QBIT_SCOPE}
                     className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5"
                   >
                     <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
                       <div>
-                        <div className="text-2xl font-bold">
+                        <div data-t1eq-qbit-id={`${toolQbitId}-asset-number`} data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-2xl font-bold">
                           {displayTool.assetNumber}
                         </div>
 
-                        <div className="text-black/70">
+                        <div data-t1eq-qbit-id={`${toolQbitId}-name`} data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-black/70">
                           {displayTool.toolName}
                         </div>
 
-                        <div className="mt-1 text-sm text-black/50">
+                        <div data-t1eq-qbit-id={`${toolQbitId}-created`} data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-1 text-sm text-black/50">
                           Created: {formatDateTime(displayTool.createdDate)}
                         </div>
                       </div>
@@ -372,11 +396,14 @@ export default function CompanyToolsPage() {
                           className={`inline-flex rounded-full border px-3 py-1 text-sm font-semibold ${getStatusClass(
                             displayTool.status
                           )}`}
+                          data-t1eq-qbit-id={`${toolQbitId}-status`}
+                          data-t1eq-qbit-type="text"
+                          data-t1eq-qbit-scope={QBIT_SCOPE}
                         >
                           {displayTool.status}
                         </span>
 
-                        <div className="text-2xl font-bold">
+                        <div data-t1eq-qbit-id={`${toolQbitId}-cost`} data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-2xl font-bold">
                           {formatCurrency(displayTool.cost)}
                         </div>
                       </div>
@@ -384,7 +411,7 @@ export default function CompanyToolsPage() {
 
                     <div className="mt-4 grid gap-4 md:grid-cols-4">
                       <label className="space-y-1">
-                        <span className="text-sm font-semibold text-black/70">
+                        <span data-t1eq-qbit-id={`${toolQbitId}-tool-name-label`} data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-semibold text-black/70">
                           Tool Name
                         </span>
 
@@ -396,12 +423,15 @@ export default function CompanyToolsPage() {
                               toolName: event.target.value,
                             })
                           }
+                          data-t1eq-qbit-id={`${toolQbitId}-tool-name`}
+                          data-t1eq-qbit-type="field"
+                          data-t1eq-qbit-scope={QBIT_SCOPE}
                           className={inputClass}
                         />
                       </label>
 
                       <label className="space-y-1">
-                        <span className="text-sm font-semibold text-black/70">
+                        <span data-t1eq-qbit-id={`${toolQbitId}-manufacturer-label`} data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-semibold text-black/70">
                           Manufacturer
                         </span>
 
@@ -413,12 +443,15 @@ export default function CompanyToolsPage() {
                               manufacturer: event.target.value,
                             })
                           }
+                          data-t1eq-qbit-id={`${toolQbitId}-manufacturer`}
+                          data-t1eq-qbit-type="field"
+                          data-t1eq-qbit-scope={QBIT_SCOPE}
                           className={inputClass}
                         />
                       </label>
 
                       <label className="space-y-1">
-                        <span className="text-sm font-semibold text-black/70">
+                        <span data-t1eq-qbit-id={`${toolQbitId}-model-number-label`} data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-semibold text-black/70">
                           Model Number
                         </span>
 
@@ -430,12 +463,15 @@ export default function CompanyToolsPage() {
                               modelNumber: event.target.value,
                             })
                           }
+                          data-t1eq-qbit-id={`${toolQbitId}-model-number`}
+                          data-t1eq-qbit-type="field"
+                          data-t1eq-qbit-scope={QBIT_SCOPE}
                           className={inputClass}
                         />
                       </label>
 
                       <label className="space-y-1">
-                        <span className="text-sm font-semibold text-black/70">
+                        <span data-t1eq-qbit-id={`${toolQbitId}-serial-number-label`} data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-semibold text-black/70">
                           Serial Number
                         </span>
 
@@ -447,12 +483,15 @@ export default function CompanyToolsPage() {
                               serialNumber: event.target.value,
                             })
                           }
+                          data-t1eq-qbit-id={`${toolQbitId}-serial-number`}
+                          data-t1eq-qbit-type="field"
+                          data-t1eq-qbit-scope={QBIT_SCOPE}
                           className={inputClass}
                         />
                       </label>
 
                       <label className="space-y-1 md:col-span-2">
-                        <span className="text-sm font-semibold text-black/70">
+                        <span data-t1eq-qbit-id={`${toolQbitId}-description-label`} data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-semibold text-black/70">
                           Description
                         </span>
 
@@ -464,12 +503,15 @@ export default function CompanyToolsPage() {
                               description: event.target.value,
                             })
                           }
+                          data-t1eq-qbit-id={`${toolQbitId}-description`}
+                          data-t1eq-qbit-type="field"
+                          data-t1eq-qbit-scope={QBIT_SCOPE}
                           className={inputClass}
                         />
                       </label>
 
                       <label className="space-y-1">
-                        <span className="text-sm font-semibold text-black/70">
+                        <span data-t1eq-qbit-id={`${toolQbitId}-cost-label`} data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-semibold text-black/70">
                           Cost
                         </span>
 
@@ -484,12 +526,15 @@ export default function CompanyToolsPage() {
                               cost: Number(event.target.value) || 0,
                             })
                           }
+                          data-t1eq-qbit-id={`${toolQbitId}-cost-field`}
+                          data-t1eq-qbit-type="field"
+                          data-t1eq-qbit-scope={QBIT_SCOPE}
                           className={inputClass}
                         />
                       </label>
 
                       <label className="space-y-1">
-                        <span className="text-sm font-semibold text-black/70">
+                        <span data-t1eq-qbit-id={`${toolQbitId}-status-label`} data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-semibold text-black/70">
                           Status
                         </span>
 
@@ -501,6 +546,9 @@ export default function CompanyToolsPage() {
                               status: event.target.value as CompanyToolStatus,
                             })
                           }
+                          data-t1eq-qbit-id={`${toolQbitId}-status-field`}
+                          data-t1eq-qbit-type="field"
+                          data-t1eq-qbit-scope={QBIT_SCOPE}
                           className={inputClass}
                         >
                           {statusOptions.map((status) => (
@@ -512,7 +560,7 @@ export default function CompanyToolsPage() {
                       </label>
 
                       <label className="space-y-1">
-                        <span className="text-sm font-semibold text-black/70">
+                        <span data-t1eq-qbit-id={`${toolQbitId}-location-type-label`} data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-semibold text-black/70">
                           Location Type
                         </span>
 
@@ -529,6 +577,9 @@ export default function CompanyToolsPage() {
                                   : "Warehouse",
                             })
                           }
+                          data-t1eq-qbit-id={`${toolQbitId}-location-type`}
+                          data-t1eq-qbit-type="field"
+                          data-t1eq-qbit-scope={QBIT_SCOPE}
                           className={inputClass}
                         >
                           {locationTypeOptions.map((locationType) => (
@@ -540,7 +591,7 @@ export default function CompanyToolsPage() {
                       </label>
 
                       <label className="space-y-1">
-                        <span className="text-sm font-semibold text-black/70">
+                        <span data-t1eq-qbit-id={`${toolQbitId}-location-name-label`} data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-semibold text-black/70">
                           Location Name
                         </span>
 
@@ -552,12 +603,15 @@ export default function CompanyToolsPage() {
                               locationName: event.target.value,
                             })
                           }
+                          data-t1eq-qbit-id={`${toolQbitId}-location-name`}
+                          data-t1eq-qbit-type="field"
+                          data-t1eq-qbit-scope={QBIT_SCOPE}
                           className={inputClass}
                         />
                       </label>
 
                       <label className="space-y-1 md:col-span-2">
-                        <span className="text-sm font-semibold text-black/70">
+                        <span data-t1eq-qbit-id={`${toolQbitId}-bin-location-label`} data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-semibold text-black/70">
                           Bin Location
                         </span>
 
@@ -569,12 +623,15 @@ export default function CompanyToolsPage() {
                               binLocation: event.target.value,
                             })
                           }
+                          data-t1eq-qbit-id={`${toolQbitId}-bin-location`}
+                          data-t1eq-qbit-type="field"
+                          data-t1eq-qbit-scope={QBIT_SCOPE}
                           className={inputClass}
                         />
                       </label>
 
                       <label className="space-y-1">
-                        <span className="text-sm font-semibold text-black/70">
+                        <span data-t1eq-qbit-id={`${toolQbitId}-assigned-to-label`} data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-semibold text-black/70">
                           Assigned To
                         </span>
 
@@ -592,12 +649,15 @@ export default function CompanyToolsPage() {
                                 : displayTool.status,
                             })
                           }
+                          data-t1eq-qbit-id={`${toolQbitId}-assigned-to`}
+                          data-t1eq-qbit-type="field"
+                          data-t1eq-qbit-scope={QBIT_SCOPE}
                           className={inputClass}
                         />
                       </label>
 
                       <label className="space-y-1 md:col-span-3">
-                        <span className="text-sm font-semibold text-black/70">
+                        <span data-t1eq-qbit-id={`${toolQbitId}-notes-label`} data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-semibold text-black/70">
                           Notes
                         </span>
 
@@ -609,6 +669,9 @@ export default function CompanyToolsPage() {
                               notes: event.target.value,
                             })
                           }
+                          data-t1eq-qbit-id={`${toolQbitId}-notes`}
+                          data-t1eq-qbit-type="field"
+                          data-t1eq-qbit-scope={QBIT_SCOPE}
                           className={inputClass}
                         />
                       </label>
@@ -620,6 +683,9 @@ export default function CompanyToolsPage() {
                           <button data-t1eq-action-button="true"
                             type="button"
                             onClick={() => saveCompanyTool(tool.id)}
+                            data-t1eq-qbit-id={`${toolQbitId}-save`}
+                            data-t1eq-qbit-type="action-button"
+                            data-t1eq-qbit-scope={QBIT_SCOPE}
                             className={primaryButtonClass}
                           >
                             Save Tool
@@ -628,6 +694,9 @@ export default function CompanyToolsPage() {
                           <button data-t1eq-action-button="true"
                             type="button"
                             onClick={() => cancelEditCompanyTool(tool.id)}
+                            data-t1eq-qbit-id={`${toolQbitId}-cancel`}
+                            data-t1eq-qbit-type="action-button"
+                            data-t1eq-qbit-scope={QBIT_SCOPE}
                             className={secondaryButtonClass}
                           >
                             Cancel
@@ -637,6 +706,9 @@ export default function CompanyToolsPage() {
                         <button data-t1eq-action-button="true"
                           type="button"
                           onClick={() => beginEditCompanyTool(tool)}
+                          data-t1eq-qbit-id={`${toolQbitId}-edit`}
+                          data-t1eq-qbit-type="action-button"
+                          data-t1eq-qbit-scope={QBIT_SCOPE}
                           className={secondaryButtonClass}
                         >
                           Edit Tool
@@ -646,6 +718,9 @@ export default function CompanyToolsPage() {
                       <button data-t1eq-action-button="true"
                         type="button"
                         onClick={() => handleDeleteCompanyTool(tool.id)}
+                        data-t1eq-qbit-id={`${toolQbitId}-delete`}
+                        data-t1eq-qbit-type="action-button"
+                        data-t1eq-qbit-scope={QBIT_SCOPE}
                         className={dangerButtonClass}
                       >
                         Delete Tool

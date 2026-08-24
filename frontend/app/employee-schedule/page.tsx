@@ -212,6 +212,8 @@ function createDefaultAbsenceForm(): AbsenceFormState {
   };
 }
 
+const QBIT_SCOPE = "employee-schedule";
+
 function isRecordEffectiveOnDate(
   startDate: string,
   endDate: string,
@@ -671,14 +673,14 @@ export default function EmployeeSchedulePage() {
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-8 text-white">
       <div className="mx-auto max-w-7xl space-y-6">
-        <header data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/30">
-          <p className="text-xs font-black uppercase tracking-[0.26em] text-orange-300">
+        <header data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="employee-schedule-header" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/30">
+          <p data-t1eq-qbit-id="employee-schedule-overline" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-xs font-black uppercase tracking-[0.26em] text-orange-300">
             Employee Schedule
           </p>
-          <h1 className="mt-2 text-4xl font-black tracking-tight">
+          <h1 data-t1eq-qbit-id="employee-schedule-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 text-4xl font-black tracking-tight">
             Availability, Holidays, Vacation, Absence
           </h1>
-          <p className="mt-3 max-w-5xl text-sm font-semibold leading-6 text-slate-300">
+          <p data-t1eq-qbit-id="employee-schedule-description" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-3 max-w-5xl text-sm font-semibold leading-6 text-slate-300">
             This module starts after the employee record exists. It manages
             recurring availability, holiday records, vacation ledger entries,
             absence records, and daily availability snapshots.
@@ -686,17 +688,17 @@ export default function EmployeeSchedulePage() {
         </header>
 
         {employees.length === 0 ? (
-          <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-dashed border-white/15 bg-black/20 p-8">
-            <h2 className="text-2xl font-black">No employees found.</h2>
-            <p className="mt-2 text-sm font-bold text-slate-400">
+          <section data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="employee-schedule-no-employees" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-3xl border border-dashed border-white/15 bg-black/20 p-8">
+            <h2 data-t1eq-qbit-id="employee-schedule-no-employees-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-2xl font-black">No employees found.</h2>
+            <p data-t1eq-qbit-id="employee-schedule-no-employees-description" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 text-sm font-bold text-slate-400">
               Create an employee record first, then return to Employee Schedule.
             </p>
           </section>
         ) : (
           <>
             <section className="grid gap-4 lg:grid-cols-[1fr_0.75fr]">
-              <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-                <h2 className="text-lg font-black">Schedule Control</h2>
+              <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="employee-schedule-control" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
+                <h2 data-t1eq-qbit-id="employee-schedule-control-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-lg font-black">Schedule Control</h2>
 
                 <div className="mt-4 grid gap-3 md:grid-cols-2">
                   <SelectField
@@ -707,6 +709,8 @@ export default function EmployeeSchedulePage() {
                       value: employee.id,
                     }))}
                     onChange={setSelectedEmployeeId}
+                    qbitId="employee-schedule-select-employee"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <InputField
@@ -714,12 +718,14 @@ export default function EmployeeSchedulePage() {
                     type="date"
                     value={snapshotDate}
                     onChange={(event) => setSnapshotDate(event.target.value)}
+                    qbitId="employee-schedule-snapshot-date"
+                    qbitScope={QBIT_SCOPE}
                   />
                 </div>
               </div>
 
-              <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-                <h2 className="text-lg font-black">Daily Snapshot</h2>
+              <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="employee-schedule-daily-snapshot" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
+                <h2 data-t1eq-qbit-id="employee-schedule-daily-snapshot-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-lg font-black">Daily Snapshot</h2>
 
                 {dailySnapshot ? (
                   <div className="mt-4 space-y-2 text-sm font-bold text-slate-300">
@@ -760,24 +766,32 @@ export default function EmployeeSchedulePage() {
                   subValue={`${vacationBalance.availableBalanceDays.toFixed(
                     2
                   )} days`}
+                  qbitId="employee-schedule-metric-available"
+                  qbitScope={QBIT_SCOPE}
                 />
 
                 <MetricCard
                   label="Projected Earned"
                   value={formatHours(vacationBalance.projectedEarnedHours)}
                   subValue={selectedEmployee.vacationSettings.accrualMethod}
+                  qbitId="employee-schedule-metric-projected"
+                  qbitScope={QBIT_SCOPE}
                 />
 
                 <MetricCard
                   label="Used"
                   value={formatHours(vacationBalance.usedHours)}
                   subValue="Vacation ledger usage"
+                  qbitId="employee-schedule-metric-used"
+                  qbitScope={QBIT_SCOPE}
                 />
 
                 <MetricCard
                   label="Starting Balance"
                   value={formatHours(vacationBalance.startingBalanceHours)}
                   subValue="Employee setup value"
+                  qbitId="employee-schedule-metric-starting-balance"
+                  qbitScope={QBIT_SCOPE}
                 />
               </section>
             )}
@@ -785,9 +799,12 @@ export default function EmployeeSchedulePage() {
             <section className="grid gap-6 xl:grid-cols-2">
               <form data-t1eq-tile="true" data-t1eq-page-card="true"
                 onSubmit={handleAvailabilitySubmit}
+                data-t1eq-qbit-id="employee-schedule-availability-form"
+                data-t1eq-qbit-type="page-card"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 className="rounded-3xl border border-white/10 bg-white/[0.04] p-5"
               >
-                <h2 className="text-lg font-black">Recurring Availability</h2>
+                <h2 data-t1eq-qbit-id="employee-schedule-availability-form-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-lg font-black">Recurring Availability</h2>
 
                 <div className="mt-4 grid gap-3 md:grid-cols-2">
                   <SelectField
@@ -800,6 +817,8 @@ export default function EmployeeSchedulePage() {
                         dayOfWeek: value as EmployeeScheduleDayOfWeek,
                       }))
                     }
+                    qbitId="employee-schedule-availability-day"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <SelectField
@@ -812,6 +831,8 @@ export default function EmployeeSchedulePage() {
                         status: value as EmployeeAvailabilityStatus,
                       }))
                     }
+                    qbitId="employee-schedule-availability-status"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <InputField
@@ -824,6 +845,8 @@ export default function EmployeeSchedulePage() {
                         startTime: event.target.value,
                       }))
                     }
+                    qbitId="employee-schedule-availability-start-time"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <InputField
@@ -836,6 +859,8 @@ export default function EmployeeSchedulePage() {
                         endTime: event.target.value,
                       }))
                     }
+                    qbitId="employee-schedule-availability-end-time"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <InputField
@@ -848,6 +873,8 @@ export default function EmployeeSchedulePage() {
                         effectiveStartDate: event.target.value,
                       }))
                     }
+                    qbitId="employee-schedule-availability-effective-start"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <InputField
@@ -860,6 +887,8 @@ export default function EmployeeSchedulePage() {
                         effectiveEndDate: event.target.value,
                       }))
                     }
+                    qbitId="employee-schedule-availability-effective-end"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <div className="md:col-span-2">
@@ -872,18 +901,23 @@ export default function EmployeeSchedulePage() {
                           notes: event.target.value,
                         }))
                       }
+                      qbitId="employee-schedule-availability-notes"
+                      qbitScope={QBIT_SCOPE}
                     />
                   </div>
                 </div>
 
-                <SubmitButton label="Save Availability Rule" />
+                <SubmitButton label="Save Availability Rule" qbitId="employee-schedule-availability-submit" qbitScope={QBIT_SCOPE} />
               </form>
 
               <form data-t1eq-tile="true" data-t1eq-page-card="true"
                 onSubmit={handleHolidaySubmit}
+                data-t1eq-qbit-id="employee-schedule-holiday-form"
+                data-t1eq-qbit-type="page-card"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 className="rounded-3xl border border-white/10 bg-white/[0.04] p-5"
               >
-                <h2 className="text-lg font-black">Holiday Record</h2>
+                <h2 data-t1eq-qbit-id="employee-schedule-holiday-form-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-lg font-black">Holiday Record</h2>
 
                 <div className="mt-4 grid gap-3 md:grid-cols-2">
                   <InputField
@@ -895,6 +929,8 @@ export default function EmployeeSchedulePage() {
                         holidayName: event.target.value,
                       }))
                     }
+                    qbitId="employee-schedule-holiday-name"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <SelectField
@@ -907,6 +943,8 @@ export default function EmployeeSchedulePage() {
                         holidayType: value as EmployeeHolidayType,
                       }))
                     }
+                    qbitId="employee-schedule-holiday-type"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <InputField
@@ -919,6 +957,8 @@ export default function EmployeeSchedulePage() {
                         date: event.target.value,
                       }))
                     }
+                    qbitId="employee-schedule-holiday-date"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <NumberField
@@ -930,6 +970,8 @@ export default function EmployeeSchedulePage() {
                         hours: safeNumber(value),
                       }))
                     }
+                    qbitId="employee-schedule-holiday-hours"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <CheckboxField
@@ -941,6 +983,8 @@ export default function EmployeeSchedulePage() {
                         paid: checked,
                       }))
                     }
+                    qbitId="employee-schedule-holiday-paid"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <CheckboxField
@@ -952,6 +996,8 @@ export default function EmployeeSchedulePage() {
                         countsAgainstVacation: checked,
                       }))
                     }
+                    qbitId="employee-schedule-holiday-counts-against-vacation"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <div className="md:col-span-2">
@@ -964,18 +1010,23 @@ export default function EmployeeSchedulePage() {
                           notes: event.target.value,
                         }))
                       }
+                      qbitId="employee-schedule-holiday-notes"
+                      qbitScope={QBIT_SCOPE}
                     />
                   </div>
                 </div>
 
-                <SubmitButton label="Save Holiday" />
+                <SubmitButton label="Save Holiday" qbitId="employee-schedule-holiday-submit" qbitScope={QBIT_SCOPE} />
               </form>
 
               <form data-t1eq-tile="true" data-t1eq-page-card="true"
                 onSubmit={handleVacationLedgerSubmit}
+                data-t1eq-qbit-id="employee-schedule-vacation-ledger-form"
+                data-t1eq-qbit-type="page-card"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 className="rounded-3xl border border-white/10 bg-white/[0.04] p-5"
               >
-                <h2 className="text-lg font-black">Vacation Ledger</h2>
+                <h2 data-t1eq-qbit-id="employee-schedule-vacation-ledger-form-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-lg font-black">Vacation Ledger</h2>
 
                 <div className="mt-4 grid gap-3 md:grid-cols-2">
                   <SelectField
@@ -988,6 +1039,8 @@ export default function EmployeeSchedulePage() {
                         entryType: value as EmployeeVacationLedgerType,
                       }))
                     }
+                    qbitId="employee-schedule-vacation-ledger-entry-type"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <SelectField
@@ -1000,6 +1053,8 @@ export default function EmployeeSchedulePage() {
                         source: value as VacationLedgerSource,
                       }))
                     }
+                    qbitId="employee-schedule-vacation-ledger-source"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <InputField
@@ -1012,6 +1067,8 @@ export default function EmployeeSchedulePage() {
                         date: event.target.value,
                       }))
                     }
+                    qbitId="employee-schedule-vacation-ledger-date"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <NumberField
@@ -1023,6 +1080,8 @@ export default function EmployeeSchedulePage() {
                         hours: safeNumber(value),
                       }))
                     }
+                    qbitId="employee-schedule-vacation-ledger-hours"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <InputField
@@ -1034,6 +1093,8 @@ export default function EmployeeSchedulePage() {
                         relatedRecordId: event.target.value,
                       }))
                     }
+                    qbitId="employee-schedule-vacation-ledger-related-id"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <div className="md:col-span-2">
@@ -1046,18 +1107,23 @@ export default function EmployeeSchedulePage() {
                           notes: event.target.value,
                         }))
                       }
+                      qbitId="employee-schedule-vacation-ledger-notes"
+                      qbitScope={QBIT_SCOPE}
                     />
                   </div>
                 </div>
 
-                <SubmitButton label="Save Vacation Ledger Entry" />
+                <SubmitButton label="Save Vacation Ledger Entry" qbitId="employee-schedule-vacation-ledger-submit" qbitScope={QBIT_SCOPE} />
               </form>
 
               <form data-t1eq-tile="true" data-t1eq-page-card="true"
                 onSubmit={handleAbsenceSubmit}
+                data-t1eq-qbit-id="employee-schedule-absence-form"
+                data-t1eq-qbit-type="page-card"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 className="rounded-3xl border border-white/10 bg-white/[0.04] p-5"
               >
-                <h2 className="text-lg font-black">Absence Record</h2>
+                <h2 data-t1eq-qbit-id="employee-schedule-absence-form-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-lg font-black">Absence Record</h2>
 
                 <div className="mt-4 grid gap-3 md:grid-cols-2">
                   <InputField
@@ -1070,6 +1136,8 @@ export default function EmployeeSchedulePage() {
                         missedDate: event.target.value,
                       }))
                     }
+                    qbitId="employee-schedule-absence-missed-date"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <SelectField
@@ -1082,6 +1150,8 @@ export default function EmployeeSchedulePage() {
                         callStatus: value as EmployeeAbsenceCallStatus,
                       }))
                     }
+                    qbitId="employee-schedule-absence-call-status"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <SelectField
@@ -1094,6 +1164,8 @@ export default function EmployeeSchedulePage() {
                         reason: value as EmployeeAbsenceReason,
                       }))
                     }
+                    qbitId="employee-schedule-absence-reason"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <InputField
@@ -1105,6 +1177,8 @@ export default function EmployeeSchedulePage() {
                         customReason: event.target.value,
                       }))
                     }
+                    qbitId="employee-schedule-absence-custom-reason"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <InputField
@@ -1117,6 +1191,8 @@ export default function EmployeeSchedulePage() {
                         scheduledStartTime: event.target.value,
                       }))
                     }
+                    qbitId="employee-schedule-absence-scheduled-start"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <InputField
@@ -1129,6 +1205,8 @@ export default function EmployeeSchedulePage() {
                         scheduledEndTime: event.target.value,
                       }))
                     }
+                    qbitId="employee-schedule-absence-scheduled-end"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <CheckboxField
@@ -1140,6 +1218,8 @@ export default function EmployeeSchedulePage() {
                         wasNormallyScheduled: checked,
                       }))
                     }
+                    qbitId="employee-schedule-absence-was-scheduled"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <CheckboxField
@@ -1151,6 +1231,8 @@ export default function EmployeeSchedulePage() {
                         paid: checked,
                       }))
                     }
+                    qbitId="employee-schedule-absence-paid"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <CheckboxField
@@ -1162,6 +1244,8 @@ export default function EmployeeSchedulePage() {
                         usesVacationHours: checked,
                       }))
                     }
+                    qbitId="employee-schedule-absence-uses-vacation-hours"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <NumberField
@@ -1173,6 +1257,8 @@ export default function EmployeeSchedulePage() {
                         vacationHoursUsed: safeNumber(value),
                       }))
                     }
+                    qbitId="employee-schedule-absence-vacation-hours-used"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <div className="md:col-span-2">
@@ -1185,11 +1271,13 @@ export default function EmployeeSchedulePage() {
                           managerNotes: event.target.value,
                         }))
                       }
+                      qbitId="employee-schedule-absence-manager-notes"
+                      qbitScope={QBIT_SCOPE}
                     />
                   </div>
                 </div>
 
-                <SubmitButton label="Save Absence" />
+                <SubmitButton label="Save Absence" qbitId="employee-schedule-absence-submit" qbitScope={QBIT_SCOPE} />
               </form>
             </section>
 
@@ -1198,6 +1286,8 @@ export default function EmployeeSchedulePage() {
                 <RecordList
                   title="Availability Rules"
                   emptyText="No availability rules saved."
+                  qbitId="employee-schedule-availability-list"
+                  qbitScope={QBIT_SCOPE}
                   records={selectedAvailabilityRules.map((rule) => ({
                     id: rule.id,
                     title: `${rule.dayOfWeek} · ${rule.status}`,
@@ -1215,6 +1305,8 @@ export default function EmployeeSchedulePage() {
                 <RecordList
                   title="Holiday Records"
                   emptyText="No holiday records saved."
+                  qbitId="employee-schedule-holiday-list"
+                  qbitScope={QBIT_SCOPE}
                   records={selectedHolidayRecords.map((record) => ({
                     id: record.id,
                     title: `${record.holidayName} · ${record.holidayType}`,
@@ -1232,6 +1324,8 @@ export default function EmployeeSchedulePage() {
                 <RecordList
                   title="Vacation Ledger"
                   emptyText="No vacation ledger entries saved."
+                  qbitId="employee-schedule-vacation-ledger-list"
+                  qbitScope={QBIT_SCOPE}
                   records={selectedVacationLedgerEntries.map((entry) => ({
                     id: entry.id,
                     title: `${entry.entryType} · ${formatHours(entry.hours)}`,
@@ -1247,6 +1341,8 @@ export default function EmployeeSchedulePage() {
                 <RecordList
                   title="Absence Records"
                   emptyText="No absence records saved."
+                  qbitId="employee-schedule-absence-list"
+                  qbitScope={QBIT_SCOPE}
                   records={selectedAbsenceRecords.map((record) => ({
                     id: record.id,
                     title: `${record.missedDate} · ${record.reason}`,
@@ -1275,17 +1371,21 @@ function MetricCard({
   label,
   value,
   subValue,
+  qbitId,
+  qbitScope = "global",
 }: {
   label: string;
   value: string;
   subValue: string;
+  qbitId?: string;
+  qbitScope?: string;
 }) {
   return (
-    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+    <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id={qbitId ? qbitId : undefined} data-t1eq-qbit-type={qbitId ? "page-card" : undefined} data-t1eq-qbit-scope={qbitId ? qbitScope : undefined} className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+      <p data-t1eq-qbit-id={qbitId ? `${qbitId}-label` : undefined} data-t1eq-qbit-type={qbitId ? "text" : undefined} data-t1eq-qbit-scope={qbitId ? qbitScope : undefined} className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
         {label}
       </p>
-      <p className="mt-2 text-2xl font-black text-white">{value}</p>
+      <p data-t1eq-qbit-id={qbitId ? `${qbitId}-value` : undefined} data-t1eq-qbit-type={qbitId ? "text" : undefined} data-t1eq-qbit-scope={qbitId ? qbitScope : undefined} className="mt-2 text-2xl font-black text-white">{value}</p>
       <p className="mt-1 text-xs font-bold text-slate-400">{subValue}</p>
     </div>
   );
@@ -1295,6 +1395,8 @@ function RecordList({
   title,
   emptyText,
   records,
+  qbitId,
+  qbitScope = "global",
 }: {
   title: string;
   emptyText: string;
@@ -1305,14 +1407,16 @@ function RecordList({
     notes: string;
     onDelete: () => void;
   }[];
+  qbitId?: string;
+  qbitScope?: string;
 }) {
   return (
-    <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-      <h2 className="text-lg font-black">{title}</h2>
+    <section data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id={qbitId ? qbitId : undefined} data-t1eq-qbit-type={qbitId ? "page-card" : undefined} data-t1eq-qbit-scope={qbitId ? qbitScope : undefined} className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
+      <h2 data-t1eq-qbit-id={qbitId ? `${qbitId}-title` : undefined} data-t1eq-qbit-type={qbitId ? "text" : undefined} data-t1eq-qbit-scope={qbitId ? qbitScope : undefined} className="text-lg font-black">{title}</h2>
 
       <div className="mt-4 space-y-3">
         {records.length === 0 && (
-          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-dashed border-white/15 bg-black/20 p-5 text-sm font-bold text-slate-400">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id={qbitId ? `${qbitId}-empty` : undefined} data-t1eq-qbit-type={qbitId ? "text" : undefined} data-t1eq-qbit-scope={qbitId ? qbitScope : undefined} className="rounded-2xl border border-dashed border-white/15 bg-black/20 p-5 text-sm font-bold text-slate-400">
             {emptyText}
           </div>
         )}
@@ -1320,6 +1424,9 @@ function RecordList({
         {records.map((record) => (
           <article data-t1eq-tile="true" data-t1eq-page-card="true"
             key={record.id}
+            data-t1eq-qbit-id={qbitId ? `${qbitId}-record-${record.id}` : undefined}
+            data-t1eq-qbit-type={qbitId ? "tile" : undefined}
+            data-t1eq-qbit-scope={qbitId ? qbitScope : undefined}
             className="rounded-2xl border border-white/10 bg-black/20 p-4"
           >
             <div className="flex items-start justify-between gap-3">
@@ -1340,6 +1447,9 @@ function RecordList({
               <button data-t1eq-action-button="true"
                 type="button"
                 onClick={record.onDelete}
+                data-t1eq-qbit-id={qbitId ? `${qbitId}-record-${record.id}-delete` : undefined}
+                data-t1eq-qbit-type={qbitId ? "action-button" : undefined}
+                data-t1eq-qbit-scope={qbitId ? qbitScope : undefined}
                 className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-black uppercase tracking-wide text-red-300 transition hover:bg-red-500/20"
               >
                 Delete
@@ -1352,10 +1462,21 @@ function RecordList({
   );
 }
 
-function SubmitButton({ label }: { label: string }) {
+function SubmitButton({
+  label,
+  qbitId,
+  qbitScope = "global",
+}: {
+  label: string;
+  qbitId?: string;
+  qbitScope?: string;
+}) {
   return (
     <button data-t1eq-action-button="true"
       type="submit"
+      data-t1eq-qbit-id={qbitId ? qbitId : undefined}
+      data-t1eq-qbit-type={qbitId ? "action-button" : undefined}
+      data-t1eq-qbit-scope={qbitId ? qbitScope : undefined}
       className="mt-4 rounded-xl bg-orange-500 px-5 py-3 text-xs font-black uppercase tracking-wide text-white transition hover:bg-orange-400"
     >
       {label}
@@ -1368,21 +1489,28 @@ function InputField({
   type = "text",
   value,
   onChange,
+  qbitId,
+  qbitScope = "global",
 }: {
   label: string;
   type?: string;
   value: string;
   onChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  qbitId?: string;
+  qbitScope?: string;
 }) {
   return (
     <label className="block">
-      <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
+      <span data-t1eq-qbit-id={qbitId ? `${qbitId}-label` : undefined} data-t1eq-qbit-type={qbitId ? "text" : undefined} data-t1eq-qbit-scope={qbitId ? qbitScope : undefined} className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
         {label}
       </span>
       <input data-t1eq-field="true"
         type={type}
         value={value}
         onChange={onChange}
+        data-t1eq-qbit-id={qbitId ? qbitId : undefined}
+        data-t1eq-qbit-type={qbitId ? "field" : undefined}
+        data-t1eq-qbit-scope={qbitId ? qbitScope : undefined}
         className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm font-bold text-white outline-none placeholder:text-slate-500 focus:border-orange-400"
       />
     </label>
@@ -1393,14 +1521,18 @@ function NumberField({
   label,
   value,
   onChange,
+  qbitId,
+  qbitScope = "global",
 }: {
   label: string;
   value: number;
   onChange: (value: string) => void;
+  qbitId?: string;
+  qbitScope?: string;
 }) {
   return (
     <label className="block">
-      <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
+      <span data-t1eq-qbit-id={qbitId ? `${qbitId}-label` : undefined} data-t1eq-qbit-type={qbitId ? "text" : undefined} data-t1eq-qbit-scope={qbitId ? qbitScope : undefined} className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
         {label}
       </span>
       <input data-t1eq-field="true"
@@ -1408,6 +1540,9 @@ function NumberField({
         step="0.01"
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        data-t1eq-qbit-id={qbitId ? qbitId : undefined}
+        data-t1eq-qbit-type={qbitId ? "field" : undefined}
+        data-t1eq-qbit-scope={qbitId ? qbitScope : undefined}
         className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm font-bold text-white outline-none placeholder:text-slate-500 focus:border-orange-400"
       />
     </label>
@@ -1418,20 +1553,27 @@ function TextareaField({
   label,
   value,
   onChange,
+  qbitId,
+  qbitScope = "global",
 }: {
   label: string;
   value: string;
   onChange: (event: ChangeEvent<HTMLTextAreaElement>) => void;
+  qbitId?: string;
+  qbitScope?: string;
 }) {
   return (
     <label className="block">
-      <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
+      <span data-t1eq-qbit-id={qbitId ? `${qbitId}-label` : undefined} data-t1eq-qbit-type={qbitId ? "text" : undefined} data-t1eq-qbit-scope={qbitId ? qbitScope : undefined} className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
         {label}
       </span>
       <textarea data-t1eq-field="true"
         value={value}
         onChange={onChange}
         rows={3}
+        data-t1eq-qbit-id={qbitId ? qbitId : undefined}
+        data-t1eq-qbit-type={qbitId ? "field" : undefined}
+        data-t1eq-qbit-scope={qbitId ? qbitScope : undefined}
         className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm font-bold text-white outline-none placeholder:text-slate-500 focus:border-orange-400"
       />
     </label>
@@ -1443,20 +1585,27 @@ function SelectField({
   value,
   options,
   onChange,
+  qbitId,
+  qbitScope = "global",
 }: {
   label: string;
   value: string;
   options: readonly (string | { label: string; value: string })[];
   onChange: (value: string) => void;
+  qbitId?: string;
+  qbitScope?: string;
 }) {
   return (
     <label className="block">
-      <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
+      <span data-t1eq-qbit-id={qbitId ? `${qbitId}-label` : undefined} data-t1eq-qbit-type={qbitId ? "text" : undefined} data-t1eq-qbit-scope={qbitId ? qbitScope : undefined} className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
         {label}
       </span>
       <select data-t1eq-field="true"
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        data-t1eq-qbit-id={qbitId ? qbitId : undefined}
+        data-t1eq-qbit-type={qbitId ? "field" : undefined}
+        data-t1eq-qbit-scope={qbitId ? qbitScope : undefined}
         className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm font-bold text-white outline-none focus:border-orange-400"
       >
         {options.map((option) => {
@@ -1484,13 +1633,17 @@ function CheckboxField({
   label,
   checked,
   onChange,
+  qbitId,
+  qbitScope = "global",
 }: {
   label: string;
   checked: boolean;
   onChange: (checked: boolean) => void;
+  qbitId?: string;
+  qbitScope?: string;
 }) {
   return (
-    <label data-t1eq-tile="true" data-t1eq-page-card="true" className="flex items-center gap-3 rounded-xl border border-white/10 bg-black/20 p-3">
+    <label data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id={qbitId ? qbitId : undefined} data-t1eq-qbit-type={qbitId ? "field" : undefined} data-t1eq-qbit-scope={qbitId ? qbitScope : undefined} className="flex items-center gap-3 rounded-xl border border-white/10 bg-black/20 p-3">
       <input data-t1eq-field="true"
         type="checkbox"
         checked={checked}

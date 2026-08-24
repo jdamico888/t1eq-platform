@@ -10,6 +10,8 @@ import {
   createInspection,
 } from "../../../services/inspections";
 
+const QBIT_SCOPE = "create-inspection-modal";
+
 type Props = {
   equipmentId: string;
 
@@ -46,17 +48,28 @@ export default function CreateInspectionModal({
         z-50
       "
     >
-      <Card>
+      <Card
+        qbitId="create-inspection-modal"
+        qbitScope={QBIT_SCOPE}
+      >
 
         <div className="w-[700px] space-y-6">
 
           <div className="flex justify-between items-center">
 
-            <h2 className="text-2xl font-bold">
+            <h2
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="create-inspection-title"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="text-2xl font-bold"
+            >
               New ESA Inspection
             </h2>
 
             <button data-t1eq-action-button="true"
+              data-t1eq-qbit-type="action-button"
+              data-t1eq-qbit-id="create-inspection-close"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
               onClick={onClose}
               className="
                 text-gray-500
@@ -72,11 +85,19 @@ export default function CreateInspectionModal({
 
             <div>
 
-              <label className="text-sm font-medium">
+              <label
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="create-inspection-type-label"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="text-sm font-medium"
+              >
                 Inspection Type
               </label>
 
               <select data-t1eq-field="true"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-id="create-inspection-type"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 value={inspectionType}
                 onChange={(e) =>
                   setInspectionType(
@@ -118,11 +139,19 @@ export default function CreateInspectionModal({
 
             <div>
 
-              <label className="text-sm font-medium">
+              <label
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="create-inspection-status-label"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="text-sm font-medium"
+              >
                 Status
               </label>
 
               <select data-t1eq-field="true"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-id="create-inspection-status"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 value={status}
                 onChange={(e) =>
                   setStatus(
@@ -156,11 +185,19 @@ export default function CreateInspectionModal({
 
             <div>
 
-              <label className="text-sm font-medium">
+              <label
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="create-inspection-notes-label"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="text-sm font-medium"
+              >
                 Notes
               </label>
 
               <textarea data-t1eq-field="true"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-id="create-inspection-notes"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 value={notes}
                 onChange={(e) =>
                   setNotes(
@@ -185,6 +222,9 @@ export default function CreateInspectionModal({
           <div className="flex justify-end gap-3">
 
             <button data-t1eq-action-button="true"
+              data-t1eq-qbit-type="action-button"
+              data-t1eq-qbit-id="create-inspection-cancel"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
               onClick={onClose}
               className="
                 px-5
@@ -197,6 +237,8 @@ export default function CreateInspectionModal({
             </button>
 
             <Button
+              qbitId="create-inspection-submit"
+              qbitScope={QBIT_SCOPE}
               onClick={() => {
 
                 createInspection({

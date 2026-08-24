@@ -41,11 +41,6 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
     href: "/inventory",
   },
   {
-    id: "truck-stock",
-    label: "Truck Stock",
-    href: "/truck-stock",
-  },
-  {
     id: "purchase-orders",
     label: "Purchase Orders",
     href: "/purchase-orders",

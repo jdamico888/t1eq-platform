@@ -13,6 +13,8 @@ import { calculateTechnicianPayrollSummary } from "@/services/technician-payroll
 import type { TechnicianProfile } from "@/types/technician-profile";
 import type { TechnicianPayrollSummary } from "@/services/technician-payroll";
 
+const QBIT_SCOPE = "payroll";
+
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -53,13 +55,23 @@ export default function PayrollPage() {
   }, [payrollSummaries]);
 
   return (
-    <PageContainer>
+    <PageContainer qbitId="payroll-page" qbitScope={QBIT_SCOPE}>
       <div>
-        <h1 className="text-5xl font-bold text-black">
+        <h1
+          data-t1eq-qbit-type="text"
+          data-t1eq-qbit-id="payroll-title"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className="text-5xl font-bold text-black"
+        >
           Payroll
         </h1>
 
-        <p className="mt-2 text-lg text-black/70">
+        <p
+          data-t1eq-qbit-type="text"
+          data-t1eq-qbit-id="payroll-description"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className="mt-2 text-lg text-black/70"
+        >
           Technician compensation, mileage reimbursement,
           and payroll calculations.
         </p>
@@ -67,34 +79,52 @@ export default function PayrollPage() {
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <MetricCard
+          qbitId="payroll-metric-labor-hours"
+          qbitScope={QBIT_SCOPE}
           label="Labor Hours"
           value={totals.laborHours.toFixed(1)}
         />
 
         <MetricCard
+          qbitId="payroll-metric-labor-amount"
+          qbitScope={QBIT_SCOPE}
           label="Labor Amount"
           value={formatCurrency(totals.laborAmount)}
         />
 
         <MetricCard
+          qbitId="payroll-metric-mileage"
+          qbitScope={QBIT_SCOPE}
           label="Mileage"
           value={formatCurrency(totals.mileage)}
         />
 
         <MetricCard
+          qbitId="payroll-metric-gross"
+          qbitScope={QBIT_SCOPE}
           label="Gross Payroll"
           value={formatCurrency(totals.grossPay)}
         />
       </div>
 
-      <Card className="text-black">
+      <Card qbitId="payroll-technician-list" qbitScope={QBIT_SCOPE} className="text-black">
         <div className="space-y-5">
           <div>
-            <h2 className="text-3xl font-bold">
+            <h2
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="payroll-technician-list-title"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="text-3xl font-bold"
+            >
               Technician Payroll
             </h2>
 
-            <p className="mt-1 text-sm text-black/60">
+            <p
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="payroll-technician-list-description"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-1 text-sm text-black/60"
+            >
               Payroll summaries generated from labor,
               mileage, and technician compensation profiles.
             </p>
@@ -102,6 +132,8 @@ export default function PayrollPage() {
 
           {payrollSummaries.length === 0 && (
             <EmptyState
+              qbitId="payroll-empty-state"
+              qbitScope={QBIT_SCOPE}
               title="No payroll data available"
               message="Create technician profiles, labor entries, and mileage entries to generate payroll."
             />
@@ -110,6 +142,9 @@ export default function PayrollPage() {
           <div className="space-y-4">
             {payrollSummaries.map((summary) => (
               <div data-t1eq-tile="true" data-t1eq-page-card="true"
+                data-t1eq-qbit-type="tile"
+                data-t1eq-qbit-id={`payroll-technician-${summary.technicianId}`}
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 key={summary.technicianId}
                 className="rounded-2xl border border-black/10 bg-black/[0.03] p-5"
               >

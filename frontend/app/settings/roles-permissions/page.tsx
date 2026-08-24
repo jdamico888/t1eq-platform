@@ -26,6 +26,8 @@ import {
   togglePermission,
 } from "@/services/role-permissions";
 
+const QBIT_SCOPE = "roles-permissions";
+
 const pageClass = "min-h-screen bg-zinc-100 p-6 text-black";
 const headerClass =
   "mb-6 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm";
@@ -137,14 +139,34 @@ export default function RolesPermissionsPage() {
   return (
     <div className={pageClass}>
       <div className="mx-auto max-w-6xl">
-        <header className={headerClass}>
-          <p className="text-xs font-black uppercase tracking-[0.24em] text-zinc-400">
+        <header
+          data-t1eq-qbit-type="page-card"
+          data-t1eq-qbit-id="roles-permissions-header"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className={headerClass}
+        >
+          <p
+            data-t1eq-qbit-type="text"
+            data-t1eq-qbit-id="roles-permissions-overline"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="text-xs font-black uppercase tracking-[0.24em] text-zinc-400"
+          >
             Setup / Company
           </p>
-          <h1 className="mt-2 text-3xl font-black tracking-tight">
+          <h1
+            data-t1eq-qbit-type="text"
+            data-t1eq-qbit-id="roles-permissions-title"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="mt-2 text-3xl font-black tracking-tight"
+          >
             Roles &amp; Permissions
           </h1>
-          <p className="mt-2 max-w-3xl text-sm font-medium text-zinc-600">
+          <p
+            data-t1eq-qbit-type="text"
+            data-t1eq-qbit-id="roles-permissions-description"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="mt-2 max-w-3xl text-sm font-medium text-zinc-600"
+          >
             Decide who can see and do what. Every function in the app is a
             row below; every role your company defines is a column. Check a
             box to expose that control for that role, uncheck it to hide it —
@@ -153,15 +175,36 @@ export default function RolesPermissionsPage() {
           </p>
 
           {statusMessage && (
-            <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-4 rounded-2xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-black text-emerald-800">
+            <div data-t1eq-tile="true" data-t1eq-page-card="true"
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="roles-permissions-status-message"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-4 rounded-2xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-black text-emerald-800">
               {statusMessage}
             </div>
           )}
         </header>
 
-        <section className={sectionClass}>
-          <h2 className="text-lg font-black">Start From Your Company Structure</h2>
-          <p className="mt-1 text-sm font-medium text-zinc-600">
+        <section
+          data-t1eq-qbit-type="page-card"
+          data-t1eq-qbit-id="roles-permissions-models"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className={sectionClass}
+        >
+          <h2
+            data-t1eq-qbit-type="text"
+            data-t1eq-qbit-id="roles-permissions-models-title"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="text-lg font-black"
+          >
+            Start From Your Company Structure
+          </h2>
+          <p
+            data-t1eq-qbit-type="text"
+            data-t1eq-qbit-id="roles-permissions-models-description"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="mt-1 text-sm font-medium text-zinc-600"
+          >
             Pick the shape closest to how your company operates — it seeds a
             starting set of roles and permissions below, which you can rename
             or adjust however you like.
@@ -174,6 +217,9 @@ export default function RolesPermissionsPage() {
               return (
                 <div data-t1eq-tile="true" data-t1eq-page-card="true"
                   key={model.id}
+                  data-t1eq-qbit-type="tile"
+                  data-t1eq-qbit-id={`roles-permissions-model-${model.id}`}
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
                   className="flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-4"
                 >
                   <div className="text-sm font-black text-black">
@@ -189,6 +235,9 @@ export default function RolesPermissionsPage() {
                   </p>
 
                   <button data-t1eq-action-button="true"
+                    data-t1eq-qbit-type="action-button"
+                    data-t1eq-qbit-id={`roles-permissions-model-${model.id}-use`}
+                    data-t1eq-qbit-scope={QBIT_SCOPE}
                     type="button"
                     onClick={() => handleUseModel(model)}
                     className={inUse ? primaryButtonClass : secondaryButtonClass}
@@ -201,7 +250,11 @@ export default function RolesPermissionsPage() {
           </div>
 
           {pendingModel && (
-            <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3">
+            <div data-t1eq-tile="true" data-t1eq-page-card="true"
+              data-t1eq-qbit-type="page-card"
+              data-t1eq-qbit-id="roles-permissions-model-confirm"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3">
               <p className="text-sm font-bold text-amber-900">
                 Applying &quot;{pendingModel.title}&quot; will replace your
                 current roles and permissions. Continue?
@@ -209,6 +262,9 @@ export default function RolesPermissionsPage() {
 
               <div className="flex gap-2">
                 <button data-t1eq-action-button="true"
+                  data-t1eq-qbit-type="action-button"
+                  data-t1eq-qbit-id="roles-permissions-model-confirm-cancel"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
                   type="button"
                   onClick={() => setPendingModel(null)}
                   className={secondaryButtonClass}
@@ -216,6 +272,9 @@ export default function RolesPermissionsPage() {
                   Cancel
                 </button>
                 <button data-t1eq-action-button="true"
+                  data-t1eq-qbit-type="action-button"
+                  data-t1eq-qbit-id="roles-permissions-model-confirm-continue"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
                   type="button"
                   onClick={confirmUseModel}
                   className={primaryButtonClass}
@@ -227,9 +286,26 @@ export default function RolesPermissionsPage() {
           )}
         </section>
 
-        <section className={sectionClass}>
-          <h2 className="text-lg font-black">Roles</h2>
-          <p className="mt-1 text-sm font-medium text-zinc-600">
+        <section
+          data-t1eq-qbit-type="page-card"
+          data-t1eq-qbit-id="roles-permissions-roles"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className={sectionClass}
+        >
+          <h2
+            data-t1eq-qbit-type="text"
+            data-t1eq-qbit-id="roles-permissions-roles-title"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="text-lg font-black"
+          >
+            Roles
+          </h2>
+          <p
+            data-t1eq-qbit-type="text"
+            data-t1eq-qbit-id="roles-permissions-roles-description"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="mt-1 text-sm font-medium text-zinc-600"
+          >
             These are the column headers in the grid below. Add as many as
             you need.
           </p>
@@ -238,9 +314,15 @@ export default function RolesPermissionsPage() {
             {settings.roles.map((role) => (
               <div data-t1eq-tile="true" data-t1eq-page-card="true"
                 key={role.id}
+                data-t1eq-qbit-type="tile"
+                data-t1eq-qbit-id={`roles-permissions-role-${role.id}`}
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 className="flex items-center gap-2 rounded-full border border-zinc-300 bg-zinc-50 py-1 pl-3 pr-1"
               >
                 <input data-t1eq-field="true"
+                  data-t1eq-qbit-type="field"
+                  data-t1eq-qbit-id={`roles-permissions-role-${role.id}-name`}
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
                   value={role.name}
                   onChange={(event) =>
                     handleRenameRole(role.id, event.target.value)
@@ -256,6 +338,9 @@ export default function RolesPermissionsPage() {
                   </span>
                 ) : (
                   <button data-t1eq-action-button="true"
+                    data-t1eq-qbit-type="action-button"
+                    data-t1eq-qbit-id={`roles-permissions-role-${role.id}-remove`}
+                    data-t1eq-qbit-scope={QBIT_SCOPE}
                     type="button"
                     onClick={() => handleRequestRemoveRole(role.id)}
                     title="Remove role"
@@ -269,6 +354,9 @@ export default function RolesPermissionsPage() {
 
             <div className="flex items-center gap-2">
               <input data-t1eq-field="true"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-id="roles-permissions-add-role"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 type="text"
                 value={newRoleName}
                 onChange={(event) => setNewRoleName(event.target.value)}
@@ -281,6 +369,9 @@ export default function RolesPermissionsPage() {
                 className="rounded-full border border-dashed border-zinc-400 px-3 py-1.5 text-sm font-semibold outline-none"
               />
               <button data-t1eq-action-button="true"
+                data-t1eq-qbit-type="action-button"
+                data-t1eq-qbit-id="roles-permissions-add-role-submit"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 type="button"
                 onClick={handleAddRole}
                 className={secondaryButtonClass}
@@ -291,7 +382,11 @@ export default function RolesPermissionsPage() {
           </div>
 
           {pendingRemoveRole && (
-            <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-red-300 bg-red-50 px-4 py-3">
+            <div data-t1eq-tile="true" data-t1eq-page-card="true"
+              data-t1eq-qbit-type="page-card"
+              data-t1eq-qbit-id="roles-permissions-role-remove-confirm"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-red-300 bg-red-50 px-4 py-3">
               <p className="text-sm font-bold text-red-900">
                 Remove &quot;{pendingRemoveRole.name}&quot;? This deletes its
                 entire permission column and can&apos;t be undone here.
@@ -299,6 +394,9 @@ export default function RolesPermissionsPage() {
 
               <div className="flex gap-2">
                 <button data-t1eq-action-button="true"
+                  data-t1eq-qbit-type="action-button"
+                  data-t1eq-qbit-id="roles-permissions-role-remove-cancel"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
                   type="button"
                   onClick={() => setPendingRemoveRoleId(null)}
                   className={secondaryButtonClass}
@@ -306,6 +404,9 @@ export default function RolesPermissionsPage() {
                   Cancel
                 </button>
                 <button data-t1eq-action-button="true"
+                  data-t1eq-qbit-type="action-button"
+                  data-t1eq-qbit-id="roles-permissions-role-remove-confirm-button"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
                   type="button"
                   onClick={confirmRemoveRole}
                   className="rounded-xl bg-red-600 px-5 py-3 text-sm font-black text-white shadow-sm transition hover:bg-red-500"
@@ -317,14 +418,35 @@ export default function RolesPermissionsPage() {
           )}
         </section>
 
-        <section className={sectionClass}>
-          <h2 className="text-lg font-black">Function Access</h2>
-          <p className="mt-1 text-sm font-medium text-zinc-600">
+        <section
+          data-t1eq-qbit-type="page-card"
+          data-t1eq-qbit-id="roles-permissions-function-access"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className={sectionClass}
+        >
+          <h2
+            data-t1eq-qbit-type="text"
+            data-t1eq-qbit-id="roles-permissions-function-access-title"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="text-lg font-black"
+          >
+            Function Access
+          </h2>
+          <p
+            data-t1eq-qbit-type="text"
+            data-t1eq-qbit-id="roles-permissions-function-access-description"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="mt-1 text-sm font-medium text-zinc-600"
+          >
             Checked = this role sees the control and can use it. Unchecked =
             it&apos;s hidden from that role entirely.
           </p>
 
-          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-5 overflow-x-auto rounded-2xl border border-zinc-200">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true"
+            data-t1eq-qbit-type="section"
+            data-t1eq-qbit-id="roles-permissions-grid"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="mt-5 overflow-x-auto rounded-2xl border border-zinc-200">
             {settings.roles.length === 0 ? (
               <div className="p-10 text-center text-sm font-semibold text-zinc-500">
                 No roles yet — pick a starting model above, or add a role, to
@@ -348,6 +470,9 @@ export default function RolesPermissionsPage() {
                         </div>
                         {!role.isLocked && (
                           <button data-t1eq-action-button="true"
+                            data-t1eq-qbit-type="action-button"
+                            data-t1eq-qbit-id={`roles-permissions-role-${role.id}-select-all`}
+                            data-t1eq-qbit-scope={QBIT_SCOPE}
                             type="button"
                             onClick={() => handleToggleAllForRole(role.id)}
                             className="mt-1 text-[11px] font-black text-zinc-500 underline underline-offset-2"
@@ -421,13 +546,24 @@ export default function RolesPermissionsPage() {
           </div>
 
           <div className="mt-5 flex items-center gap-3">
-            <button data-t1eq-action-button="true" type="button" onClick={handleSave} className={primaryButtonClass}>
+            <button data-t1eq-action-button="true"
+              data-t1eq-qbit-type="action-button"
+              data-t1eq-qbit-id="roles-permissions-save"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              type="button"
+              onClick={handleSave}
+              className={primaryButtonClass}
+            >
               Save Changes
             </button>
           </div>
         </section>
 
-        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-dashed border-zinc-300 bg-white p-5 text-xs font-medium text-zinc-500">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true"
+          data-t1eq-qbit-type="page-card"
+          data-t1eq-qbit-id="roles-permissions-footer-note"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className="rounded-3xl border border-dashed border-zinc-300 bg-white p-5 text-xs font-medium text-zinc-500">
           This function list will keep growing as more screens get built
           (dispatch, inventory, invoicing, accounting, etc.) — it currently
           covers the functions introduced by the Technician Workorder screen

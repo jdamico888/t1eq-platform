@@ -9,6 +9,7 @@ import RepairOrderBillingSummary from "@/components/repair-orders/repair-order-b
 import RepairOrderClockPrerequisitesPanel from "@/components/repair-orders/repair-order-clock-prerequisites-panel";
 import RepairOrderDispatchReadinessPanel from "@/components/repair-orders/repair-order-dispatch-readiness-panel";
 import RepairOrderHeader from "@/components/repair-orders/repair-order-header";
+import RepairOrderInvoicePanel from "@/components/repair-orders/repair-order-invoice-panel";
 import RepairOrderSchedulePanel from "@/components/repair-orders/repair-order-schedule-panel";
 import RepairOrderSummary from "@/components/repair-orders/repair-order-summary";
 import RepairOrderTechnicianPanel from "@/components/repair-orders/repair-order-technician-panel";
@@ -91,6 +92,8 @@ const createRepairOrderInput = (
     cancelledDate: repairOrder.cancelledDate ?? "",
   };
 };
+
+const QBIT_SCOPE = "repair-order-detail";
 
 function createClientId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -798,20 +801,23 @@ export default function RepairOrderWorkspacePage() {
   if (!repairOrder) {
     return (
       <main className="min-h-screen bg-slate-950 p-6 text-white">
-        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-8 shadow-2xl backdrop-blur-xl">
-          <div className="text-sm font-semibold uppercase tracking-[0.25em] text-white/50">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="repair-order-detail-not-found" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-3xl border border-white/10 bg-white/10 p-8 shadow-2xl backdrop-blur-xl">
+          <div data-t1eq-qbit-id="repair-order-detail-not-found-overline" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-semibold uppercase tracking-[0.25em] text-white/50">
             Repair Order Workspace
           </div>
 
-          <h1 className="mt-3 text-3xl font-bold">Repair Order Not Found</h1>
+          <h1 data-t1eq-qbit-id="repair-order-detail-not-found-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-3 text-3xl font-bold">Repair Order Not Found</h1>
 
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-white/60">
+          <p data-t1eq-qbit-id="repair-order-detail-not-found-description" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-3 max-w-2xl text-sm leading-6 text-white/60">
             The requested repair order could not be found in local storage.
           </p>
 
           <button data-t1eq-action-button="true"
             type="button"
             onClick={() => router.push("/repair-orders")}
+            data-t1eq-qbit-id="repair-order-detail-not-found-back"
+            data-t1eq-qbit-type="action-button"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
             className="mt-6 rounded-xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
           >
             Back to Repair Orders
@@ -827,6 +833,9 @@ export default function RepairOrderWorkspacePage() {
         <button data-t1eq-action-button="true"
           type="button"
           onClick={() => router.push("/repair-orders")}
+          data-t1eq-qbit-id="repair-order-detail-back"
+          data-t1eq-qbit-type="action-button"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
           className="rounded-xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
         >
           ← Back to Repair Orders
@@ -840,6 +849,8 @@ export default function RepairOrderWorkspacePage() {
         <RepairOrderSummary repairOrder={repairOrder} />
 
         <RepairOrderBillingSummary repairOrder={repairOrder} />
+
+        <RepairOrderInvoicePanel repairOrder={repairOrder} />
 
         <RepairOrderTechnicianPanel
           repairOrder={repairOrder}
@@ -877,12 +888,12 @@ export default function RepairOrderWorkspacePage() {
 
         <RepairOrderTimeline repairOrder={repairOrder} />
 
-        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="repair-order-detail-action-items" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
           <div className="mb-5 flex flex-col justify-between gap-4 md:flex-row md:items-center">
             <div>
-              <h2 className="text-2xl font-bold text-white">Action Items</h2>
+              <h2 data-t1eq-qbit-id="repair-order-detail-action-items-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-2xl font-bold text-white">Action Items</h2>
 
-              <p className="mt-1 text-sm text-white/60">
+              <p data-t1eq-qbit-id="repair-order-detail-action-items-description" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-1 text-sm text-white/60">
                 Inspection, repair, diagnosis, parts, and recommendation work
                 tied to this repair order.
               </p>
@@ -891,6 +902,9 @@ export default function RepairOrderWorkspacePage() {
             <button data-t1eq-action-button="true"
               type="button"
               onClick={openAddActionItemModal}
+              data-t1eq-qbit-id="repair-order-detail-action-items-add"
+              data-t1eq-qbit-type="action-button"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
               className="rounded-xl border border-blue-400/30 bg-blue-500/20 px-4 py-2 text-sm font-semibold text-blue-100 transition hover:bg-blue-500/30"
             >
               Add Action Item
@@ -929,18 +943,18 @@ function RepairOrderEmployeeSetupPanel({
   onEmployeeProfileChange: (employeeProfileId: string) => void;
 }) {
   return (
-    <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+    <section data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="repair-order-detail-employee-setup" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
       <div className="mb-5 flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.24em] text-orange-300">
+          <p data-t1eq-qbit-id="repair-order-detail-employee-setup-overline" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-xs font-black uppercase tracking-[0.24em] text-orange-300">
             Employee Setup Rules
           </p>
 
-          <h2 className="mt-2 text-2xl font-bold text-white">
+          <h2 data-t1eq-qbit-id="repair-order-detail-employee-setup-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 text-2xl font-bold text-white">
             Labor Control Profile
           </h2>
 
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-white/60">
+          <p data-t1eq-qbit-id="repair-order-detail-employee-setup-description" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 max-w-3xl text-sm leading-6 text-white/60">
             This connects the repair order to the employee setup record. Payroll,
             clocking behavior, customer labor billing, and company metrics stay
             separate even when the same person performs the work.
@@ -949,13 +963,16 @@ function RepairOrderEmployeeSetupPanel({
 
         <div className="w-full lg:w-80">
           <label className="block">
-            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-white/50">
+            <span data-t1eq-qbit-id="repair-order-detail-employee-select-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-[10px] font-black uppercase tracking-[0.18em] text-white/50">
               Assigned Employee Profile
             </span>
 
             <select data-t1eq-field="true"
               value={selectedEmployeeProfile?.id ?? ""}
               onChange={(event) => onEmployeeProfileChange(event.target.value)}
+              data-t1eq-qbit-id="repair-order-detail-employee-select"
+              data-t1eq-qbit-type="field"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
               className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm font-bold text-white outline-none focus:border-orange-400"
             >
               <option value="">
@@ -976,12 +993,12 @@ function RepairOrderEmployeeSetupPanel({
       </div>
 
       {!selectedEmployeeProfile && (
-        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-dashed border-orange-400/30 bg-orange-500/10 p-5">
-          <h3 className="text-sm font-black uppercase tracking-wide text-orange-200">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="repair-order-detail-employee-setup-unlinked" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-2xl border border-dashed border-orange-400/30 bg-orange-500/10 p-5">
+          <h3 data-t1eq-qbit-id="repair-order-detail-employee-setup-unlinked-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-black uppercase tracking-wide text-orange-200">
             No Employee Setup Profile Linked
           </h3>
 
-          <p className="mt-2 text-sm leading-6 text-orange-100/80">
+          <p data-t1eq-qbit-id="repair-order-detail-employee-setup-unlinked-description" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 text-sm leading-6 text-orange-100/80">
             Select an employee profile to let this repair order inherit clocking,
             billing, payroll, and metric rules from Employee Setup.
           </p>
@@ -991,6 +1008,8 @@ function RepairOrderEmployeeSetupPanel({
       {selectedEmployeeProfile && (
         <div className="grid gap-4 xl:grid-cols-4">
           <RuleCard
+            qbitId="repair-order-detail-rule-payroll"
+            qbitScope={QBIT_SCOPE}
             title="Payroll"
             rows={[
               ["Pay Type", selectedEmployeeProfile.payrollSettings.payType],
@@ -1020,6 +1039,8 @@ function RepairOrderEmployeeSetupPanel({
           />
 
           <RuleCard
+            qbitId="repair-order-detail-rule-clocking"
+            qbitScope={QBIT_SCOPE}
             title="Clocking"
             rows={[
               ["Clock In", selectedEmployeeProfile.clockingSettings.clockInRule],
@@ -1045,6 +1066,8 @@ function RepairOrderEmployeeSetupPanel({
           />
 
           <RuleCard
+            qbitId="repair-order-detail-rule-customer-billing"
+            qbitScope={QBIT_SCOPE}
             title="Customer Billing"
             rows={[
               [
@@ -1076,6 +1099,8 @@ function RepairOrderEmployeeSetupPanel({
           />
 
           <RuleCard
+            qbitId="repair-order-detail-rule-metrics"
+            qbitScope={QBIT_SCOPE}
             title="Metrics"
             rows={[
               [
@@ -1134,18 +1159,18 @@ function RepairOrderLaborClockPanel({
   );
 
   return (
-    <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+    <section data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="repair-order-detail-labor-clock" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
       <div className="mb-5 flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.24em] text-orange-300">
+          <p data-t1eq-qbit-id="repair-order-detail-labor-clock-overline" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-xs font-black uppercase tracking-[0.24em] text-orange-300">
             Labor Clock
           </p>
 
-          <h2 className="mt-2 text-2xl font-bold text-white">
+          <h2 data-t1eq-qbit-id="repair-order-detail-labor-clock-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 text-2xl font-bold text-white">
             Employee Rule Clock-In / Clock-Out
           </h2>
 
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-white/60">
+          <p data-t1eq-qbit-id="repair-order-detail-labor-clock-description" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 max-w-3xl text-sm leading-6 text-white/60">
             Clocking creates a labor entry with four separate branches: customer
             billing, payroll, attendance/activity clocking, and company metrics.
           </p>
@@ -1156,6 +1181,9 @@ function RepairOrderLaborClockPanel({
             type="button"
             onClick={onClockIn}
             disabled={!selectedEmployeeProfile || Boolean(activeLaborEntry)}
+            data-t1eq-qbit-id="repair-order-detail-clock-in"
+            data-t1eq-qbit-type="action-button"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
             className="rounded-xl border border-emerald-400/30 bg-emerald-500/20 px-4 py-2 text-sm font-black text-emerald-100 transition hover:bg-emerald-500/30 disabled:cursor-not-allowed disabled:opacity-40"
           >
             Clock In
@@ -1165,6 +1193,9 @@ function RepairOrderLaborClockPanel({
             type="button"
             onClick={onClockOut}
             disabled={!selectedEmployeeProfile || !activeLaborEntry}
+            data-t1eq-qbit-id="repair-order-detail-clock-out"
+            data-t1eq-qbit-type="action-button"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
             className="rounded-xl border border-red-400/30 bg-red-500/20 px-4 py-2 text-sm font-black text-red-100 transition hover:bg-red-500/30 disabled:cursor-not-allowed disabled:opacity-40"
           >
             Clock Out
@@ -1173,7 +1204,7 @@ function RepairOrderLaborClockPanel({
       </div>
 
       {!selectedEmployeeProfile && (
-        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-dashed border-orange-400/30 bg-orange-500/10 p-5 text-sm font-bold leading-6 text-orange-100/80">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="repair-order-detail-labor-clock-unlinked" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-2xl border border-dashed border-orange-400/30 bg-orange-500/10 p-5 text-sm font-bold leading-6 text-orange-100/80">
           Select an employee profile before clocking labor.
         </div>
       )}
@@ -1181,6 +1212,8 @@ function RepairOrderLaborClockPanel({
       {selectedEmployeeProfile && (
         <div className="grid gap-4 xl:grid-cols-4">
           <RuleCard
+            qbitId="repair-order-detail-rule-active-clock"
+            qbitScope={QBIT_SCOPE}
             title="Active Clock"
             rows={[
               [
@@ -1203,6 +1236,8 @@ function RepairOrderLaborClockPanel({
           />
 
           <RuleCard
+            qbitId="repair-order-detail-rule-requirements"
+            qbitScope={QBIT_SCOPE}
             title="Requirements"
             rows={[
               [
@@ -1239,6 +1274,8 @@ function RepairOrderLaborClockPanel({
           />
 
           <RuleCard
+            qbitId="repair-order-detail-rule-billing-output"
+            qbitScope={QBIT_SCOPE}
             title="Billing Output"
             rows={[
               [
@@ -1273,6 +1310,8 @@ function RepairOrderLaborClockPanel({
           />
 
           <RuleCard
+            qbitId="repair-order-detail-rule-payroll-metrics"
+            qbitScope={QBIT_SCOPE}
             title="Payroll / Metrics"
             rows={[
               ["Pay Type", selectedEmployeeProfile.payrollSettings.payType],
@@ -1306,13 +1345,17 @@ function RepairOrderLaborClockPanel({
 function RuleCard({
   title,
   rows,
+  qbitId,
+  qbitScope = "global",
 }: {
   title: string;
   rows: [string, string][];
+  qbitId?: string;
+  qbitScope?: string;
 }) {
   return (
-    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4">
-      <h3 className="text-sm font-black uppercase tracking-wide text-white">
+    <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id={qbitId ? qbitId : undefined} data-t1eq-qbit-type={qbitId ? "page-card" : undefined} data-t1eq-qbit-scope={qbitId ? qbitScope : undefined} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+      <h3 data-t1eq-qbit-id={qbitId ? `${qbitId}-title` : undefined} data-t1eq-qbit-type={qbitId ? "text" : undefined} data-t1eq-qbit-scope={qbitId ? qbitScope : undefined} className="text-sm font-black uppercase tracking-wide text-white">
         {title}
       </h3>
 

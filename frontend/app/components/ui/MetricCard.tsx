@@ -6,6 +6,9 @@ type MetricCardProps = {
   subvalue?: string | number;
   className?: string;
   hoverable?: boolean;
+
+  qbitId?: string;
+  qbitScope?: string;
 };
 
 export default function MetricCard({
@@ -14,23 +17,42 @@ export default function MetricCard({
   subvalue,
   className = "",
   hoverable = false,
+  qbitId,
+  qbitScope = "global",
 }: MetricCardProps) {
   return (
     <Card
       hoverable={hoverable}
+      qbitId={qbitId}
+      qbitScope={qbitScope}
       className={`text-black ${className}`}
     >
       <div className="space-y-2">
-        <div className="text-sm font-semibold uppercase tracking-wide text-black/60">
+        <div
+          data-t1eq-qbit-type={qbitId ? "text" : undefined}
+          data-t1eq-qbit-id={qbitId ? `${qbitId}-label` : undefined}
+          data-t1eq-qbit-scope={qbitId ? qbitScope : undefined}
+          className="text-sm font-semibold uppercase tracking-wide text-black/60"
+        >
           {label}
         </div>
 
-        <div className="text-4xl font-black leading-tight">
+        <div
+          data-t1eq-qbit-type={qbitId ? "text" : undefined}
+          data-t1eq-qbit-id={qbitId ? `${qbitId}-value` : undefined}
+          data-t1eq-qbit-scope={qbitId ? qbitScope : undefined}
+          className="text-4xl font-black leading-tight"
+        >
           {value}
         </div>
 
         {subvalue !== undefined && (
-          <div className="text-sm font-medium text-black/70">
+          <div
+            data-t1eq-qbit-type={qbitId ? "text" : undefined}
+            data-t1eq-qbit-id={qbitId ? `${qbitId}-subvalue` : undefined}
+            data-t1eq-qbit-scope={qbitId ? qbitScope : undefined}
+            className="text-sm font-medium text-black/70"
+          >
             {subvalue}
           </div>
         )}

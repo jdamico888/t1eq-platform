@@ -17,6 +17,9 @@ type SelectProps =
     value: string;
     options: SelectOption[];
     onChange: (value: string) => void;
+
+    qbitId?: string;
+    qbitScope?: string;
   };
 
 export default function Select({
@@ -25,10 +28,15 @@ export default function Select({
   onChange,
   className = "",
   disabled,
+  qbitId,
+  qbitScope = "global",
   ...props
 }: SelectProps) {
   return (
     <select data-t1eq-field="true"
+      data-t1eq-qbit-type={qbitId ? "field" : undefined}
+      data-t1eq-qbit-id={qbitId || undefined}
+      data-t1eq-qbit-scope={qbitId ? qbitScope : undefined}
       value={value}
       disabled={disabled}
       onChange={(event) =>

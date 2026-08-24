@@ -11,6 +11,9 @@ type TextareaProps =
   > & {
     value: string;
     onChange: (value: string) => void;
+
+    qbitId?: string;
+    qbitScope?: string;
   };
 
 export default function Textarea({
@@ -20,10 +23,15 @@ export default function Textarea({
   rows = 4,
   className = "",
   disabled,
+  qbitId,
+  qbitScope = "global",
   ...props
 }: TextareaProps) {
   return (
     <textarea data-t1eq-field="true"
+      data-t1eq-qbit-type={qbitId ? "field" : undefined}
+      data-t1eq-qbit-id={qbitId || undefined}
+      data-t1eq-qbit-scope={qbitId ? qbitScope : undefined}
       value={value}
       rows={rows}
       disabled={disabled}

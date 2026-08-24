@@ -25,6 +25,8 @@ type RepairOrderFormState = {
   status: RepairOrderStatus;
 };
 
+const QBIT_SCOPE = "repair-orders-page";
+
 const emptyForm: RepairOrderFormState = {
   customerName: "",
   siteName: "",
@@ -261,24 +263,46 @@ export default function RepairOrdersPage() {
   return (
     <main className="min-h-screen bg-slate-950 p-6 text-white">
       <div className="mx-auto max-w-7xl space-y-6">
-        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur-xl">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true"
+          data-t1eq-qbit-type="page-card"
+          data-t1eq-qbit-id="repair-orders-page-header"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur-xl">
           <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.28em] text-blue-200">
+              <p
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="repair-orders-page-overline"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="text-xs font-black uppercase tracking-[0.28em] text-blue-200"
+              >
                 Repair Orders
               </p>
 
-              <h1 className="mt-3 text-4xl font-black text-white">
+              <h1
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="repair-orders-page-title"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="mt-3 text-4xl font-black text-white"
+              >
                 Repair Order Command Center
               </h1>
 
-              <p className="mt-3 max-w-3xl text-sm leading-6 text-white/60">
+              <p
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="repair-orders-page-description"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="mt-3 max-w-3xl text-sm leading-6 text-white/60"
+              >
                 Create, open, dispatch, clock labor, capture model/serial
                 evidence, and move repair work through the full service cycle.
               </p>
             </div>
 
             <button data-t1eq-action-button="true"
+              data-t1eq-qbit-type="action-button"
+              data-t1eq-qbit-id="repair-orders-page-toggle-create"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
               type="button"
               onClick={() => setIsCreateOpen((current) => !current)}
               className="rounded-xl border border-blue-400/30 bg-blue-500/20 px-5 py-3 text-sm font-black text-blue-100 transition hover:bg-blue-500/30"
@@ -288,28 +312,69 @@ export default function RepairOrdersPage() {
           </div>
 
           <div className="mt-6 grid gap-4 md:grid-cols-5">
-            <MetricCard label="Total" value={queueCounts.total} />
-            <MetricCard label="Open" value={queueCounts.open} />
-            <MetricCard label="In Progress" value={queueCounts.inProgress} />
-            <MetricCard label="Waiting" value={queueCounts.waiting} />
-            <MetricCard label="Completed" value={queueCounts.completed} />
+            <MetricCard
+              qbitId="repair-orders-page-metric-total"
+              qbitScope={QBIT_SCOPE}
+              label="Total"
+              value={queueCounts.total}
+            />
+            <MetricCard
+              qbitId="repair-orders-page-metric-open"
+              qbitScope={QBIT_SCOPE}
+              label="Open"
+              value={queueCounts.open}
+            />
+            <MetricCard
+              qbitId="repair-orders-page-metric-in-progress"
+              qbitScope={QBIT_SCOPE}
+              label="In Progress"
+              value={queueCounts.inProgress}
+            />
+            <MetricCard
+              qbitId="repair-orders-page-metric-waiting"
+              qbitScope={QBIT_SCOPE}
+              label="Waiting"
+              value={queueCounts.waiting}
+            />
+            <MetricCard
+              qbitId="repair-orders-page-metric-completed"
+              qbitScope={QBIT_SCOPE}
+              label="Completed"
+              value={queueCounts.completed}
+            />
           </div>
         </section>
 
         {isCreateOpen && (
-          <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+          <section data-t1eq-tile="true" data-t1eq-page-card="true"
+            data-t1eq-qbit-type="page-card"
+            data-t1eq-qbit-id="repair-orders-page-create-form"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
             <div className="mb-5">
-              <p className="text-xs font-black uppercase tracking-[0.24em] text-orange-300">
+              <p
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="repair-orders-page-create-form-overline"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="text-xs font-black uppercase tracking-[0.24em] text-orange-300"
+              >
                 New Repair Order
               </p>
 
-              <h2 className="mt-2 text-2xl font-bold text-white">
+              <h2
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="repair-orders-page-create-form-title"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="mt-2 text-2xl font-bold text-white"
+              >
                 Create Service Ticket
               </h2>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <TextField
+                qbitId="repair-orders-page-field-customer-name"
+                qbitScope={QBIT_SCOPE}
                 label="Customer Name"
                 value={form.customerName}
                 onChange={(value) => updateForm("customerName", value)}
@@ -317,18 +382,24 @@ export default function RepairOrdersPage() {
               />
 
               <TextField
+                qbitId="repair-orders-page-field-site-name"
+                qbitScope={QBIT_SCOPE}
                 label="Site / Location"
                 value={form.siteName}
                 onChange={(value) => updateForm("siteName", value)}
               />
 
               <TextField
+                qbitId="repair-orders-page-field-equipment-name"
+                qbitScope={QBIT_SCOPE}
                 label="Equipment Name"
                 value={form.equipmentName}
                 onChange={(value) => updateForm("equipmentName", value)}
               />
 
               <TextField
+                qbitId="repair-orders-page-field-equipment-description"
+                qbitScope={QBIT_SCOPE}
                 label="Equipment Description"
                 value={form.equipmentDescription}
                 onChange={(value) =>
@@ -337,11 +408,19 @@ export default function RepairOrdersPage() {
               />
 
               <label className="block">
-                <span className="text-[10px] font-black uppercase tracking-[0.18em] text-white/50">
+                <span
+                  data-t1eq-qbit-type="text"
+                  data-t1eq-qbit-id="repair-orders-page-field-priority-label"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
+                  className="text-[10px] font-black uppercase tracking-[0.18em] text-white/50"
+                >
                   Priority
                 </span>
 
                 <select data-t1eq-field="true"
+                  data-t1eq-qbit-type="field"
+                  data-t1eq-qbit-id="repair-orders-page-field-priority"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
                   value={form.priority}
                   onChange={(event) =>
                     updateForm(
@@ -360,11 +439,19 @@ export default function RepairOrdersPage() {
               </label>
 
               <label className="block">
-                <span className="text-[10px] font-black uppercase tracking-[0.18em] text-white/50">
+                <span
+                  data-t1eq-qbit-type="text"
+                  data-t1eq-qbit-id="repair-orders-page-field-status-label"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
+                  className="text-[10px] font-black uppercase tracking-[0.18em] text-white/50"
+                >
                   Starting Status
                 </span>
 
                 <select data-t1eq-field="true"
+                  data-t1eq-qbit-type="field"
+                  data-t1eq-qbit-id="repair-orders-page-field-status"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
                   value={form.status}
                   onChange={(event) =>
                     updateForm(
@@ -381,11 +468,19 @@ export default function RepairOrdersPage() {
               </label>
 
               <label className="block md:col-span-2">
-                <span className="text-[10px] font-black uppercase tracking-[0.18em] text-white/50">
+                <span
+                  data-t1eq-qbit-type="text"
+                  data-t1eq-qbit-id="repair-orders-page-field-complaint-label"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
+                  className="text-[10px] font-black uppercase tracking-[0.18em] text-white/50"
+                >
                   Complaint / Customer Concern
                 </span>
 
                 <textarea data-t1eq-field="true"
+                  data-t1eq-qbit-type="field"
+                  data-t1eq-qbit-id="repair-orders-page-field-complaint"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
                   value={form.complaint}
                   onChange={(event) =>
                     updateForm("complaint", event.target.value)
@@ -399,6 +494,9 @@ export default function RepairOrdersPage() {
 
             <div className="mt-5 flex flex-wrap gap-3">
               <button data-t1eq-action-button="true"
+                data-t1eq-qbit-type="action-button"
+                data-t1eq-qbit-id="repair-orders-page-create-submit"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 type="button"
                 onClick={handleCreateRepairOrder}
                 className="rounded-xl border border-emerald-400/30 bg-emerald-500/20 px-5 py-3 text-sm font-black text-emerald-100 transition hover:bg-emerald-500/30"
@@ -407,6 +505,9 @@ export default function RepairOrdersPage() {
               </button>
 
               <button data-t1eq-action-button="true"
+                data-t1eq-qbit-type="action-button"
+                data-t1eq-qbit-id="repair-orders-page-create-reset"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 type="button"
                 onClick={resetForm}
                 className="rounded-xl border border-white/10 bg-white/10 px-5 py-3 text-sm font-black text-white transition hover:bg-white/20"
@@ -417,9 +518,16 @@ export default function RepairOrdersPage() {
           </section>
         )}
 
-        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true"
+          data-t1eq-qbit-type="page-card"
+          data-t1eq-qbit-id="repair-orders-page-list"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
           <div className="mb-5 grid gap-4 lg:grid-cols-[1fr_260px]">
             <input data-t1eq-field="true"
+              data-t1eq-qbit-type="field"
+              data-t1eq-qbit-id="repair-orders-page-search"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               className="rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-sm font-bold text-white outline-none placeholder:text-white/30 focus:border-blue-400"
@@ -427,6 +535,9 @@ export default function RepairOrdersPage() {
             />
 
             <select data-t1eq-field="true"
+              data-t1eq-qbit-type="field"
+              data-t1eq-qbit-id="repair-orders-page-status-filter"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
               value={statusFilter}
               onChange={(event) =>
                 setStatusFilter(event.target.value as "All" | RepairOrderStatus)
@@ -441,7 +552,11 @@ export default function RepairOrdersPage() {
             </select>
           </div>
 
-          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="overflow-hidden rounded-2xl border border-white/10">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true"
+            data-t1eq-qbit-type="section"
+            data-t1eq-qbit-id="repair-orders-page-table"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="overflow-hidden rounded-2xl border border-white/10">
             <table className="w-full border-collapse text-left text-sm">
               <thead className="bg-white/10 text-[10px] font-black uppercase tracking-[0.18em] text-white/50">
                 <tr>
@@ -458,7 +573,11 @@ export default function RepairOrdersPage() {
 
               <tbody className="divide-y divide-white/10">
                 {filteredRepairOrders.map((repairOrder) => (
-                  <tr key={repairOrder.id} className="hover:bg-white/5">
+                  <tr key={repairOrder.id}
+                    data-t1eq-qbit-type="tile"
+                    data-t1eq-qbit-id={`repair-order-${repairOrder.id}`}
+                    data-t1eq-qbit-scope={QBIT_SCOPE}
+                    className="hover:bg-white/5">
                     <td className="px-4 py-4 font-black text-blue-100">
                       {repairOrder.repairOrderNumber}
                     </td>
@@ -482,7 +601,11 @@ export default function RepairOrdersPage() {
                     </td>
 
                     <td className="px-4 py-4">
-                      <span data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-black text-white">
+                      <span data-t1eq-tile="true" data-t1eq-page-card="true"
+                        data-t1eq-qbit-type="text"
+                        data-t1eq-qbit-id={`repair-order-${repairOrder.id}-status`}
+                        data-t1eq-qbit-scope={QBIT_SCOPE}
+                        className="rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-black text-white">
                         {repairOrder.status}
                       </span>
                     </td>
@@ -502,6 +625,9 @@ export default function RepairOrdersPage() {
                     <td className="px-4 py-4">
                       <div className="flex justify-end gap-2">
                         <button data-t1eq-action-button="true"
+                          data-t1eq-qbit-type="action-button"
+                          data-t1eq-qbit-id={`repair-order-${repairOrder.id}-open`}
+                          data-t1eq-qbit-scope={QBIT_SCOPE}
                           type="button"
                           onClick={() =>
                             router.push(`/repair-orders/${repairOrder.id}`)
@@ -512,6 +638,9 @@ export default function RepairOrdersPage() {
                         </button>
 
                         <button data-t1eq-action-button="true"
+                          data-t1eq-qbit-type="action-button"
+                          data-t1eq-qbit-id={`repair-order-${repairOrder.id}-delete`}
+                          data-t1eq-qbit-scope={QBIT_SCOPE}
                           type="button"
                           onClick={() => handleDeleteRepairOrder(repairOrder)}
                           className="rounded-lg border border-red-400/30 bg-red-500/20 px-3 py-2 text-xs font-black text-red-100 transition hover:bg-red-500/30"
@@ -542,13 +671,39 @@ export default function RepairOrdersPage() {
   );
 }
 
-function MetricCard({ label, value }: { label: string; value: number }) {
+function MetricCard({
+  label,
+  value,
+  qbitId,
+  qbitScope = "global",
+}: {
+  label: string;
+  value: number;
+  qbitId?: string;
+  qbitScope?: string;
+}) {
   return (
-    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4">
-      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/40">
+    <div data-t1eq-tile="true" data-t1eq-page-card="true"
+      data-t1eq-qbit-type={qbitId ? "page-card" : undefined}
+      data-t1eq-qbit-id={qbitId || undefined}
+      data-t1eq-qbit-scope={qbitId ? qbitScope : undefined}
+      className="rounded-2xl border border-white/10 bg-black/20 p-4">
+      <p
+        data-t1eq-qbit-type={qbitId ? "text" : undefined}
+        data-t1eq-qbit-id={qbitId ? `${qbitId}-label` : undefined}
+        data-t1eq-qbit-scope={qbitId ? qbitScope : undefined}
+        className="text-[10px] font-black uppercase tracking-[0.18em] text-white/40"
+      >
         {label}
       </p>
-      <p className="mt-2 text-3xl font-black text-white">{value}</p>
+      <p
+        data-t1eq-qbit-type={qbitId ? "text" : undefined}
+        data-t1eq-qbit-id={qbitId ? `${qbitId}-value` : undefined}
+        data-t1eq-qbit-scope={qbitId ? qbitScope : undefined}
+        className="mt-2 text-3xl font-black text-white"
+      >
+        {value}
+      </p>
     </div>
   );
 }
@@ -558,20 +713,32 @@ function TextField({
   value,
   onChange,
   required,
+  qbitId,
+  qbitScope = "global",
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   required?: boolean;
+  qbitId?: string;
+  qbitScope?: string;
 }) {
   return (
     <label className="block">
-      <span className="text-[10px] font-black uppercase tracking-[0.18em] text-white/50">
+      <span
+        data-t1eq-qbit-type={qbitId ? "text" : undefined}
+        data-t1eq-qbit-id={qbitId ? `${qbitId}-label` : undefined}
+        data-t1eq-qbit-scope={qbitId ? qbitScope : undefined}
+        className="text-[10px] font-black uppercase tracking-[0.18em] text-white/50"
+      >
         {label}
         {required ? " *" : ""}
       </span>
 
       <input data-t1eq-field="true"
+        data-t1eq-qbit-type={qbitId ? "field" : undefined}
+        data-t1eq-qbit-id={qbitId || undefined}
+        data-t1eq-qbit-scope={qbitId ? qbitScope : undefined}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-3 text-sm font-bold text-white outline-none placeholder:text-white/30 focus:border-blue-400"

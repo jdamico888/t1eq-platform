@@ -1,11 +1,24 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 
-import type { Invoice } from "@/types/invoice";
+import type { Invoice, InvoiceStatus } from "@/types/invoice";
 
 import { getInvoices } from "@/services/invoices";
+
+const QBIT_SCOPE = "invoices-list";
+
+const INVOICE_STATUSES: InvoiceStatus[] = [
+  "Draft",
+  "Open",
+  "Issued",
+  "Partial",
+  "Paid",
+  "Overdue",
+  "Cancelled",
+  "Void",
+];
 
 const formatCurrency = (value: number) => {
   return value.toLocaleString(undefined, {
@@ -28,332 +41,416 @@ const formatDate = (value?: string) => {
   return date.toLocaleDateString();
 };
 
-export default function InvoiceDetailPage() {
-  const params = useParams();
-  const router = useRouter();
+function isClosedStatus(status: InvoiceStatus) {
+  return status === "Paid" || status === "Void" || status === "Cancelled";
+}
 
-  const invoiceId = useMemo(() => {
-    const id = params?.id;
+function isInvoiceOverdue(invoice: Invoice) {
+  if (isClosedStatus(invoice.status)) {
+    return false;
+  }
 
-    if (Array.isArray(id)) {
-      return id[0] ?? "";
-    }
+  if (invoice.status === "Overdue") {
+    return true;
+  }
 
-    return id ?? "";
-  }, [params]);
+  if (!invoice.dueDate || invoice.balanceDue <= 0) {
+    return false;
+  }
 
-  const [invoice, setInvoice] = useState<Invoice | null>(null);
+  const dueDate = new Date(invoice.dueDate);
+
+  return !Number.isNaN(dueDate.getTime()) && dueDate.getTime() < Date.now();
+}
+
+function getStatusBadgeClass(status: InvoiceStatus) {
+  if (status === "Paid") {
+    return "border-emerald-400/30 bg-emerald-500/15 text-emerald-200";
+  }
+
+  if (status === "Overdue") {
+    return "border-red-400/30 bg-red-500/15 text-red-200";
+  }
+
+  if (status === "Partial") {
+    return "border-amber-400/30 bg-amber-500/15 text-amber-200";
+  }
+
+  if (status === "Void" || status === "Cancelled") {
+    return "border-white/10 bg-white/5 text-white/50";
+  }
+
+  if (status === "Issued" || status === "Open") {
+    return "border-blue-400/30 bg-blue-500/15 text-blue-200";
+  }
+
+  return "border-white/10 bg-white/10 text-white/70";
+}
+
+export default function InvoicesListPage() {
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"All" | InvoiceStatus>(
+    "All"
+  );
 
   useEffect(() => {
-    const invoices = getInvoices();
+    refreshData();
 
-    const selectedInvoice =
-      invoices.find((item) => item.id === invoiceId) ??
-      invoices.find((item) => item.invoiceNumber === invoiceId) ??
-      null;
+    function handleInvoicesChanged() {
+      refreshData();
+    }
 
-    setInvoice(selectedInvoice);
-  }, [invoiceId]);
+    window.addEventListener("t1eq-invoices-changed", handleInvoicesChanged);
 
-  if (!invoice) {
-    return (
-      <main className="min-h-screen bg-slate-950 p-6 text-white">
-        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-8 shadow-2xl backdrop-blur-xl">
-          <div className="text-sm font-semibold uppercase tracking-[0.25em] text-white/50">
-            Invoice
-          </div>
+    return () => {
+      window.removeEventListener(
+        "t1eq-invoices-changed",
+        handleInvoicesChanged
+      );
+    };
+  }, []);
 
-          <h1 className="mt-3 text-3xl font-bold">Invoice Not Found</h1>
-
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-white/60">
-            The requested invoice could not be found in local storage.
-          </p>
-
-          <button data-t1eq-action-button="true"
-            type="button"
-            onClick={() => router.push("/invoices")}
-            className="mt-6 rounded-xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
-          >
-            Back to Invoices
-          </button>
-        </div>
-      </main>
-    );
+  function refreshData() {
+    setInvoices(getInvoices());
   }
+
+  const filteredInvoices = useMemo(() => {
+    const normalizedSearch = searchTerm.trim().toLowerCase();
+
+    return invoices
+      .filter((invoice) => {
+        if (statusFilter === "All") {
+          return true;
+        }
+
+        return invoice.status === statusFilter;
+      })
+      .filter((invoice) => {
+        if (!normalizedSearch) {
+          return true;
+        }
+
+        return (
+          invoice.invoiceNumber.toLowerCase().includes(normalizedSearch) ||
+          invoice.customerName.toLowerCase().includes(normalizedSearch) ||
+          (invoice.repairOrderNumber ?? "")
+            .toLowerCase()
+            .includes(normalizedSearch) ||
+          invoice.status.toLowerCase().includes(normalizedSearch)
+        );
+      })
+      .sort((a, b) => b.createdDate.localeCompare(a.createdDate));
+  }, [invoices, searchTerm, statusFilter]);
+
+  const metrics = useMemo(() => {
+    const outstandingBalance = invoices
+      .filter((invoice) => !isClosedStatus(invoice.status))
+      .reduce((total, invoice) => total + invoice.balanceDue, 0);
+
+    const totalInvoiced = invoices.reduce(
+      (total, invoice) => total + invoice.totalAmount,
+      0
+    );
+
+    const overdueCount = invoices.filter(isInvoiceOverdue).length;
+
+    return {
+      count: invoices.length,
+      totalInvoiced,
+      outstandingBalance,
+      overdueCount,
+    };
+  }, [invoices]);
 
   return (
     <main className="min-h-screen bg-slate-950 p-6 text-white">
-      <div className="mx-auto max-w-6xl space-y-6">
-        <button data-t1eq-action-button="true"
-          type="button"
-          onClick={() => router.push("/invoices")}
-          className="rounded-xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
+      <div className="mx-auto max-w-7xl space-y-6">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true"
+          data-t1eq-qbit-type="page-card"
+          data-t1eq-qbit-id="invoices-list-header"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl"
         >
-          ← Back to Invoices
-        </button>
+          <div
+            data-t1eq-qbit-type="text"
+            data-t1eq-qbit-id="invoices-list-overline"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="text-sm font-semibold uppercase tracking-[0.25em] text-white/50"
+          >
+            Billing
+          </div>
 
-        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
-          <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
-            <div>
-              <div className="text-sm font-semibold uppercase tracking-[0.25em] text-white/50">
-                Invoice
+          <h1
+            data-t1eq-qbit-type="text"
+            data-t1eq-qbit-id="invoices-list-title"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="mt-2 text-4xl font-bold text-white"
+          >
+            Invoices
+          </h1>
+
+          <p
+            data-t1eq-qbit-type="text"
+            data-t1eq-qbit-id="invoices-list-description"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="mt-2 max-w-2xl text-sm leading-6 text-white/60"
+          >
+            Invoices generated from repair orders. Open a repair order and
+            use "Generate Invoice" to create one.
+          </p>
+        </section>
+
+        <section
+          data-t1eq-qbit-type="section"
+          data-t1eq-qbit-id="invoices-list-metrics"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className="grid gap-4 md:grid-cols-4"
+        >
+          <MetricCard
+            qbitId="invoices-list-metric-count"
+            qbitScope={QBIT_SCOPE}
+            label="Total Invoices"
+            value={metrics.count.toString()}
+          />
+
+          <MetricCard
+            qbitId="invoices-list-metric-invoiced"
+            qbitScope={QBIT_SCOPE}
+            label="Total Invoiced"
+            value={formatCurrency(metrics.totalInvoiced)}
+          />
+
+          <MetricCard
+            qbitId="invoices-list-metric-outstanding"
+            qbitScope={QBIT_SCOPE}
+            label="Outstanding Balance"
+            value={formatCurrency(metrics.outstandingBalance)}
+          />
+
+          <MetricCard
+            qbitId="invoices-list-metric-overdue"
+            qbitScope={QBIT_SCOPE}
+            label="Overdue"
+            value={metrics.overdueCount.toString()}
+            tone={metrics.overdueCount > 0 ? "danger" : undefined}
+          />
+        </section>
+
+        <section data-t1eq-tile="true" data-t1eq-page-card="true"
+          data-t1eq-qbit-type="page-card"
+          data-t1eq-qbit-id="invoices-list-filters"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl"
+        >
+          <div className="grid gap-4 md:grid-cols-3">
+            <label className="space-y-1 md:col-span-2">
+              <span className="text-sm font-semibold text-white/70">
+                Search Invoices
+              </span>
+
+              <input data-t1eq-field="true"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-id="invoices-list-search"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder="Search invoice #, customer, RO #, status..."
+                className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-white outline-none transition focus:border-white/30 focus:ring-2 focus:ring-white/10"
+              />
+            </label>
+
+            <label className="space-y-1">
+              <span className="text-sm font-semibold text-white/70">
+                Status
+              </span>
+
+              <select data-t1eq-field="true"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-id="invoices-list-status-filter"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                value={statusFilter}
+                onChange={(event) =>
+                  setStatusFilter(event.target.value as "All" | InvoiceStatus)
+                }
+                className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-white outline-none transition focus:border-white/30 focus:ring-2 focus:ring-white/10"
+              >
+                <option value="All">All</option>
+
+                {INVOICE_STATUSES.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </section>
+
+        <section data-t1eq-tile="true" data-t1eq-page-card="true"
+          data-t1eq-qbit-type="page-card"
+          data-t1eq-qbit-id="invoices-list-table-section"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl"
+        >
+          <h2
+            data-t1eq-qbit-type="text"
+            data-t1eq-qbit-id="invoices-list-table-title"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="text-2xl font-bold text-white"
+          >
+            {filteredInvoices.length} Invoice
+            {filteredInvoices.length === 1 ? "" : "s"}
+          </h2>
+
+          {filteredInvoices.length === 0 ? (
+            <div data-t1eq-tile="true" data-t1eq-page-card="true"
+              data-t1eq-qbit-type="page-card"
+              data-t1eq-qbit-id="invoices-list-empty"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-5 rounded-2xl border border-dashed border-white/10 bg-black/10 p-10 text-center"
+            >
+              <div className="text-xl font-bold text-white">
+                No invoices found
               </div>
-
-              <h1 className="mt-2 text-4xl font-bold text-white">
-                {invoice.invoiceNumber}
-              </h1>
 
               <p className="mt-2 text-white/60">
-                {invoice.customerName}
-              </p>
-
-              <p className="mt-1 text-sm text-white/40">
-                RO:{" "}
-                {invoice.repairOrderNumber ??
-                  invoice.repairOrderId ??
-                  "Not assigned"}
+                {invoices.length === 0
+                  ? "No invoices have been generated yet. Open a repair order and use \"Generate Invoice.\""
+                  : "Try a different search or status filter."}
               </p>
             </div>
+          ) : (
+            <div data-t1eq-tile="true" data-t1eq-page-card="true"
+              data-t1eq-qbit-type="section"
+              data-t1eq-qbit-id="invoices-list-table"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-5 overflow-hidden rounded-2xl border border-white/10"
+            >
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-white/10 text-white/70">
+                    <tr>
+                      <th className="p-3">Invoice #</th>
+                      <th className="p-3">Customer</th>
+                      <th className="p-3">RO #</th>
+                      <th className="p-3">Status</th>
+                      <th className="p-3 text-right">Total</th>
+                      <th className="p-3 text-right">Balance Due</th>
+                      <th className="p-3">Issued</th>
+                      <th className="p-3">Due</th>
+                    </tr>
+                  </thead>
 
-            <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4 text-right">
-              <div className="text-xs uppercase tracking-wide text-white/50">
-                Total
-              </div>
+                  <tbody>
+                    {filteredInvoices.map((invoice) => (
+                      <tr
+                        key={invoice.id}
+                        data-t1eq-qbit-type="tile"
+                        data-t1eq-qbit-id={`invoices-list-row-${invoice.id}`}
+                        data-t1eq-qbit-scope={QBIT_SCOPE}
+                        className="border-t border-white/10 align-top transition hover:bg-white/5"
+                      >
+                        <td className="p-3">
+                          <Link
+                            href={`/invoices/${invoice.id}`}
+                            data-t1eq-qbit-type="action-button"
+                            data-t1eq-qbit-id={`invoices-list-row-${invoice.id}-link`}
+                            data-t1eq-qbit-scope={QBIT_SCOPE}
+                            className="font-semibold text-blue-200 hover:underline"
+                          >
+                            {invoice.invoiceNumber}
+                          </Link>
+                        </td>
 
-              <div className="mt-1 text-3xl font-bold text-white">
-                {formatCurrency(invoice.totalAmount)}
-              </div>
+                        <td className="p-3 text-white">
+                          {invoice.customerName}
+                        </td>
 
-              <div className="mt-2 text-sm text-white/60">
-                {invoice.status}
-              </div>
+                        <td className="p-3 text-white/70">
+                          {invoice.repairOrderNumber ?? "—"}
+                        </td>
 
-              <div className="mt-1 text-xs text-white/40">
-                Balance Due: {formatCurrency(invoice.balanceDue)}
+                        <td className="p-3">
+                          <span
+                            className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${getStatusBadgeClass(
+                              invoice.status
+                            )}`}
+                          >
+                            {isInvoiceOverdue(invoice) &&
+                            invoice.status !== "Overdue"
+                              ? "Overdue"
+                              : invoice.status}
+                          </span>
+                        </td>
+
+                        <td className="p-3 text-right font-semibold text-white">
+                          {formatCurrency(invoice.totalAmount)}
+                        </td>
+
+                        <td className="p-3 text-right text-white">
+                          {formatCurrency(invoice.balanceDue)}
+                        </td>
+
+                        <td className="p-3 text-white/60">
+                          {formatDate(invoice.issuedDate ?? invoice.invoiceDate)}
+                        </td>
+
+                        <td className="p-3 text-white/60">
+                          {formatDate(invoice.dueDate)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
-          </div>
+          )}
         </section>
-
-        <section className="grid gap-4 md:grid-cols-4">
-          <SummaryCard
-            label="Labor"
-            value={formatCurrency(invoice.subtotalLabor)}
-          />
-
-          <SummaryCard
-            label="Parts"
-            value={formatCurrency(invoice.subtotalParts)}
-          />
-
-          <SummaryCard
-            label="Travel / Misc / Other"
-            value={formatCurrency(invoice.subtotalOther)}
-          />
-
-          <SummaryCard
-            label="Tax"
-            value={formatCurrency(invoice.taxAmount)}
-          />
-        </section>
-
-        <section className="grid gap-4 md:grid-cols-3">
-          <SummaryCard
-            label="Issued Date"
-            value={formatDate(invoice.issuedDate ?? invoice.invoiceDate)}
-          />
-
-          <SummaryCard
-            label="Due Date"
-            value={formatDate(invoice.dueDate)}
-          />
-
-          <SummaryCard
-            label="Paid Date"
-            value={formatDate(invoice.paidDate)}
-          />
-        </section>
-
-        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
-          <h2 className="text-2xl font-bold text-white">
-            Invoice Details
-          </h2>
-
-          <div className="mt-5 grid gap-4 md:grid-cols-2">
-            <DetailBlock label="Customer ID" value={invoice.customerId} />
-
-            <DetailBlock
-              label="Repair Order"
-              value={
-                invoice.repairOrderNumber ??
-                invoice.repairOrderId ??
-                "Not assigned"
-              }
-            />
-
-            <DetailBlock
-              label="Site"
-              value={invoice.siteName ?? "Not assigned"}
-            />
-
-            <DetailBlock
-              label="Equipment"
-              value={invoice.equipmentName ?? "Not assigned"}
-            />
-          </div>
-        </section>
-
-        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
-          <h2 className="text-2xl font-bold text-white">
-            Line Items
-          </h2>
-
-          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-5 overflow-hidden rounded-2xl border border-white/10">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-white/10 text-white/70">
-                <tr>
-                  <th className="p-3">Type</th>
-                  <th className="p-3">Description</th>
-                  <th className="p-3">Source</th>
-                  <th className="p-3 text-right">Qty</th>
-                  <th className="p-3 text-right">Unit Price</th>
-                  <th className="p-3 text-right">Total</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {invoice.lineItems.length === 0 && (
-                  <tr>
-                    <td
-                      colSpan={6}
-                      className="border-t border-white/10 p-6 text-center text-white/50"
-                    >
-                      No invoice line items.
-                    </td>
-                  </tr>
-                )}
-
-                {invoice.lineItems.map((lineItem) => (
-                  <tr
-                    key={lineItem.id}
-                    className="border-t border-white/10 align-top"
-                  >
-                    <td className="p-3 text-white">
-                      {lineItem.type}
-                    </td>
-
-                    <td className="p-3 text-white">
-                      <div>{lineItem.description}</div>
-
-                      {lineItem.notes && (
-                        <div className="mt-1 text-xs leading-5 text-white/50">
-                          {lineItem.notes}
-                        </div>
-                      )}
-                    </td>
-
-                    <td className="p-3 text-white/70">
-                      {lineItem.sourceType ?? "Manual"}
-                    </td>
-
-                    <td className="p-3 text-right text-white">
-                      {lineItem.quantity}
-                    </td>
-
-                    <td className="p-3 text-right text-white">
-                      {formatCurrency(lineItem.unitPrice)}
-                    </td>
-
-                    <td className="p-3 text-right font-semibold text-white">
-                      {formatCurrency(lineItem.total)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
-          <div className="ml-auto max-w-sm space-y-3">
-            <TotalRow label="Labor" value={invoice.subtotalLabor} />
-            <TotalRow label="Parts" value={invoice.subtotalParts} />
-            <TotalRow label="Other" value={invoice.subtotalOther} />
-            <TotalRow label="Subtotal" value={invoice.subtotal} />
-            <TotalRow label="Tax" value={invoice.taxAmount} />
-
-            <div className="flex justify-between border-t border-white/10 pt-3 text-xl font-bold text-white">
-              <span>Total</span>
-              <span>{formatCurrency(invoice.totalAmount)}</span>
-            </div>
-          </div>
-        </section>
-
-        {invoice.notes && (
-          <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
-            <h2 className="text-2xl font-bold text-white">Notes</h2>
-
-            <p className="mt-3 text-sm leading-6 text-white/70">
-              {invoice.notes}
-            </p>
-          </section>
-        )}
       </div>
     </main>
   );
 }
 
-function SummaryCard({
+function MetricCard({
   label,
   value,
+  tone,
+  qbitId,
+  qbitScope = "global",
 }: {
   label: string;
   value: string;
+  tone?: "danger";
+  qbitId?: string;
+  qbitScope?: string;
 }) {
   return (
-    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-white/5 p-5">
-      <div className="text-xs uppercase tracking-wide text-white/50">
+    <div data-t1eq-tile="true" data-t1eq-page-card="true"
+      data-t1eq-qbit-type={qbitId ? "page-card" : undefined}
+      data-t1eq-qbit-id={qbitId || undefined}
+      data-t1eq-qbit-scope={qbitId ? qbitScope : undefined}
+      className={`rounded-2xl border p-5 ${
+        tone === "danger"
+          ? "border-red-400/30 bg-red-500/10"
+          : "border-white/10 bg-white/5"
+      }`}
+    >
+      <div
+        className={`text-xs uppercase tracking-wide ${
+          tone === "danger" ? "text-red-200/80" : "text-white/50"
+        }`}
+      >
         {label}
       </div>
 
-      <div className="mt-2 text-lg font-semibold text-white">
+      <div
+        className={`mt-2 text-2xl font-bold ${
+          tone === "danger" ? "text-red-100" : "text-white"
+        }`}
+      >
         {value}
       </div>
-    </div>
-  );
-}
-
-function DetailBlock({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div>
-      <div className="text-xs uppercase tracking-wide text-white/50">
-        {label}
-      </div>
-
-      <div className="mt-1 text-white">
-        {value}
-      </div>
-    </div>
-  );
-}
-
-function TotalRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: number;
-}) {
-  return (
-    <div className="flex justify-between text-white/70">
-      <span>{label}</span>
-      <span>{formatCurrency(value)}</span>
     </div>
   );
 }

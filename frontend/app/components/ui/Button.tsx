@@ -16,6 +16,9 @@ type ButtonProps =
     children: ReactNode;
     variant?: ButtonVariant;
     fullWidth?: boolean;
+
+    qbitId?: string;
+    qbitScope?: string;
   };
 
 export default function Button({
@@ -25,6 +28,8 @@ export default function Button({
   className = "",
   disabled,
   type = "button",
+  qbitId,
+  qbitScope = "global",
   ...props
 }: ButtonProps) {
   const variantClasses: Record<ButtonVariant, string> = {
@@ -46,6 +51,9 @@ export default function Button({
       type={type}
       disabled={disabled}
       data-t1eq-action-button="true"
+      data-t1eq-qbit-type={qbitId ? "action-button" : undefined}
+      data-t1eq-qbit-id={qbitId || undefined}
+      data-t1eq-qbit-scope={qbitId ? qbitScope : undefined}
       className={`
         rounded-xl
         border

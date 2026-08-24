@@ -71,6 +71,15 @@ export type Invoice = {
   repairOrderNumber?: string;
   repairOrderRO?: string;
 
+  /**
+   * Set when this invoice was generated directly from an appointment
+   * (ScheduleEvent) rather than from a Repair Order. Appointments must pass
+   * the invoicing gate in services/schedule-event-invoicing.ts before an
+   * invoice can be generated from them.
+   */
+  scheduleEventId?: string;
+  scheduleEventTitle?: string;
+
   customerId: string;
   customerName: string;
   customer?: string;

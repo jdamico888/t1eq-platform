@@ -11,6 +11,9 @@ type InputProps =
   > & {
     value: string | number;
     onChange: (value: string) => void;
+
+    qbitId?: string;
+    qbitScope?: string;
   };
 
 export default function Input({
@@ -20,10 +23,15 @@ export default function Input({
   placeholder = "",
   className = "",
   disabled,
+  qbitId,
+  qbitScope = "global",
   ...props
 }: InputProps) {
   return (
     <input data-t1eq-field="true"
+      data-t1eq-qbit-type={qbitId ? "field" : undefined}
+      data-t1eq-qbit-id={qbitId || undefined}
+      data-t1eq-qbit-scope={qbitId ? qbitScope : undefined}
       type={type}
       value={value}
       disabled={disabled}

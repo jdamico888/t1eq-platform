@@ -15,6 +15,9 @@ import {
   updateTechnicianProfile,
 } from "@/services/technician-profiles";
 
+import { getRolePermissionsSettings } from "@/services/role-permissions";
+import type { Role as PermissionRole } from "@/types/role-permissions";
+
 import { employeeVacationAccrualMethodOptions } from "@/types/employee-schedule";
 
 import type {
@@ -73,6 +76,8 @@ function getDisplayName(employee: EmployeeProfileInput): string {
   return fullName || "Unnamed Employee";
 }
 
+const QBIT_SCOPE = "employees";
+
 function openEmployeeSchedule(employeeProfileId: string) {
   const query = new URLSearchParams({
     employeeProfileId,
@@ -91,6 +96,9 @@ export default function EmployeesPage() {
   );
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<"All" | EmployeeRole>("All");
+  const [permissionRoles, setPermissionRoles] = useState<PermissionRole[]>(
+    []
+  );
   const [postSaveAction, setPostSaveAction] = useState<PostSaveAction>(
     "Stay on Employee Setup"
   );
@@ -114,6 +122,7 @@ export default function EmployeesPage() {
 
   useEffect(() => {
     loadEmployees();
+    setPermissionRoles(getRolePermissionsSettings().roles);
 
     function handleProfileChange() {
       loadEmployees();
@@ -431,14 +440,14 @@ export default function EmployeesPage() {
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-8 text-white">
       <div className="mx-auto max-w-7xl space-y-6">
-        <header data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/30">
-          <p className="text-xs font-black uppercase tracking-[0.26em] text-orange-300">
+        <header data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="employees-header" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/30">
+          <p data-t1eq-qbit-id="employees-overline" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-xs font-black uppercase tracking-[0.26em] text-orange-300">
             Employee Setup
           </p>
-          <h1 className="mt-2 text-4xl font-black tracking-tight">
+          <h1 data-t1eq-qbit-id="employees-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 text-4xl font-black tracking-tight">
             Employees
           </h1>
-          <p className="mt-3 max-w-4xl text-sm font-semibold leading-6 text-slate-300">
+          <p data-t1eq-qbit-id="employees-description" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-3 max-w-4xl text-sm font-semibold leading-6 text-slate-300">
             Configure employees by role. Technician is a subgroup of employee
             setup, not a separate parent module. Pay structure, clocking rules,
             customer labor billing, company metrics, and vacation parameters are
@@ -451,6 +460,9 @@ export default function EmployeesPage() {
           <button data-t1eq-action-button="true"
             type="button"
             onClick={() => setRoleFilter("All")}
+            data-t1eq-qbit-id="employees-role-filter-all"
+            data-t1eq-qbit-type="action-button"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
             className={`rounded-2xl border p-4 text-left transition ${
               roleFilter === "All"
                 ? "border-orange-400 bg-orange-500/15"
@@ -468,6 +480,9 @@ export default function EmployeesPage() {
               key={item.role}
               type="button"
               onClick={() => setRoleFilter(item.role)}
+              data-t1eq-qbit-id={`employees-role-filter-${item.role.replace(/\s+/g, "-").toLowerCase()}`}
+              data-t1eq-qbit-type="action-button"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
               className={`rounded-2xl border p-4 text-left transition ${
                 roleFilter === item.role
                   ? "border-orange-400 bg-orange-500/15"
@@ -483,19 +498,19 @@ export default function EmployeesPage() {
         </section>
 
         <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-          <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/[0.04] p-5 shadow-2xl shadow-black/30">
+          <section data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="employees-form" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-3xl border border-white/10 bg-white/[0.04] p-5 shadow-2xl shadow-black/30">
             <div className="mb-5">
-              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-orange-300">
+              <p data-t1eq-qbit-id="employees-form-mode" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-[10px] font-black uppercase tracking-[0.22em] text-orange-300">
                 {editingEmployeeId ? "Edit Employee" : "Create Employee"}
               </p>
-              <h2 className="mt-1 text-2xl font-black">
+              <h2 data-t1eq-qbit-id="employees-form-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-1 text-2xl font-black">
                 {getDisplayName(formData)}
               </h2>
             </div>
 
             <form className="space-y-6" onSubmit={handleSubmit}>
-              <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                <h3 className="text-sm font-black uppercase tracking-wide text-white">
+              <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="employees-form-identity" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <h3 data-t1eq-qbit-id="employees-form-identity-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-black uppercase tracking-wide text-white">
                   Identity / Role
                 </h3>
 
@@ -505,6 +520,8 @@ export default function EmployeesPage() {
                     name="firstName"
                     value={formData.firstName}
                     onChange={handleBasicFieldChange}
+                    qbitId="employees-form-first-name"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <InputField
@@ -512,6 +529,8 @@ export default function EmployeesPage() {
                     name="lastName"
                     value={formData.lastName}
                     onChange={handleBasicFieldChange}
+                    qbitId="employees-form-last-name"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <InputField
@@ -519,6 +538,8 @@ export default function EmployeesPage() {
                     name="displayName"
                     value={formData.displayName}
                     onChange={handleBasicFieldChange}
+                    qbitId="employees-form-display-name"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <InputField
@@ -526,6 +547,8 @@ export default function EmployeesPage() {
                     name="employeeNumber"
                     value={formData.employeeNumber}
                     onChange={handleBasicFieldChange}
+                    qbitId="employees-form-employee-number"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <InputField
@@ -533,6 +556,8 @@ export default function EmployeesPage() {
                     name="userId"
                     value={formData.userId}
                     onChange={handleBasicFieldChange}
+                    qbitId="employees-form-user-id"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <InputField
@@ -540,6 +565,8 @@ export default function EmployeesPage() {
                     name="technicianNumber"
                     value={formData.technicianNumber}
                     onChange={handleBasicFieldChange}
+                    qbitId="employees-form-technician-number"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <InputField
@@ -547,6 +574,8 @@ export default function EmployeesPage() {
                     name="phone"
                     value={formData.phone}
                     onChange={handleBasicFieldChange}
+                    qbitId="employees-form-phone"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <InputField
@@ -554,6 +583,8 @@ export default function EmployeesPage() {
                     name="email"
                     value={formData.email}
                     onChange={handleBasicFieldChange}
+                    qbitId="employees-form-email"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <InputField
@@ -561,6 +592,8 @@ export default function EmployeesPage() {
                     name="territory"
                     value={formData.territory}
                     onChange={handleBasicFieldChange}
+                    qbitId="employees-form-territory"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <InputField
@@ -568,6 +601,8 @@ export default function EmployeesPage() {
                     name="serviceVehicleName"
                     value={formData.serviceVehicleName}
                     onChange={handleBasicFieldChange}
+                    qbitId="employees-form-service-vehicle"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <SelectField
@@ -580,6 +615,8 @@ export default function EmployeesPage() {
                         active: value === "Active",
                       })
                     }
+                    qbitId="employees-form-status"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <SelectField
@@ -591,6 +628,8 @@ export default function EmployeesPage() {
                         role: value as EmployeeRole,
                       })
                     }
+                    qbitId="employees-form-role"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <SelectField
@@ -602,12 +641,43 @@ export default function EmployeesPage() {
                         skillLevel: value as EmployeeSkillLevel,
                       })
                     }
+                    qbitId="employees-form-skill-level"
+                    qbitScope={QBIT_SCOPE}
+                  />
+
+                  <SelectField
+                    label="Permission Role"
+                    value={formData.permissionRoleId ?? ""}
+                    options={[
+                      { label: "— Not Set —", value: "" },
+                      ...permissionRoles.map((permissionRole) => ({
+                        label: permissionRole.name,
+                        value: permissionRole.id,
+                      })),
+                    ]}
+                    onChange={(value) =>
+                      updateForm({
+                        permissionRoleId: value || undefined,
+                      })
+                    }
+                    qbitId="employees-form-permission-role"
+                    qbitScope={QBIT_SCOPE}
+                  />
+
+                  <InputField
+                    label="Login PIN (local device only, not encrypted)"
+                    name="pin"
+                    type="password"
+                    value={formData.pin ?? ""}
+                    onChange={handleBasicFieldChange}
+                    qbitId="employees-form-pin"
+                    qbitScope={QBIT_SCOPE}
                   />
                 </div>
               </div>
 
-              <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                <h3 className="text-sm font-black uppercase tracking-wide text-white">
+              <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="employees-form-payroll" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <h3 data-t1eq-qbit-id="employees-form-payroll-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-black uppercase tracking-wide text-white">
                   Payroll Settings
                 </h3>
 
@@ -619,6 +689,8 @@ export default function EmployeesPage() {
                     onChange={(value) =>
                       handlePayTypeChange(value as EmployeePayType)
                     }
+                    qbitId="employees-form-pay-type"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <CheckboxField
@@ -631,6 +703,8 @@ export default function EmployeesPage() {
                         checked
                       )
                     }
+                    qbitId="employees-form-payroll-eligible"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <NumberField
@@ -639,6 +713,8 @@ export default function EmployeesPage() {
                     onChange={(value) =>
                       handlePayrollNumberChange("hourlyPayRate", value)
                     }
+                    qbitId="employees-form-hourly-pay-rate"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <NumberField
@@ -647,6 +723,8 @@ export default function EmployeesPage() {
                     onChange={(value) =>
                       handlePayrollNumberChange("flatRatePayRate", value)
                     }
+                    qbitId="employees-form-flat-rate-pay-rate"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <NumberField
@@ -655,12 +733,14 @@ export default function EmployeesPage() {
                     onChange={(value) =>
                       handlePayrollNumberChange("salaryAnnualAmount", value)
                     }
+                    qbitId="employees-form-salary-annual-amount"
+                    qbitScope={QBIT_SCOPE}
                   />
                 </div>
               </div>
 
-              <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                <h3 className="text-sm font-black uppercase tracking-wide text-white">
+              <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="employees-form-clocking" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <h3 data-t1eq-qbit-id="employees-form-clocking-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-black uppercase tracking-wide text-white">
                   Clock-In / Clock-Out Rules
                 </h3>
 
@@ -675,6 +755,8 @@ export default function EmployeesPage() {
                         value as EmployeeClockInRule
                       )
                     }
+                    qbitId="employees-form-clock-in-rule"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <SelectField
@@ -687,6 +769,8 @@ export default function EmployeesPage() {
                         value as EmployeeClockOutRule
                       )
                     }
+                    qbitId="employees-form-clock-out-rule"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <div className="grid gap-3 md:grid-cols-2">
@@ -696,6 +780,8 @@ export default function EmployeesPage() {
                         formData.clockingSettings
                           .requiresModelSerialPhotoForClockIn
                       }
+                      qbitId="employees-form-clocking-photo-flag"
+                      qbitScope={QBIT_SCOPE}
                     />
 
                     <ReadOnlyFlag
@@ -704,23 +790,29 @@ export default function EmployeesPage() {
                         formData.clockingSettings
                           .requiresCustomerSignatureForClockOut
                       }
+                      qbitId="employees-form-clocking-signature-flag"
+                      qbitScope={QBIT_SCOPE}
                     />
 
                     <ReadOnlyFlag
                       label="Manual Clock-In Allowed"
                       value={formData.clockingSettings.allowsManualClockIn}
+                      qbitId="employees-form-clocking-manual-in-flag"
+                      qbitScope={QBIT_SCOPE}
                     />
 
                     <ReadOnlyFlag
                       label="Manual Clock-Out Allowed"
                       value={formData.clockingSettings.allowsManualClockOut}
+                      qbitId="employees-form-clocking-manual-out-flag"
+                      qbitScope={QBIT_SCOPE}
                     />
                   </div>
                 </div>
               </div>
 
-              <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                <h3 className="text-sm font-black uppercase tracking-wide text-white">
+              <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="employees-form-billing" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <h3 data-t1eq-qbit-id="employees-form-billing-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-black uppercase tracking-wide text-white">
                   Customer Labor Billing
                 </h3>
 
@@ -737,6 +829,8 @@ export default function EmployeesPage() {
                         checked
                       )
                     }
+                    qbitId="employees-form-can-generate-labor-charges"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <SelectField
@@ -753,6 +847,8 @@ export default function EmployeesPage() {
                         },
                       }))
                     }
+                    qbitId="employees-form-default-billing-mode"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <NumberField
@@ -764,6 +860,8 @@ export default function EmployeesPage() {
                         value
                       )
                     }
+                    qbitId="employees-form-default-labor-rate"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <NumberField
@@ -772,6 +870,8 @@ export default function EmployeesPage() {
                     onChange={(value) =>
                       handleBillingNumberChange("minimumLaborCharge", value)
                     }
+                    qbitId="employees-form-minimum-labor-charge"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <NumberField
@@ -780,12 +880,14 @@ export default function EmployeesPage() {
                     onChange={(value) =>
                       handleBillingNumberChange("flatJobLaborAmount", value)
                     }
+                    qbitId="employees-form-flat-job-labor-amount"
+                    qbitScope={QBIT_SCOPE}
                   />
                 </div>
               </div>
 
-              <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                <h3 className="text-sm font-black uppercase tracking-wide text-white">
+              <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="employees-form-metrics" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <h3 data-t1eq-qbit-id="employees-form-metrics-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-black uppercase tracking-wide text-white">
                   Company Metrics
                 </h3>
 
@@ -800,6 +902,8 @@ export default function EmployeesPage() {
                         checked
                       )
                     }
+                    qbitId="employees-form-metric-included"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <CheckboxField
@@ -812,6 +916,8 @@ export default function EmployeesPage() {
                         checked
                       )
                     }
+                    qbitId="employees-form-metric-labor-revenue"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <CheckboxField
@@ -824,6 +930,8 @@ export default function EmployeesPage() {
                         checked
                       )
                     }
+                    qbitId="employees-form-metric-labor-hours"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <CheckboxField
@@ -836,6 +944,8 @@ export default function EmployeesPage() {
                         checked
                       )
                     }
+                    qbitId="employees-form-metric-utilization"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <CheckboxField
@@ -848,6 +958,8 @@ export default function EmployeesPage() {
                         checked
                       )
                     }
+                    qbitId="employees-form-metric-efficiency"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <CheckboxField
@@ -860,6 +972,8 @@ export default function EmployeesPage() {
                         checked
                       )
                     }
+                    qbitId="employees-form-metric-comebacks"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <CheckboxField
@@ -874,6 +988,8 @@ export default function EmployeesPage() {
                         checked
                       )
                     }
+                    qbitId="employees-form-metric-first-time-fix"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <CheckboxField
@@ -888,16 +1004,18 @@ export default function EmployeesPage() {
                         checked
                       )
                     }
+                    qbitId="employees-form-metric-customer-satisfaction"
+                    qbitScope={QBIT_SCOPE}
                   />
                 </div>
               </div>
 
-              <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                <h3 className="text-sm font-black uppercase tracking-wide text-white">
+              <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="employees-form-vacation" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <h3 data-t1eq-qbit-id="employees-form-vacation-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-black uppercase tracking-wide text-white">
                   Vacation Settings
                 </h3>
 
-                <p className="mt-2 text-xs font-bold leading-5 text-slate-400">
+                <p data-t1eq-qbit-id="employees-form-vacation-description" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 text-xs font-bold leading-5 text-slate-400">
                   Vacation eligibility and accrual parameters are stored on the
                   employee record. The schedule system uses these values to
                   calculate daily updated vacation balances.
@@ -914,6 +1032,8 @@ export default function EmployeesPage() {
                         checked
                       )
                     }
+                    qbitId="employees-form-vacation-eligible"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <SelectField
@@ -923,6 +1043,8 @@ export default function EmployeesPage() {
                     onChange={(value) =>
                       handleVacationTextChange("accrualMethod", value)
                     }
+                    qbitId="employees-form-vacation-accrual-method"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <NumberField
@@ -931,6 +1053,8 @@ export default function EmployeesPage() {
                     onChange={(value) =>
                       handleVacationNumberChange("accrualRateHours", value)
                     }
+                    qbitId="employees-form-vacation-accrual-rate"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <NumberField
@@ -939,6 +1063,8 @@ export default function EmployeesPage() {
                     onChange={(value) =>
                       handleVacationNumberChange("hoursPerVacationDay", value)
                     }
+                    qbitId="employees-form-vacation-hours-per-day"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <NumberField
@@ -950,6 +1076,8 @@ export default function EmployeesPage() {
                         value
                       )
                     }
+                    qbitId="employees-form-vacation-cap-hours"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <NumberField
@@ -958,6 +1086,8 @@ export default function EmployeesPage() {
                     onChange={(value) =>
                       handleVacationNumberChange("carryoverLimitHours", value)
                     }
+                    qbitId="employees-form-vacation-carryover-limit"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <NumberField
@@ -971,6 +1101,8 @@ export default function EmployeesPage() {
                         value
                       )
                     }
+                    qbitId="employees-form-vacation-starting-balance"
+                    qbitScope={QBIT_SCOPE}
                   />
 
                   <label className="block">
@@ -986,6 +1118,9 @@ export default function EmployeesPage() {
                           event.target.value
                         )
                       }
+                      data-t1eq-qbit-id="employees-form-vacation-accrual-start-date"
+                      data-t1eq-qbit-type="field"
+                      data-t1eq-qbit-scope={QBIT_SCOPE}
                       className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm font-bold text-white outline-none focus:border-orange-400"
                     />
                   </label>
@@ -1004,6 +1139,9 @@ export default function EmployeesPage() {
                           )
                         }
                         rows={3}
+                        data-t1eq-qbit-id="employees-form-vacation-notes"
+                        data-t1eq-qbit-type="field"
+                        data-t1eq-qbit-scope={QBIT_SCOPE}
                         className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm font-bold text-white outline-none placeholder:text-slate-500 focus:border-orange-400"
                       />
                     </label>
@@ -1012,12 +1150,12 @@ export default function EmployeesPage() {
               </div>
 
               {!editingEmployeeId && (
-                <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-orange-400/20 bg-orange-500/10 p-4">
-                  <h3 className="text-sm font-black uppercase tracking-wide text-orange-200">
+                <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="employees-form-post-save" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-2xl border border-orange-400/20 bg-orange-500/10 p-4">
+                  <h3 data-t1eq-qbit-id="employees-form-post-save-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-black uppercase tracking-wide text-orange-200">
                     After Save Shortcut
                   </h3>
 
-                  <p className="mt-2 text-xs font-bold leading-5 text-orange-100/80">
+                  <p data-t1eq-qbit-id="employees-form-post-save-description" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 text-xs font-bold leading-5 text-orange-100/80">
                     Employee Schedule is its own module. Use this shortcut only
                     when creating a new employee record and you want to continue
                     directly into schedule setup after saving.
@@ -1034,23 +1172,30 @@ export default function EmployeesPage() {
                       onChange={(value) =>
                         setPostSaveAction(value as PostSaveAction)
                       }
+                      qbitId="employees-form-post-save-action"
+                      qbitScope={QBIT_SCOPE}
                     />
                   </div>
                 </div>
               )}
 
-              <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="employees-form-notes" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-2xl border border-white/10 bg-black/20 p-4">
                 <TextareaField
                   label="Notes"
                   name="notes"
                   value={formData.notes}
                   onChange={handleBasicFieldChange}
+                  qbitId="employees-form-notes-field"
+                  qbitScope={QBIT_SCOPE}
                 />
               </div>
 
               <div className="flex flex-wrap gap-3">
                 <button data-t1eq-action-button="true"
                   type="submit"
+                  data-t1eq-qbit-id="employees-form-submit"
+                  data-t1eq-qbit-type="action-button"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
                   className="rounded-xl bg-orange-500 px-5 py-3 text-xs font-black uppercase tracking-wide text-white transition hover:bg-orange-400"
                 >
                   {editingEmployeeId ? "Update Employee" : "Create Employee"}
@@ -1059,6 +1204,9 @@ export default function EmployeesPage() {
                 <button data-t1eq-action-button="true"
                   type="button"
                   onClick={resetForm}
+                  data-t1eq-qbit-id="employees-form-cancel"
+                  data-t1eq-qbit-type="action-button"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
                   className="rounded-xl border border-white/10 px-5 py-3 text-xs font-black uppercase tracking-wide text-white transition hover:bg-white/10"
                 >
                   Cancel
@@ -1067,13 +1215,13 @@ export default function EmployeesPage() {
             </form>
           </section>
 
-          <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-white/10 bg-white/[0.04] p-5 shadow-2xl shadow-black/30">
+          <section data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="employees-list" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-3xl border border-white/10 bg-white/[0.04] p-5 shadow-2xl shadow-black/30">
             <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-orange-300">
+                <p data-t1eq-qbit-id="employees-list-overline" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-[10px] font-black uppercase tracking-[0.22em] text-orange-300">
                   Employee Records
                 </p>
-                <h2 className="mt-1 text-2xl font-black">
+                <h2 data-t1eq-qbit-id="employees-list-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-1 text-2xl font-black">
                   {filteredEmployees.length} Employees
                 </h2>
               </div>
@@ -1082,29 +1230,38 @@ export default function EmployeesPage() {
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search employees..."
+                data-t1eq-qbit-id="employees-list-search"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm font-bold text-white outline-none placeholder:text-slate-500 focus:border-orange-400"
               />
             </div>
 
             <div className="space-y-3">
               {filteredEmployees.length === 0 && (
-                <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-dashed border-white/15 bg-black/20 p-6 text-sm font-bold text-slate-400">
+                <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="employees-list-empty" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-2xl border border-dashed border-white/15 bg-black/20 p-6 text-sm font-bold text-slate-400">
                   No employees found.
                 </div>
               )}
 
-              {filteredEmployees.map((employee) => (
+              {filteredEmployees.map((employee) => {
+                const employeeQbitId = `employee-${employee.id}`;
+
+                return (
                 <article data-t1eq-tile="true" data-t1eq-page-card="true"
                   key={employee.id}
+                  data-t1eq-qbit-id={employeeQbitId}
+                  data-t1eq-qbit-type="tile"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
                   className="rounded-2xl border border-white/10 bg-black/20 p-4"
                 >
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-300">
+                      <p data-t1eq-qbit-id={`${employeeQbitId}-status`} data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-300">
                         {employee.status} · {getRoleLabel(employee.role)}
                       </p>
 
-                      <h3 className="mt-1 text-xl font-black text-white">
+                      <h3 data-t1eq-qbit-id={`${employeeQbitId}-name`} data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-1 text-xl font-black text-white">
                         {employee.displayName}
                       </h3>
 
@@ -1153,6 +1310,9 @@ export default function EmployeesPage() {
                       <button data-t1eq-action-button="true"
                         type="button"
                         onClick={() => handleEdit(employee)}
+                        data-t1eq-qbit-id={`${employeeQbitId}-edit`}
+                        data-t1eq-qbit-type="action-button"
+                        data-t1eq-qbit-scope={QBIT_SCOPE}
                         className="rounded-lg border border-cyan-400/30 bg-cyan-400/10 px-3 py-2 text-xs font-black uppercase tracking-wide text-cyan-200 transition hover:bg-cyan-400/20"
                       >
                         Edit
@@ -1161,6 +1321,9 @@ export default function EmployeesPage() {
                       <button data-t1eq-action-button="true"
                         type="button"
                         onClick={() => handleDelete(employee)}
+                        data-t1eq-qbit-id={`${employeeQbitId}-delete`}
+                        data-t1eq-qbit-type="action-button"
+                        data-t1eq-qbit-scope={QBIT_SCOPE}
                         className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-black uppercase tracking-wide text-red-300 transition hover:bg-red-500/20"
                       >
                         Delete
@@ -1168,7 +1331,8 @@ export default function EmployeesPage() {
                     </div>
                   </div>
                 </article>
-              ))}
+                );
+              })}
             </div>
           </section>
         </div>
@@ -1182,6 +1346,9 @@ function InputField({
   name,
   value,
   onChange,
+  type = "text",
+  qbitId,
+  qbitScope = "global",
 }: {
   label: string;
   name: string;
@@ -1189,16 +1356,23 @@ function InputField({
   onChange: (
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => void;
+  type?: string;
+  qbitId?: string;
+  qbitScope?: string;
 }) {
   return (
     <label className="block">
-      <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
+      <span data-t1eq-qbit-id={qbitId ? `${qbitId}-label` : undefined} data-t1eq-qbit-type={qbitId ? "text" : undefined} data-t1eq-qbit-scope={qbitId ? qbitScope : undefined} className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
         {label}
       </span>
       <input data-t1eq-field="true"
+        type={type}
         name={name}
         value={value}
         onChange={onChange}
+        data-t1eq-qbit-id={qbitId ? qbitId : undefined}
+        data-t1eq-qbit-type={qbitId ? "field" : undefined}
+        data-t1eq-qbit-scope={qbitId ? qbitScope : undefined}
         className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm font-bold text-white outline-none placeholder:text-slate-500 focus:border-orange-400"
       />
     </label>
@@ -1209,14 +1383,18 @@ function NumberField({
   label,
   value,
   onChange,
+  qbitId,
+  qbitScope = "global",
 }: {
   label: string;
   value: number;
   onChange: (value: string) => void;
+  qbitId?: string;
+  qbitScope?: string;
 }) {
   return (
     <label className="block">
-      <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
+      <span data-t1eq-qbit-id={qbitId ? `${qbitId}-label` : undefined} data-t1eq-qbit-type={qbitId ? "text" : undefined} data-t1eq-qbit-scope={qbitId ? qbitScope : undefined} className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
         {label}
       </span>
       <input data-t1eq-field="true"
@@ -1225,6 +1403,9 @@ function NumberField({
         step="0.01"
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        data-t1eq-qbit-id={qbitId ? qbitId : undefined}
+        data-t1eq-qbit-type={qbitId ? "field" : undefined}
+        data-t1eq-qbit-scope={qbitId ? qbitScope : undefined}
         className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm font-bold text-white outline-none placeholder:text-slate-500 focus:border-orange-400"
       />
     </label>
@@ -1236,6 +1417,8 @@ function TextareaField({
   name,
   value,
   onChange,
+  qbitId,
+  qbitScope = "global",
 }: {
   label: string;
   name: string;
@@ -1243,10 +1426,12 @@ function TextareaField({
   onChange: (
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => void;
+  qbitId?: string;
+  qbitScope?: string;
 }) {
   return (
     <label className="block">
-      <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
+      <span data-t1eq-qbit-id={qbitId ? `${qbitId}-label` : undefined} data-t1eq-qbit-type={qbitId ? "text" : undefined} data-t1eq-qbit-scope={qbitId ? qbitScope : undefined} className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
         {label}
       </span>
       <textarea data-t1eq-field="true"
@@ -1254,38 +1439,61 @@ function TextareaField({
         value={value}
         onChange={onChange}
         rows={4}
+        data-t1eq-qbit-id={qbitId ? qbitId : undefined}
+        data-t1eq-qbit-type={qbitId ? "field" : undefined}
+        data-t1eq-qbit-scope={qbitId ? qbitScope : undefined}
         className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm font-bold text-white outline-none placeholder:text-slate-500 focus:border-orange-400"
       />
     </label>
   );
 }
 
+type SelectFieldOption = string | { label: string; value: string };
+
 function SelectField({
   label,
   value,
   options,
   onChange,
+  qbitId,
+  qbitScope = "global",
 }: {
   label: string;
   value: string;
-  options: string[];
+  options: SelectFieldOption[];
   onChange: (value: string) => void;
+  qbitId?: string;
+  qbitScope?: string;
 }) {
   return (
     <label className="block">
-      <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
+      <span data-t1eq-qbit-id={qbitId ? `${qbitId}-label` : undefined} data-t1eq-qbit-type={qbitId ? "text" : undefined} data-t1eq-qbit-scope={qbitId ? qbitScope : undefined} className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
         {label}
       </span>
       <select data-t1eq-field="true"
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        data-t1eq-qbit-id={qbitId ? qbitId : undefined}
+        data-t1eq-qbit-type={qbitId ? "field" : undefined}
+        data-t1eq-qbit-scope={qbitId ? qbitScope : undefined}
         className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm font-bold text-white outline-none focus:border-orange-400"
       >
-        {options.map((option) => (
-          <option key={option} value={option} className="bg-slate-950">
-            {option}
-          </option>
-        ))}
+        {options.map((option) => {
+          const optionValue =
+            typeof option === "string" ? option : option.value;
+          const optionLabel =
+            typeof option === "string" ? option : option.label;
+
+          return (
+            <option
+              key={optionValue}
+              value={optionValue}
+              className="bg-slate-950"
+            >
+              {optionLabel}
+            </option>
+          );
+        })}
       </select>
     </label>
   );
@@ -1295,13 +1503,17 @@ function CheckboxField({
   label,
   checked,
   onChange,
+  qbitId,
+  qbitScope = "global",
 }: {
   label: string;
   checked: boolean;
   onChange: (checked: boolean) => void;
+  qbitId?: string;
+  qbitScope?: string;
 }) {
   return (
-    <label data-t1eq-tile="true" data-t1eq-page-card="true" className="flex items-center gap-3 rounded-xl border border-white/10 bg-black/20 p-3">
+    <label data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id={qbitId ? qbitId : undefined} data-t1eq-qbit-type={qbitId ? "field" : undefined} data-t1eq-qbit-scope={qbitId ? qbitScope : undefined} className="flex items-center gap-3 rounded-xl border border-white/10 bg-black/20 p-3">
       <input data-t1eq-field="true"
         type="checkbox"
         checked={checked}
@@ -1315,9 +1527,19 @@ function CheckboxField({
   );
 }
 
-function ReadOnlyFlag({ label, value }: { label: string; value: boolean }) {
+function ReadOnlyFlag({
+  label,
+  value,
+  qbitId,
+  qbitScope = "global",
+}: {
+  label: string;
+  value: boolean;
+  qbitId?: string;
+  qbitScope?: string;
+}) {
   return (
-    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-white/10 bg-black/20 p-3">
+    <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id={qbitId ? qbitId : undefined} data-t1eq-qbit-type={qbitId ? "text" : undefined} data-t1eq-qbit-scope={qbitId ? qbitScope : undefined} className="rounded-xl border border-white/10 bg-black/20 p-3">
       <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
         {label}
       </p>

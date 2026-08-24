@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+const QBIT_SCOPE = "inventory-hub";
+
 const pageClass = "min-h-screen bg-zinc-100 p-6 text-black";
 const headerClass =
   "mb-6 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm";
@@ -15,6 +17,7 @@ const cardActionClass =
 
 const inventoryCategories = [
   {
+    id: "items",
     title: "Inventory Items",
     description:
       "View and manage stocked parts, part numbers, quantities, pricing, minimum stock, bin locations, and required item photos.",
@@ -22,6 +25,7 @@ const inventoryCategories = [
     action: "Open Inventory Items",
   },
   {
+    id: "receiving",
     title: "Inventory Receiving",
     description:
       "Receive purchase order parts into warehouse stock, truck stock, or custom receiving locations.",
@@ -29,6 +33,7 @@ const inventoryCategories = [
     action: "Open Receiving",
   },
   {
+    id: "company-tools",
     title: "Company Tools",
     description:
       "Track company-owned tools, serial numbers, assigned users, truck locations, repair status, and asset history.",
@@ -36,6 +41,7 @@ const inventoryCategories = [
     action: "Open Company Tools",
   },
   {
+    id: "transactions",
     title: "Inventory Transactions",
     description:
       "Review part movements, quantity adjustments, stock usage, receiving events, correction history, and inventory discrepancies.",
@@ -43,6 +49,15 @@ const inventoryCategories = [
     action: "Open Transactions",
   },
   {
+    id: "locations",
+    title: "Inventory Locations",
+    description:
+      "Manage the Warehouse, additional warehouses, and other custom stock locations items can be assigned to.",
+    href: "/inventory/locations",
+    action: "Open Locations",
+  },
+  {
+    id: "truck-stock",
     title: "Truck Stock",
     description:
       "Manage mobile inventory assigned to service trucks and field technicians.",
@@ -50,6 +65,7 @@ const inventoryCategories = [
     action: "Open Truck Stock",
   },
   {
+    id: "truck-stock-transactions",
     title: "Truck Stock Transactions",
     description:
       "Review truck stock transfers, replenishment, technician usage, and truck-level inventory movement.",
@@ -61,42 +77,97 @@ const inventoryCategories = [
 export default function InventoryPage() {
   return (
     <div className={pageClass}>
-      <header data-t1eq-page-card="true" className={headerClass}>
+      <header
+        data-t1eq-page-card="true"
+        data-t1eq-qbit-type="page-card"
+        data-t1eq-qbit-id="inventory-header"
+        data-t1eq-qbit-scope={QBIT_SCOPE}
+        className={headerClass}
+      >
         <p className="text-sm font-black uppercase tracking-wide text-zinc-500">
           Tier One Equipment
         </p>
 
-        <h1 className="mt-2 text-4xl font-black text-black">Inventory</h1>
+        <h1
+          data-t1eq-qbit-type="text"
+          data-t1eq-qbit-id="inventory-title"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className="mt-2 text-4xl font-black text-black"
+        >
+          Inventory
+        </h1>
 
-        <p className="mt-2 max-w-3xl text-base font-semibold text-zinc-600">
+        <p
+          data-t1eq-qbit-type="text"
+          data-t1eq-qbit-id="inventory-description"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className="mt-2 max-w-3xl text-base font-semibold text-zinc-600"
+        >
           Manage stocked parts, purchase order receiving, company tools,
           transactions, discrepancies, and truck stock from one inventory hub.
         </p>
       </header>
 
-      <section data-t1eq-page-card="true" className={sectionClass}>
+      <section
+        data-t1eq-page-card="true"
+        data-t1eq-qbit-type="page-card"
+        data-t1eq-qbit-id="inventory-categories-section"
+        data-t1eq-qbit-scope={QBIT_SCOPE}
+        className={sectionClass}
+      >
         <div className="mb-5">
-          <h2 className="text-2xl font-black text-black">
+          <h2
+            data-t1eq-qbit-type="text"
+            data-t1eq-qbit-id="inventory-categories-title"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="text-2xl font-black text-black"
+          >
             Inventory Categories
           </h2>
 
-          <p className="mt-1 text-sm font-semibold text-zinc-600">
+          <p
+            data-t1eq-qbit-type="text"
+            data-t1eq-qbit-id="inventory-categories-description"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="mt-1 text-sm font-semibold text-zinc-600"
+          >
             Select an inventory area to open.
           </p>
         </div>
 
-        <div data-t1eq-tile-grid="true" className={cardGridClass}>
+        <div
+          data-t1eq-tile-grid="true"
+          data-t1eq-qbit-type="section"
+          data-t1eq-qbit-id="inventory-categories-grid"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className={cardGridClass}
+        >
           {inventoryCategories.map((category) => (
             <Link
               key={category.href}
               data-t1eq-tile="true"
               data-t1eq-page-card="true"
+              data-t1eq-qbit-type="tile"
+              data-t1eq-qbit-id={`inventory-category-${category.id}`}
+              data-t1eq-qbit-scope={QBIT_SCOPE}
               href={category.href}
               className={cardClass}
             >
-              <div className={cardTitleClass}>{category.title}</div>
+              <div
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id={`inventory-category-${category.id}-title`}
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className={cardTitleClass}
+              >
+                {category.title}
+              </div>
 
-              <div className={cardDescriptionClass}>
+              <div
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id={`inventory-category-${category.id}-description`}
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className={cardDescriptionClass}
+              >
                 {category.description}
               </div>
 

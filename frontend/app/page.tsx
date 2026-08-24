@@ -22,6 +22,7 @@ type DashboardTileMetric = {
 };
 
 type DashboardCategoryTile = {
+  id: string;
   title: string;
   description: string;
   href: string;
@@ -44,6 +45,8 @@ type LocalCounts = {
   suppliers: number;
   users: number;
 };
+
+const QBIT_SCOPE = "operations-dashboard";
 
 const pageClass = "min-h-screen bg-zinc-100 p-6 text-black";
 
@@ -227,17 +230,23 @@ function isAssignedTool(tool: CompanyTool) {
 }
 
 function DashboardCategoryCard({
+  id,
   title,
   description,
   href,
   metrics,
   tone = "Normal",
 }: DashboardCategoryTile) {
+  const qbitId = `operations-dashboard-category-${id}`;
+
   return (
     <a
       href={href}
       data-t1eq-tile="true"
       data-t1eq-page-card="true"
+      data-t1eq-qbit-type="tile"
+      data-t1eq-qbit-id={qbitId}
+      data-t1eq-qbit-scope={QBIT_SCOPE}
       className={getTileClass(tone)}
     >
       <div className="flex items-start justify-between gap-4">
@@ -246,10 +255,21 @@ function DashboardCategoryCard({
             Operations Area
           </div>
 
-          <h2 className="mt-2 text-2xl font-black text-black">{title}</h2>
+          <h2
+            data-t1eq-qbit-type="text"
+            data-t1eq-qbit-id={`${qbitId}-title`}
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="mt-2 text-2xl font-black text-black"
+          >
+            {title}
+          </h2>
         </div>
 
-        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs font-black uppercase tracking-wide text-zinc-600">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true"
+          data-t1eq-qbit-type="text"
+          data-t1eq-qbit-id={`${qbitId}-status-badge`}
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className="rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs font-black uppercase tracking-wide text-zinc-600">
           Open
         </div>
       </div>
@@ -273,7 +293,11 @@ function DashboardCategoryCard({
       </p>
 
       <div className="mt-auto pt-5">
-        <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-zinc-300 bg-white px-4 py-2 text-center text-sm font-black text-black shadow-sm">
+        <div data-t1eq-tile="true" data-t1eq-page-card="true"
+          data-t1eq-qbit-type="action-button"
+          data-t1eq-qbit-id={`${qbitId}-open`}
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className="rounded-xl border border-zinc-300 bg-white px-4 py-2 text-center text-sm font-black text-black shadow-sm">
           Open {title}
         </div>
       </div>
@@ -353,6 +377,7 @@ export default function OperationsDashboardPage() {
 
   const dashboardCategories: DashboardCategoryTile[] = [
     {
+      id: "repair-orders",
       title: "Repair Orders",
       description:
         "Active repair workflow from customer complaint through technician action items, parts, labor, signature, and invoice handoff.",
@@ -366,6 +391,7 @@ export default function OperationsDashboardPage() {
       ],
     },
     {
+      id: "dispatch",
       title: "Dispatch",
       description:
         "Field movement, technician assignment, route status, urgent calls, waiting parts, and customer arrival workflow.",
@@ -379,6 +405,7 @@ export default function OperationsDashboardPage() {
       ],
     },
     {
+      id: "invoicing",
       title: "Invoicing",
       description:
         "Billing status, repair order charges, parts totals, labor totals, customer invoice creation, and payment closure.",
@@ -392,6 +419,7 @@ export default function OperationsDashboardPage() {
       ],
     },
     {
+      id: "inventory",
       title: "Inventory",
       description:
         "Stocked parts, receiving, tools, inventory transactions, discrepancies, truck stock, and mobile inventory movement.",
@@ -408,6 +436,7 @@ export default function OperationsDashboardPage() {
       ],
     },
     {
+      id: "purchase-orders",
       title: "Purchase Orders",
       description:
         "Purchasing from supplier order through receiving, warehouse stock, truck stock, direct-charge RO parts, and cost control.",
@@ -421,6 +450,7 @@ export default function OperationsDashboardPage() {
       ],
     },
     {
+      id: "accounting",
       title: "Accounting",
       description:
         "Invoicing, payroll, purchase orders, supplier spend, technician pay, labor cost, parts cost, and accounting review.",
@@ -434,6 +464,7 @@ export default function OperationsDashboardPage() {
       ],
     },
     {
+      id: "customers",
       title: "Customers",
       description:
         "Customer records, service locations, site addresses, equipment ownership, repair history, and billing relationships.",
@@ -446,6 +477,7 @@ export default function OperationsDashboardPage() {
       ],
     },
     {
+      id: "equipment",
       title: "Equipment",
       description:
         "Customer equipment, model and serial data, service history, inspection records, repair orders, photos, and asset movement.",
@@ -458,6 +490,7 @@ export default function OperationsDashboardPage() {
       ],
     },
     {
+      id: "scheduling",
       title: "Scheduling",
       description:
         "Technician workload, recurring service, field appointments, customer commitments, dispatch preparation, and capacity.",
@@ -470,6 +503,7 @@ export default function OperationsDashboardPage() {
       ],
     },
     {
+      id: "payroll",
       title: "Payroll",
       description:
         "Technician labor entries, flat-rate work, mileage, hourly time, completed jobs, and payroll approval.",
@@ -482,6 +516,7 @@ export default function OperationsDashboardPage() {
       ],
     },
     {
+      id: "suppliers",
       title: "Suppliers",
       description:
         "Vendors, parts sources, purchase order suppliers, pricing history, and procurement relationships.",
@@ -494,6 +529,7 @@ export default function OperationsDashboardPage() {
       ],
     },
     {
+      id: "users",
       title: "Users",
       description:
         "Technicians, owner access, office users, tax users, future inspectors, permissions, and role-based workflows.",
@@ -509,18 +545,37 @@ export default function OperationsDashboardPage() {
 
   return (
     <div className={pageClass}>
-      <header data-t1eq-page-card="true" className={pageHeaderClass}>
+      <header data-t1eq-page-card="true"
+        data-t1eq-qbit-type="page-card"
+        data-t1eq-qbit-id="operations-dashboard-header"
+        data-t1eq-qbit-scope={QBIT_SCOPE}
+        className={pageHeaderClass}>
         <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
           <div>
-            <p className="text-sm font-black uppercase tracking-wide text-zinc-500">
+            <p
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="operations-dashboard-overline"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="text-sm font-black uppercase tracking-wide text-zinc-500"
+            >
               Tier One Equipment
             </p>
 
-            <h1 className="mt-2 text-4xl font-black text-black">
+            <h1
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="operations-dashboard-title"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-2 text-4xl font-black text-black"
+            >
               Operations Dashboard
             </h1>
 
-            <p className="mt-2 max-w-4xl text-base font-semibold text-zinc-600">
+            <p
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="operations-dashboard-description"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-2 max-w-4xl text-base font-semibold text-zinc-600"
+            >
               At-a-glance command center for the key operational areas of the
               business. Each equal-size tile shows multiple live status values
               and opens the category main menu when clicked.
@@ -528,41 +583,86 @@ export default function OperationsDashboardPage() {
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <a href="/repair-orders" className={linkButtonClass}>
+            <a href="/repair-orders"
+              data-t1eq-qbit-type="action-button"
+              data-t1eq-qbit-id="operations-dashboard-quicklink-repair-orders"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className={linkButtonClass}
+            >
               Repair Orders
             </a>
 
-            <a href="/dispatch" className={linkButtonClass}>
+            <a href="/dispatch"
+              data-t1eq-qbit-type="action-button"
+              data-t1eq-qbit-id="operations-dashboard-quicklink-dispatch"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className={linkButtonClass}
+            >
               Dispatch
             </a>
 
-            <a href="/invoices" className={linkButtonClass}>
+            <a href="/invoices"
+              data-t1eq-qbit-type="action-button"
+              data-t1eq-qbit-id="operations-dashboard-quicklink-invoices"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className={linkButtonClass}
+            >
               Invoices
             </a>
 
-            <a href="/inventory" className={linkButtonClass}>
+            <a href="/inventory"
+              data-t1eq-qbit-type="action-button"
+              data-t1eq-qbit-id="operations-dashboard-quicklink-inventory"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className={linkButtonClass}
+            >
               Inventory
             </a>
           </div>
         </div>
       </header>
 
-      <section data-t1eq-page-card="true" className={sectionClass}>
+      <section data-t1eq-page-card="true"
+        data-t1eq-qbit-type="page-card"
+        data-t1eq-qbit-id="operations-dashboard-categories"
+        data-t1eq-qbit-scope={QBIT_SCOPE}
+        className={sectionClass}>
         <div className="mb-5">
-          <p className="text-sm font-black uppercase tracking-wide text-zinc-500">
+          <p
+            data-t1eq-qbit-type="text"
+            data-t1eq-qbit-id="operations-dashboard-categories-overline"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="text-sm font-black uppercase tracking-wide text-zinc-500"
+          >
             Command Center
           </p>
 
-          <h2 className="mt-1 text-2xl font-black text-black">
+          <h2
+            data-t1eq-qbit-type="text"
+            data-t1eq-qbit-id="operations-dashboard-categories-title"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="mt-1 text-2xl font-black text-black"
+          >
             Operational Category Tiles
           </h2>
 
-          <p className="mt-1 text-sm font-semibold text-zinc-600">
+          <p
+            data-t1eq-qbit-type="text"
+            data-t1eq-qbit-id="operations-dashboard-categories-description"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="mt-1 text-sm font-semibold text-zinc-600"
+          >
             Click any tile to open that category’s main menu.
           </p>
         </div>
 
-        <div data-t1eq-tile-grid="true" className={dashboardGridClass}>
+        <div
+          data-t1eq-tile-grid="true"
+          data-t1eq-qbit-type="section"
+          data-t1eq-qbit-id="operations-dashboard-tile-grid"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className={dashboardGridClass}
+        >
           {dashboardCategories.map((category) => (
             <DashboardCategoryCard key={category.title} {...category} />
           ))}

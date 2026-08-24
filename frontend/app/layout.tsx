@@ -8,6 +8,8 @@ import AppearanceEditor from "@/components/appearance/AppearanceEditor";
 import AppearanceThemeClient from "@/components/appearance/AppearanceThemeClient";
 import CategorySubnavigation from "@/components/navigation/CategorySubnavigation";
 import SidebarNav from "@/app/components/layout/SidebarNav";
+import AuthGate from "@/components/auth/AuthGate";
+import CurrentUserBadge from "@/components/auth/CurrentUserBadge";
 
 export const metadata: Metadata = {
   title: "Tier One Equipment",
@@ -25,6 +27,7 @@ export default function RootLayout({
       <body>
         <AppearanceThemeClient />
 
+        <AuthGate>
         <div
           data-t1eq-qbit-type="section"
           data-t1eq-qbit-id="app-shell"
@@ -81,6 +84,8 @@ export default function RootLayout({
                 Operations Platform
               </div>
             </div>
+
+            <CurrentUserBadge />
 
             <div
               data-t1eq-qbit-type="section"
@@ -145,6 +150,7 @@ export default function RootLayout({
             </main>
           </div>
         </div>
+        </AuthGate>
 
         <AppearanceEditor />
       </body>

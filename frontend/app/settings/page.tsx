@@ -20,6 +20,8 @@ type BrandSettings = {
   updatedDate: string;
 };
 
+const QBIT_SCOPE = "settings-page";
+
 const BRAND_STORAGE_KEY = "t1eq-brand-settings";
 const APPEARANCE_STORAGE_KEY = "t1eq-appearance-settings";
 
@@ -232,40 +234,87 @@ export default function SettingsPage() {
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-8 text-slate-50">
       <div className="mx-auto max-w-6xl space-y-8">
-        <header data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-[28px] border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur">
-          <p className="text-xs font-black uppercase tracking-[0.28em] text-orange-300">
+        <header data-t1eq-tile="true" data-t1eq-page-card="true"
+          data-t1eq-qbit-type="page-card"
+          data-t1eq-qbit-id="settings-page-header"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className="rounded-[28px] border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur">
+          <p
+            data-t1eq-qbit-type="text"
+            data-t1eq-qbit-id="settings-page-overline"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="text-xs font-black uppercase tracking-[0.28em] text-orange-300"
+          >
             Tier One Equipment
           </p>
-          <h1 className="mt-2 text-3xl font-black tracking-tight">
+          <h1
+            data-t1eq-qbit-type="text"
+            data-t1eq-qbit-id="settings-page-title"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="mt-2 text-3xl font-black tracking-tight"
+          >
             Settings
           </h1>
-          <p className="mt-2 max-w-3xl text-sm font-medium text-slate-300">
+          <p
+            data-t1eq-qbit-type="text"
+            data-t1eq-qbit-id="settings-page-description"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="mt-2 max-w-3xl text-sm font-medium text-slate-300"
+          >
             Manage the application logo and appearance settings. Changes are
             saved locally and applied immediately.
           </p>
 
           {saveMessage && (
-            <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-4 rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm font-black text-emerald-200">
+            <div data-t1eq-tile="true" data-t1eq-page-card="true"
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="settings-page-save-message"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-4 rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm font-black text-emerald-200">
               {saveMessage}
             </div>
           )}
         </header>
 
         <section className="grid gap-6 lg:grid-cols-2">
-          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-[28px] border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true"
+            data-t1eq-qbit-type="page-card"
+            data-t1eq-qbit-id="settings-page-branding"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="rounded-[28px] border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur">
             <div className="mb-6">
-              <p className="text-xs font-black uppercase tracking-[0.24em] text-slate-400">
+              <p
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="settings-page-branding-overline"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="text-xs font-black uppercase tracking-[0.24em] text-slate-400"
+              >
                 Branding
               </p>
-              <h2 className="mt-2 text-2xl font-black">Logo</h2>
+              <h2
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="settings-page-branding-title"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="mt-2 text-2xl font-black"
+              >
+                Logo
+              </h2>
             </div>
 
             <div className="space-y-5">
               <label className="block">
-                <span className="text-xs font-black uppercase tracking-wide text-slate-400">
+                <span
+                  data-t1eq-qbit-type="text"
+                  data-t1eq-qbit-id="settings-page-company-name-label"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
+                  className="text-xs font-black uppercase tracking-wide text-slate-400"
+                >
                   Company Name
                 </span>
                 <input data-t1eq-field="true"
+                  data-t1eq-qbit-type="field"
+                  data-t1eq-qbit-id="settings-page-company-name"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
                   value={brandSettings.companyName}
                   onChange={(event) =>
                     setBrandSettings((current) => ({
@@ -278,10 +327,18 @@ export default function SettingsPage() {
               </label>
 
               <label className="block">
-                <span className="text-xs font-black uppercase tracking-wide text-slate-400">
+                <span
+                  data-t1eq-qbit-type="text"
+                  data-t1eq-qbit-id="settings-page-logo-upload-label"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
+                  className="text-xs font-black uppercase tracking-wide text-slate-400"
+                >
                   Upload Logo
                 </span>
                 <input data-t1eq-field="true"
+                  data-t1eq-qbit-type="field"
+                  data-t1eq-qbit-id="settings-page-logo-upload"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
                   type="file"
                   accept="image/*"
                   onChange={handleLogoFileChange}
@@ -289,8 +346,17 @@ export default function SettingsPage() {
                 />
               </label>
 
-              <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-2xl border border-white/10 bg-black/30 p-5">
-                <p className="mb-3 text-xs font-black uppercase tracking-wide text-slate-400">
+              <div data-t1eq-tile="true" data-t1eq-page-card="true"
+                data-t1eq-qbit-type="page-card"
+                data-t1eq-qbit-id="settings-page-logo-preview"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="rounded-2xl border border-white/10 bg-black/30 p-5">
+                <p
+                  data-t1eq-qbit-type="text"
+                  data-t1eq-qbit-id="settings-page-logo-preview-label"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
+                  className="mb-3 text-xs font-black uppercase tracking-wide text-slate-400"
+                >
                   Preview
                 </p>
 
@@ -298,22 +364,37 @@ export default function SettingsPage() {
                   <img
                     src={logoPreview}
                     alt="Saved company logo preview"
+                    data-t1eq-qbit-type="logo"
+                    data-t1eq-qbit-id="settings-page-logo-image"
+                    data-t1eq-qbit-scope={QBIT_SCOPE}
                     className="max-h-32 max-w-full rounded-xl object-contain"
                   />
                 ) : (
-                  <div data-t1eq-tile="true" data-t1eq-page-card="true" className="flex h-32 items-center justify-center rounded-xl border border-dashed border-white/20 text-sm font-bold text-slate-500">
+                  <div data-t1eq-tile="true" data-t1eq-page-card="true"
+                    data-t1eq-qbit-type="text"
+                    data-t1eq-qbit-id="settings-page-logo-empty"
+                    data-t1eq-qbit-scope={QBIT_SCOPE}
+                    className="flex h-32 items-center justify-center rounded-xl border border-dashed border-white/20 text-sm font-bold text-slate-500">
                     No logo selected
                   </div>
                 )}
 
                 {selectedLogoFileName && (
-                  <p className="mt-3 text-xs font-bold text-slate-400">
+                  <p
+                    data-t1eq-qbit-type="text"
+                    data-t1eq-qbit-id="settings-page-logo-filename"
+                    data-t1eq-qbit-scope={QBIT_SCOPE}
+                    className="mt-3 text-xs font-bold text-slate-400"
+                  >
                     {selectedLogoFileName}
                   </p>
                 )}
               </div>
 
               <button data-t1eq-action-button="true"
+                data-t1eq-qbit-type="action-button"
+                data-t1eq-qbit-id="settings-page-save-logo"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 type="button"
                 onClick={handleSaveLogo}
                 className="w-full rounded-2xl bg-orange-500 px-5 py-3 text-sm font-black uppercase tracking-wide text-white shadow-xl shadow-orange-950/30 hover:bg-orange-400"
@@ -323,20 +404,44 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-[28px] border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur">
+          <div data-t1eq-tile="true" data-t1eq-page-card="true"
+            data-t1eq-qbit-type="page-card"
+            data-t1eq-qbit-id="settings-page-appearance"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="rounded-[28px] border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur">
             <div className="mb-6">
-              <p className="text-xs font-black uppercase tracking-[0.24em] text-slate-400">
+              <p
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="settings-page-appearance-overline"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="text-xs font-black uppercase tracking-[0.24em] text-slate-400"
+              >
                 Interface
               </p>
-              <h2 className="mt-2 text-2xl font-black">Appearance</h2>
+              <h2
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="settings-page-appearance-title"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="mt-2 text-2xl font-black"
+              >
+                Appearance
+              </h2>
             </div>
 
             <div className="space-y-5">
               <label className="block">
-                <span className="text-xs font-black uppercase tracking-wide text-slate-400">
+                <span
+                  data-t1eq-qbit-type="text"
+                  data-t1eq-qbit-id="settings-page-theme-name-label"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
+                  className="text-xs font-black uppercase tracking-wide text-slate-400"
+                >
                   Theme Name
                 </span>
                 <input data-t1eq-field="true"
+                  data-t1eq-qbit-type="field"
+                  data-t1eq-qbit-id="settings-page-theme-name"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
                   value={appearanceSettings.themeName}
                   onChange={(event) =>
                     updateAppearance("themeName", event.target.value)
@@ -347,10 +452,18 @@ export default function SettingsPage() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block">
-                  <span className="text-xs font-black uppercase tracking-wide text-slate-400">
+                  <span
+                    data-t1eq-qbit-type="text"
+                    data-t1eq-qbit-id="settings-page-accent-color-label"
+                    data-t1eq-qbit-scope={QBIT_SCOPE}
+                    className="text-xs font-black uppercase tracking-wide text-slate-400"
+                  >
                     Accent
                   </span>
                   <input data-t1eq-field="true"
+                    data-t1eq-qbit-type="field"
+                    data-t1eq-qbit-id="settings-page-accent-color"
+                    data-t1eq-qbit-scope={QBIT_SCOPE}
                     type="color"
                     value={appearanceSettings.accentColor}
                     onChange={(event) =>
@@ -361,10 +474,18 @@ export default function SettingsPage() {
                 </label>
 
                 <label className="block">
-                  <span className="text-xs font-black uppercase tracking-wide text-slate-400">
+                  <span
+                    data-t1eq-qbit-type="text"
+                    data-t1eq-qbit-id="settings-page-background-color-label"
+                    data-t1eq-qbit-scope={QBIT_SCOPE}
+                    className="text-xs font-black uppercase tracking-wide text-slate-400"
+                  >
                     Background
                   </span>
                   <input data-t1eq-field="true"
+                    data-t1eq-qbit-type="field"
+                    data-t1eq-qbit-id="settings-page-background-color"
+                    data-t1eq-qbit-scope={QBIT_SCOPE}
                     type="color"
                     value={appearanceSettings.backgroundColor}
                     onChange={(event) =>
@@ -375,10 +496,18 @@ export default function SettingsPage() {
                 </label>
 
                 <label className="block">
-                  <span className="text-xs font-black uppercase tracking-wide text-slate-400">
+                  <span
+                    data-t1eq-qbit-type="text"
+                    data-t1eq-qbit-id="settings-page-panel-color-label"
+                    data-t1eq-qbit-scope={QBIT_SCOPE}
+                    className="text-xs font-black uppercase tracking-wide text-slate-400"
+                  >
                     Panel
                   </span>
                   <input data-t1eq-field="true"
+                    data-t1eq-qbit-type="field"
+                    data-t1eq-qbit-id="settings-page-panel-color"
+                    data-t1eq-qbit-scope={QBIT_SCOPE}
                     type="color"
                     value={appearanceSettings.panelColor}
                     onChange={(event) =>
@@ -389,10 +518,18 @@ export default function SettingsPage() {
                 </label>
 
                 <label className="block">
-                  <span className="text-xs font-black uppercase tracking-wide text-slate-400">
+                  <span
+                    data-t1eq-qbit-type="text"
+                    data-t1eq-qbit-id="settings-page-text-color-label"
+                    data-t1eq-qbit-scope={QBIT_SCOPE}
+                    className="text-xs font-black uppercase tracking-wide text-slate-400"
+                  >
                     Text
                   </span>
                   <input data-t1eq-field="true"
+                    data-t1eq-qbit-type="field"
+                    data-t1eq-qbit-id="settings-page-text-color"
+                    data-t1eq-qbit-scope={QBIT_SCOPE}
                     type="color"
                     value={appearanceSettings.textColor}
                     onChange={(event) =>
@@ -404,10 +541,18 @@ export default function SettingsPage() {
               </div>
 
               <label className="block">
-                <span className="text-xs font-black uppercase tracking-wide text-slate-400">
+                <span
+                  data-t1eq-qbit-type="text"
+                  data-t1eq-qbit-id="settings-page-border-radius-label"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
+                  className="text-xs font-black uppercase tracking-wide text-slate-400"
+                >
                   Border Radius
                 </span>
                 <select data-t1eq-field="true"
+                  data-t1eq-qbit-type="field"
+                  data-t1eq-qbit-id="settings-page-border-radius"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
                   value={appearanceSettings.borderRadius}
                   onChange={(event) =>
                     updateAppearance("borderRadius", event.target.value)
@@ -422,10 +567,18 @@ export default function SettingsPage() {
               </label>
 
               <label className="block">
-                <span className="text-xs font-black uppercase tracking-wide text-slate-400">
+                <span
+                  data-t1eq-qbit-type="text"
+                  data-t1eq-qbit-id="settings-page-glass-opacity-label"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
+                  className="text-xs font-black uppercase tracking-wide text-slate-400"
+                >
                   Glass Opacity
                 </span>
                 <input data-t1eq-field="true"
+                  data-t1eq-qbit-type="field"
+                  data-t1eq-qbit-id="settings-page-glass-opacity"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
                   type="range"
                   min="0.25"
                   max="1"
@@ -440,6 +593,9 @@ export default function SettingsPage() {
 
               <div className="grid gap-3 sm:grid-cols-2">
                 <button data-t1eq-action-button="true"
+                  data-t1eq-qbit-type="action-button"
+                  data-t1eq-qbit-id="settings-page-save-appearance"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
                   type="button"
                   onClick={handleSaveAppearance}
                   className="rounded-2xl bg-orange-500 px-5 py-3 text-sm font-black uppercase tracking-wide text-white shadow-xl shadow-orange-950/30 hover:bg-orange-400"
@@ -448,6 +604,9 @@ export default function SettingsPage() {
                 </button>
 
                 <button data-t1eq-action-button="true"
+                  data-t1eq-qbit-type="action-button"
+                  data-t1eq-qbit-id="settings-page-reset-appearance"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
                   type="button"
                   onClick={handleResetAppearance}
                   className="rounded-2xl border border-white/10 bg-white/10 px-5 py-3 text-sm font-black uppercase tracking-wide text-white hover:bg-white/20"
@@ -460,6 +619,9 @@ export default function SettingsPage() {
         </section>
 
         <section data-t1eq-tile="true" data-t1eq-page-card="true"
+          data-t1eq-qbit-type="page-card"
+          data-t1eq-qbit-id="settings-page-live-preview"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
           className="rounded-[28px] border border-white/10 p-6 shadow-2xl"
           style={{
             backgroundColor: appearanceSettings.panelColor,
@@ -468,25 +630,47 @@ export default function SettingsPage() {
             boxShadow: appearanceSettings.shadowDepth,
           }}
         >
-          <p className="text-xs font-black uppercase tracking-[0.24em] opacity-70">
+          <p
+            data-t1eq-qbit-type="text"
+            data-t1eq-qbit-id="settings-page-live-preview-overline"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="text-xs font-black uppercase tracking-[0.24em] opacity-70"
+          >
             Live Preview
           </p>
-          <h2 className="mt-2 text-2xl font-black">
+          <h2
+            data-t1eq-qbit-type="text"
+            data-t1eq-qbit-id="settings-page-live-preview-title"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="mt-2 text-2xl font-black"
+          >
             {brandSettings.companyName || "Tier One Equipment"}
           </h2>
-          <p className="mt-2 max-w-2xl text-sm font-medium opacity-80">
+          <p
+            data-t1eq-qbit-type="text"
+            data-t1eq-qbit-id="settings-page-live-preview-description"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="mt-2 max-w-2xl text-sm font-medium opacity-80"
+          >
             This preview updates as you change the appearance settings. Press
             Save Appearance to persist the final configuration.
           </p>
 
           <div className="mt-5 flex flex-wrap gap-3">
             <span
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="settings-page-live-preview-accent-sample"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
               className="rounded-full px-4 py-2 text-xs font-black uppercase tracking-wide text-white"
               style={{ backgroundColor: appearanceSettings.accentColor }}
             >
               Accent Sample
             </span>
-            <span data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-full border border-white/20 px-4 py-2 text-xs font-black uppercase tracking-wide">
+            <span data-t1eq-tile="true" data-t1eq-page-card="true"
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="settings-page-live-preview-panel-sample"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="rounded-full border border-white/20 px-4 py-2 text-xs font-black uppercase tracking-wide">
               Panel Sample
             </span>
           </div>

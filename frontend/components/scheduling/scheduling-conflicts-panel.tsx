@@ -19,6 +19,22 @@ const formatDateTime = (value: string) => {
   return date.toLocaleString();
 };
 
+const renderConflictEventLines = (scheduleEvent: ScheduleEvent) => {
+  if (!scheduleEvent.actionItems || scheduleEvent.actionItems.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="text-xs text-red-900/60">
+      {scheduleEvent.actionItems.length} line
+      {scheduleEvent.actionItems.length === 1 ? "" : "s"}:{" "}
+      {scheduleEvent.actionItems
+        .map((actionItem) => actionItem.type)
+        .join(", ")}
+    </div>
+  );
+};
+
 export default function SchedulingConflictsPanel({
   scheduleEvents,
 }: SchedulingConflictsPanelProps) {
@@ -92,9 +108,22 @@ export default function SchedulingConflictsPanel({
                     {conflict.technicianName || "Technician"}
                   </div>
 
-                  <div className="mt-2 text-sm leading-6 text-red-900/80">
-                    <div>{conflict.eventA.title}</div>
-                    <div>{conflict.eventB.title}</div>
+                  <div className="mt-2 space-y-2 text-sm leading-6 text-red-900/80">
+                    <div>
+                      <div className="font-semibold">
+                        {conflict.eventA.title}
+                      </div>
+
+                      {renderConflictEventLines(conflict.eventA)}
+                    </div>
+
+                    <div>
+                      <div className="font-semibold">
+                        {conflict.eventB.title}
+                      </div>
+
+                      {renderConflictEventLines(conflict.eventB)}
+                    </div>
                   </div>
 
                   <div className="mt-3 text-sm font-semibold text-red-900">
@@ -129,7 +158,9 @@ export default function SchedulingConflictsPanel({
 
                       <div className="mt-1 text-sm text-black/60">
                         {load.eventCount} scheduled event
-                        {load.eventCount === 1 ? "" : "s"}
+                        {load.eventCount === 1 ? "" : "s"} ·{" "}
+                        {load.lineCount} line
+                        {load.lineCount === 1 ? "" : "s"}
                       </div>
                     </div>
 

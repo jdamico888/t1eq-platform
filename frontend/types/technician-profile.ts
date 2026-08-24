@@ -157,6 +157,20 @@ export type TechnicianProfile = {
   role: TechnicianRole;
   skillLevel: TechnicianSkillLevel;
 
+  /**
+   * Links to a Role from the Roles & Permissions settings
+   * (types/role-permissions.ts). Drives what this person can see/edit once
+   * logged in — separate from the `role` field above.
+   */
+  permissionRoleId?: string;
+
+  /**
+   * A login PIN/password checked by the local login screen (services/auth.ts).
+   * Stored as plain text in this browser's localStorage — a convenience gate,
+   * not real security. Leave blank to allow logging in with no PIN.
+   */
+  pin?: string;
+
   territory: string;
   serviceVehicleId: string;
   serviceVehicleName: string;

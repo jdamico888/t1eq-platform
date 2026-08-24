@@ -344,6 +344,8 @@ function purchaseOrderLineToDraftLine(line: PurchaseOrderLine): DraftLine {
   };
 }
 
+const QBIT_SCOPE = "purchase-orders";
+
 function getStatusClass(status: PurchaseOrder["status"]) {
   if (status === "Received") {
     return "border-green-200 bg-green-50 text-green-700";
@@ -1130,12 +1132,17 @@ export default function PurchaseOrdersPage() {
       return null;
     }
 
+    const locationQbitId = `purchase-orders-draft-line-${draftLine.id}-location`;
+
     return (
       <div className="grid gap-3 md:grid-cols-4">
         <label className="space-y-1">
           <span className={smallMutedTextClass}>Location Type</span>
 
           <select data-t1eq-field="true"
+            data-t1eq-qbit-id={`${locationQbitId}-type`}
+            data-t1eq-qbit-type="field"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
             value={draftLine.receiveLocationType}
             onChange={(event) =>
               updateDraftLine(draftLine.id, {
@@ -1158,6 +1165,9 @@ export default function PurchaseOrdersPage() {
             <span className={smallMutedTextClass}>Compartment</span>
 
             <select data-t1eq-field="true"
+              data-t1eq-qbit-id={`${locationQbitId}-compartment`}
+              data-t1eq-qbit-type="field"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
               value={draftLine.truckCompartment ?? ""}
               onChange={(event) =>
                 updateDraftLine(draftLine.id, {
@@ -1180,6 +1190,9 @@ export default function PurchaseOrdersPage() {
             <span className={smallMutedTextClass}>Row</span>
 
             <select data-t1eq-field="true"
+              data-t1eq-qbit-id={`${locationQbitId}-row`}
+              data-t1eq-qbit-type="field"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
               value={draftLine.warehouseRow ?? ""}
               onChange={(event) =>
                 updateDraftLine(draftLine.id, {
@@ -1203,6 +1216,9 @@ export default function PurchaseOrdersPage() {
           <span className={smallMutedTextClass}>Shelf</span>
 
           <select data-t1eq-field="true"
+            data-t1eq-qbit-id={`${locationQbitId}-shelf`}
+            data-t1eq-qbit-type="field"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
             value={draftLine.shelf ?? ""}
             onChange={(event) =>
               updateDraftLine(draftLine.id, {
@@ -1225,6 +1241,9 @@ export default function PurchaseOrdersPage() {
           <span className={smallMutedTextClass}>Location #</span>
 
           <select data-t1eq-field="true"
+            data-t1eq-qbit-id={`${locationQbitId}-number`}
+            data-t1eq-qbit-type="field"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
             value={draftLine.locationNumber ?? ""}
             onChange={(event) =>
               updateDraftLine(draftLine.id, {
@@ -1249,26 +1268,45 @@ export default function PurchaseOrdersPage() {
   return (
     <main className="min-h-screen bg-zinc-100 p-6 text-black">
       <div className="mx-auto max-w-7xl space-y-6">
-        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true"
+          data-t1eq-qbit-id="purchase-orders-header"
+          data-t1eq-qbit-type="page-card"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
             <div>
-              <h1 className="text-5xl font-bold text-black">
+              <h1
+                data-t1eq-qbit-id="purchase-orders-header-title"
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="text-5xl font-bold text-black">
                 Purchase Orders
               </h1>
 
-              <p className="mt-2 text-lg text-black/70">
+              <p
+                data-t1eq-qbit-id="purchase-orders-header-description"
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="mt-2 text-lg text-black/70">
                 Supplier purchasing, repair order direct charges, inventory
                 stock receiving, company tools, structured storage, and
                 discrepancy handoff.
               </p>
 
-              <p className="mt-2 text-sm font-semibold text-black/50">
+              <p
+                data-t1eq-qbit-id="purchase-orders-header-active-role"
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="mt-2 text-sm font-semibold text-black/50">
                 Active role: {currentRole}
               </p>
             </div>
 
             <div className="flex flex-col gap-3">
               <button data-t1eq-action-button="true"
+                data-t1eq-qbit-id="purchase-orders-refresh"
+                data-t1eq-qbit-type="action-button"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 type="button"
                 onClick={refreshPurchaseOrders}
                 className={secondaryButtonClass}
@@ -1277,6 +1315,9 @@ export default function PurchaseOrdersPage() {
               </button>
 
               <button data-t1eq-action-button="true"
+                data-t1eq-qbit-id="purchase-orders-create"
+                data-t1eq-qbit-type="action-button"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 type="button"
                 onClick={() => {
                   resetDraftForm();
@@ -1289,6 +1330,9 @@ export default function PurchaseOrdersPage() {
 
               {isManager && (
                 <button data-t1eq-action-button="true"
+                  data-t1eq-qbit-id="purchase-orders-manager-logout"
+                  data-t1eq-qbit-type="action-button"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
                   type="button"
                   onClick={handleManagerLogout}
                   className={secondaryButtonClass}
@@ -1302,6 +1346,9 @@ export default function PurchaseOrdersPage() {
 
         <section className="grid grid-cols-2 gap-4 md:grid-cols-4">
           <button data-t1eq-action-button="true"
+            data-t1eq-qbit-id="purchase-orders-filter-all"
+            data-t1eq-qbit-type="tile"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
             type="button"
             onClick={() => setSelectedStatusTileFilter("All")}
             className={`cursor-pointer rounded-2xl border bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99] ${
@@ -1322,6 +1369,9 @@ export default function PurchaseOrdersPage() {
           </button>
 
           <button data-t1eq-action-button="true"
+            data-t1eq-qbit-id="purchase-orders-filter-open"
+            data-t1eq-qbit-type="tile"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
             type="button"
             onClick={() => setSelectedStatusTileFilter("Open")}
             className={`cursor-pointer rounded-2xl border bg-orange-50 p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99] ${
@@ -1344,6 +1394,9 @@ export default function PurchaseOrdersPage() {
           </button>
 
           <button data-t1eq-action-button="true"
+            data-t1eq-qbit-id="purchase-orders-filter-received"
+            data-t1eq-qbit-type="tile"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
             type="button"
             onClick={() => setSelectedStatusTileFilter("Received")}
             className={`cursor-pointer rounded-2xl border bg-green-50 p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99] ${
@@ -1366,6 +1419,9 @@ export default function PurchaseOrdersPage() {
           </button>
 
           <button data-t1eq-action-button="true"
+            data-t1eq-qbit-id="purchase-orders-filter-value"
+            data-t1eq-qbit-type="tile"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
             type="button"
             onClick={() => setSelectedStatusTileFilter("All")}
             className="cursor-pointer rounded-2xl border border-zinc-200 bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md active:scale-[0.99]"
@@ -1385,8 +1441,16 @@ export default function PurchaseOrdersPage() {
         </section>
 
         {showCreatePurchaseOrderForm && (
-          <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
-            <h2 className="text-3xl font-bold">
+          <section data-t1eq-tile="true" data-t1eq-page-card="true"
+            data-t1eq-qbit-id="purchase-orders-form"
+            data-t1eq-qbit-type="page-card"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+            <h2
+              data-t1eq-qbit-id="purchase-orders-form-title"
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="text-3xl font-bold">
               {editingPoId ? "Edit Purchase Order" : "Create Purchase Order"}
             </h2>
 
@@ -1395,6 +1459,9 @@ export default function PurchaseOrdersPage() {
                 <span className={smallMutedTextClass}>Supplier</span>
 
                 <input data-t1eq-field="true"
+                  data-t1eq-qbit-id="purchase-orders-form-supplier"
+                  data-t1eq-qbit-type="field"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
                   value={supplierName}
                   onChange={(event) => setSupplierName(event.target.value)}
                   placeholder="Supplier name"
@@ -1406,6 +1473,9 @@ export default function PurchaseOrdersPage() {
                 <span className={smallMutedTextClass}>Notes</span>
 
                 <input data-t1eq-field="true"
+                  data-t1eq-qbit-id="purchase-orders-form-notes"
+                  data-t1eq-qbit-type="field"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
                   value={notes}
                   onChange={(event) => setNotes(event.target.value)}
                   placeholder="PO notes"
@@ -1415,15 +1485,28 @@ export default function PurchaseOrdersPage() {
             </div>
 
             <div className="mt-5 space-y-4">
-              {draftLines.map((draftLine, index) => (
+              {draftLines.map((draftLine, index) => {
+                const draftLineQbitId = `purchase-orders-draft-line-${draftLine.id}`;
+
+                return (
                 <div data-t1eq-tile="true" data-t1eq-page-card="true"
+                  data-t1eq-qbit-id={draftLineQbitId}
+                  data-t1eq-qbit-type="tile"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
                   key={draftLine.id}
                   className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4"
                 >
                   <div className="mb-4 flex items-center justify-between">
-                    <div className="text-lg font-bold">Line {index + 1}</div>
+                    <div
+                      data-t1eq-qbit-id={`${draftLineQbitId}-label`}
+                      data-t1eq-qbit-type="text"
+                      data-t1eq-qbit-scope={QBIT_SCOPE}
+                      className="text-lg font-bold">Line {index + 1}</div>
 
                     <button data-t1eq-action-button="true"
+                      data-t1eq-qbit-id={`${draftLineQbitId}-remove`}
+                      data-t1eq-qbit-type="action-button"
+                      data-t1eq-qbit-scope={QBIT_SCOPE}
                       type="button"
                       onClick={() => removeDraftLine(draftLine.id)}
                       className={dangerButtonClass}
@@ -1437,6 +1520,9 @@ export default function PurchaseOrdersPage() {
                       <span className={smallMutedTextClass}>Line Class</span>
 
                       <select data-t1eq-field="true"
+                        data-t1eq-qbit-id={`${draftLineQbitId}-line-class`}
+                        data-t1eq-qbit-type="field"
+                        data-t1eq-qbit-scope={QBIT_SCOPE}
                         value={draftLine.lineClass}
                         onChange={(event) =>
                           updateDraftLine(draftLine.id, {
@@ -1458,6 +1544,9 @@ export default function PurchaseOrdersPage() {
                       <span className={smallMutedTextClass}>Part Number</span>
 
                       <input data-t1eq-field="true"
+                        data-t1eq-qbit-id={`${draftLineQbitId}-part-number`}
+                        data-t1eq-qbit-type="field"
+                        data-t1eq-qbit-scope={QBIT_SCOPE}
                         value={draftLine.partNumber}
                         onChange={(event) =>
                           updateDraftLine(draftLine.id, {
@@ -1472,6 +1561,9 @@ export default function PurchaseOrdersPage() {
                       <span className={smallMutedTextClass}>Description</span>
 
                       <input data-t1eq-field="true"
+                        data-t1eq-qbit-id={`${draftLineQbitId}-description`}
+                        data-t1eq-qbit-type="field"
+                        data-t1eq-qbit-scope={QBIT_SCOPE}
                         value={draftLine.description}
                         onChange={(event) =>
                           updateDraftLine(draftLine.id, {
@@ -1486,6 +1578,9 @@ export default function PurchaseOrdersPage() {
                       <span className={smallMutedTextClass}>Quantity</span>
 
                       <input data-t1eq-field="true"
+                        data-t1eq-qbit-id={`${draftLineQbitId}-quantity`}
+                        data-t1eq-qbit-type="field"
+                        data-t1eq-qbit-scope={QBIT_SCOPE}
                         type="number"
                         min="1"
                         value={draftLine.quantity}
@@ -1502,6 +1597,9 @@ export default function PurchaseOrdersPage() {
                       <span className={smallMutedTextClass}>Unit Cost</span>
 
                       <input data-t1eq-field="true"
+                        data-t1eq-qbit-id={`${draftLineQbitId}-cost`}
+                        data-t1eq-qbit-type="field"
+                        data-t1eq-qbit-scope={QBIT_SCOPE}
                         type="number"
                         min="0"
                         step="0.01"
@@ -1515,7 +1613,11 @@ export default function PurchaseOrdersPage() {
                       />
                     </label>
 
-                    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-zinc-200 bg-white p-3">
+                    <div data-t1eq-tile="true" data-t1eq-page-card="true"
+                      data-t1eq-qbit-id={`${draftLineQbitId}-total`}
+                      data-t1eq-qbit-type="tile"
+                      data-t1eq-qbit-scope={QBIT_SCOPE}
+                      className="rounded-xl border border-zinc-200 bg-white p-3">
                       <div className={smallMutedTextClass}>Line Total</div>
 
                       <div className="text-xl font-bold">
@@ -1531,11 +1633,15 @@ export default function PurchaseOrdersPage() {
                     {renderStructuredLocationFields(draftLine)}
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="mt-5 flex flex-wrap gap-3">
               <button data-t1eq-action-button="true"
+                data-t1eq-qbit-id="purchase-orders-form-add-line"
+                data-t1eq-qbit-type="action-button"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 type="button"
                 onClick={addDraftLine}
                 className={secondaryButtonClass}
@@ -1544,6 +1650,9 @@ export default function PurchaseOrdersPage() {
               </button>
 
               <button data-t1eq-action-button="true"
+                data-t1eq-qbit-id="purchase-orders-form-submit"
+                data-t1eq-qbit-type="action-button"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 type="button"
                 onClick={handleCreateOrUpdatePurchaseOrder}
                 className={primaryButtonClass}
@@ -1553,6 +1662,9 @@ export default function PurchaseOrdersPage() {
 
               {!editingPoId && (
                 <button data-t1eq-action-button="true"
+                  data-t1eq-qbit-id="purchase-orders-form-cancel"
+                  data-t1eq-qbit-type="action-button"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
                   type="button"
                   onClick={resetDraftForm}
                   className={secondaryButtonClass}
@@ -1563,6 +1675,9 @@ export default function PurchaseOrdersPage() {
 
               {editingPoId && (
                 <button data-t1eq-action-button="true"
+                  data-t1eq-qbit-id="purchase-orders-form-cancel-edit"
+                  data-t1eq-qbit-type="action-button"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
                   type="button"
                   onClick={resetDraftForm}
                   className={secondaryButtonClass}
@@ -1574,7 +1689,11 @@ export default function PurchaseOrdersPage() {
           </section>
         )}
 
-        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <section data-t1eq-tile="true" data-t1eq-page-card="true"
+          data-t1eq-qbit-id="purchase-orders-search"
+          data-t1eq-qbit-type="page-card"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="grid gap-4 md:grid-cols-3">
             <label className="space-y-1 md:col-span-2">
               <span className={smallMutedTextClass}>
@@ -1582,6 +1701,9 @@ export default function PurchaseOrdersPage() {
               </span>
 
               <input data-t1eq-field="true"
+                data-t1eq-qbit-id="purchase-orders-search-field"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="Search PO, supplier, status, part, description..."
@@ -1591,16 +1713,31 @@ export default function PurchaseOrdersPage() {
           </div>
         </section>
 
-        <section data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <h2 className="text-3xl font-bold">Purchase Order List</h2>
+        <section data-t1eq-tile="true" data-t1eq-page-card="true"
+          data-t1eq-qbit-id="purchase-orders-list"
+          data-t1eq-qbit-type="page-card"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+          <h2
+            data-t1eq-qbit-id="purchase-orders-list-title"
+            data-t1eq-qbit-type="text"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="text-3xl font-bold">Purchase Order List</h2>
 
           <div className="mt-3 flex flex-wrap items-center gap-3">
-            <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-sm font-semibold text-black/60">
+            <div data-t1eq-tile="true" data-t1eq-page-card="true"
+              data-t1eq-qbit-id="purchase-orders-list-filter-badge"
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-sm font-semibold text-black/60">
               Filter: {selectedStatusTileFilter ?? "None"}
             </div>
 
             {selectedStatusTileFilter && (
               <button data-t1eq-action-button="true"
+                data-t1eq-qbit-id="purchase-orders-list-clear-filter"
+                data-t1eq-qbit-type="action-button"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
                 type="button"
                 onClick={() => setSelectedStatusTileFilter(null)}
                 className={secondaryButtonClass}
@@ -1611,7 +1748,11 @@ export default function PurchaseOrdersPage() {
           </div>
 
           {filteredPurchaseOrders.length === 0 ? (
-            <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-5 rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-10 text-center">
+            <div data-t1eq-tile="true" data-t1eq-page-card="true"
+              data-t1eq-qbit-id="purchase-orders-list-empty"
+              data-t1eq-qbit-type="page-card"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-5 rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-10 text-center">
               <div className="text-xl font-bold">No purchase orders found</div>
 
               <p className="mt-2 text-black/60">
@@ -1643,30 +1784,55 @@ export default function PurchaseOrdersPage() {
                 const selectedRecommendedTotals =
                   getSelectedRecommendedInventoryTotals(purchaseOrder.id);
 
+                const purchaseOrderQbitId = `purchase-order-${purchaseOrder.id}`;
+
                 return (
                   <article data-t1eq-tile="true" data-t1eq-page-card="true"
+                    data-t1eq-qbit-id={purchaseOrderQbitId}
+                    data-t1eq-qbit-type="tile"
+                    data-t1eq-qbit-scope={QBIT_SCOPE}
                     key={purchaseOrder.id}
                     className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5"
                   >
                     <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
                       <div>
-                        <div className="text-2xl font-bold">
+                        <div
+                          data-t1eq-qbit-id={`${purchaseOrderQbitId}-number`}
+                          data-t1eq-qbit-type="text"
+                          data-t1eq-qbit-scope={QBIT_SCOPE}
+                          className="text-2xl font-bold">
                           {purchaseOrderNumber}
                         </div>
 
-                        <div className="text-black/70">
+                        <div
+                          data-t1eq-qbit-id={`${purchaseOrderQbitId}-supplier`}
+                          data-t1eq-qbit-type="text"
+                          data-t1eq-qbit-scope={QBIT_SCOPE}
+                          className="text-black/70">
                           {getSupplierName(purchaseOrder)}
                         </div>
 
-                        <div className="mt-2 text-sm text-black/50">
+                        <div
+                          data-t1eq-qbit-id={`${purchaseOrderQbitId}-created`}
+                          data-t1eq-qbit-type="text"
+                          data-t1eq-qbit-scope={QBIT_SCOPE}
+                          className="mt-2 text-sm text-black/50">
                           Created: {formatDate(purchaseOrder.createdDate)}
                         </div>
 
-                        <div className="text-sm text-black/50">
+                        <div
+                          data-t1eq-qbit-id={`${purchaseOrderQbitId}-received-date`}
+                          data-t1eq-qbit-type="text"
+                          data-t1eq-qbit-scope={QBIT_SCOPE}
+                          className="text-sm text-black/50">
                           Received: {formatDate(purchaseOrder.receivedDate)}
                         </div>
 
-                        <div className="mt-2 text-sm text-black/60">
+                        <div
+                          data-t1eq-qbit-id={`${purchaseOrderQbitId}-line-summary`}
+                          data-t1eq-qbit-type="text"
+                          data-t1eq-qbit-scope={QBIT_SCOPE}
+                          className="mt-2 text-sm text-black/60">
                           {inventoryLineCount} inventory stock line(s),{" "}
                           {companyToolLineCount} company tool line(s),{" "}
                           {directChargeLineCount} repair order direct charge
@@ -1676,6 +1842,9 @@ export default function PurchaseOrdersPage() {
 
                       <div className="space-y-2 md:text-right">
                         <span
+                          data-t1eq-qbit-id={`${purchaseOrderQbitId}-status`}
+                          data-t1eq-qbit-type="text"
+                          data-t1eq-qbit-scope={QBIT_SCOPE}
                           className={`inline-flex rounded-full border px-3 py-1 text-sm font-semibold ${getStatusClass(
                             purchaseOrder.status
                           )}`}
@@ -1683,14 +1852,22 @@ export default function PurchaseOrdersPage() {
                           {purchaseOrder.status}
                         </span>
 
-                        <div className="text-3xl font-bold">
+                        <div
+                          data-t1eq-qbit-id={`${purchaseOrderQbitId}-total`}
+                          data-t1eq-qbit-type="text"
+                          data-t1eq-qbit-scope={QBIT_SCOPE}
+                          className="text-3xl font-bold">
                           {formatCurrency(
                             purchaseOrder.total ?? purchaseOrder.totalAmount
                           )}
                         </div>
 
                         {isLocked && (
-                          <div className="text-sm font-semibold text-orange-700">
+                          <div
+                            data-t1eq-qbit-id={`${purchaseOrderQbitId}-locked-indicator`}
+                            data-t1eq-qbit-type="text"
+                            data-t1eq-qbit-scope={QBIT_SCOPE}
+                            className="text-sm font-semibold text-orange-700">
                             Completed PO locked
                           </div>
                         )}
@@ -1699,6 +1876,9 @@ export default function PurchaseOrdersPage() {
 
                     <div className="mt-4 flex flex-wrap gap-3">
                       <button data-t1eq-action-button="true"
+                        data-t1eq-qbit-id={`${purchaseOrderQbitId}-toggle-details`}
+                        data-t1eq-qbit-type="action-button"
+                        data-t1eq-qbit-scope={QBIT_SCOPE}
                         type="button"
                         onClick={() =>
                           setExpandedPoId(isExpanded ? null : purchaseOrder.id)
@@ -1711,6 +1891,9 @@ export default function PurchaseOrdersPage() {
                       {!isLocked && (
                         <>
                           <button data-t1eq-action-button="true"
+                            data-t1eq-qbit-id={`${purchaseOrderQbitId}-edit`}
+                            data-t1eq-qbit-type="action-button"
+                            data-t1eq-qbit-scope={QBIT_SCOPE}
                             type="button"
                             onClick={() =>
                               beginEditPurchaseOrder(purchaseOrder)
@@ -1721,6 +1904,9 @@ export default function PurchaseOrdersPage() {
                           </button>
 
                           <button data-t1eq-action-button="true"
+                            data-t1eq-qbit-id={`${purchaseOrderQbitId}-mark-ordered`}
+                            data-t1eq-qbit-type="action-button"
+                            data-t1eq-qbit-scope={QBIT_SCOPE}
                             type="button"
                             onClick={() => handleMarkOrdered(purchaseOrder)}
                             className={secondaryButtonClass}
@@ -1729,6 +1915,9 @@ export default function PurchaseOrdersPage() {
                           </button>
 
                           <button data-t1eq-action-button="true"
+                            data-t1eq-qbit-id={`${purchaseOrderQbitId}-toggle-recommended`}
+                            data-t1eq-qbit-type="action-button"
+                            data-t1eq-qbit-scope={QBIT_SCOPE}
                             type="button"
                             onClick={() =>
                               toggleRecommendedInventoryPanel(purchaseOrder.id)
@@ -1739,6 +1928,9 @@ export default function PurchaseOrdersPage() {
                           </button>
 
                           <button data-t1eq-action-button="true"
+                            data-t1eq-qbit-id={`${purchaseOrderQbitId}-receive`}
+                            data-t1eq-qbit-type="action-button"
+                            data-t1eq-qbit-scope={QBIT_SCOPE}
                             type="button"
                             onClick={() =>
                               handleReceivePurchaseOrder(purchaseOrder)
@@ -1749,6 +1941,9 @@ export default function PurchaseOrdersPage() {
                           </button>
 
                           <button data-t1eq-action-button="true"
+                            data-t1eq-qbit-id={`${purchaseOrderQbitId}-recalculate`}
+                            data-t1eq-qbit-type="action-button"
+                            data-t1eq-qbit-scope={QBIT_SCOPE}
                             type="button"
                             onClick={() =>
                               handleRecalculateTotals(purchaseOrder)
@@ -1759,6 +1954,9 @@ export default function PurchaseOrdersPage() {
                           </button>
 
                           <button data-t1eq-action-button="true"
+                            data-t1eq-qbit-id={`${purchaseOrderQbitId}-delete`}
+                            data-t1eq-qbit-type="action-button"
+                            data-t1eq-qbit-scope={QBIT_SCOPE}
                             type="button"
                             onClick={() =>
                               handleDeletePurchaseOrder(purchaseOrder)
@@ -1772,13 +1970,20 @@ export default function PurchaseOrdersPage() {
                     </div>
 
                     {isLocked && !isManager && (
-                      <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-4 flex flex-wrap items-center gap-2 rounded-xl border border-orange-200 bg-orange-50 p-3">
+                      <div data-t1eq-tile="true" data-t1eq-page-card="true"
+                        data-t1eq-qbit-id={`${purchaseOrderQbitId}-manager-login-banner`}
+                        data-t1eq-qbit-type="page-card"
+                        data-t1eq-qbit-scope={QBIT_SCOPE}
+                        className="mt-4 flex flex-wrap items-center gap-2 rounded-xl border border-orange-200 bg-orange-50 p-3">
                         <div className="w-full text-sm font-semibold text-orange-700 md:w-auto">
                           Completed PO locked. Manager login required for
                           changes.
                         </div>
 
                         <input data-t1eq-field="true"
+                          data-t1eq-qbit-id={`${purchaseOrderQbitId}-manager-code`}
+                          data-t1eq-qbit-type="field"
+                          data-t1eq-qbit-scope={QBIT_SCOPE}
                           value={managerCodeByPoId[purchaseOrder.id] ?? ""}
                           onChange={(event) =>
                             updateManagerCode(
@@ -1791,6 +1996,9 @@ export default function PurchaseOrdersPage() {
                         />
 
                         <button data-t1eq-action-button="true"
+                          data-t1eq-qbit-id={`${purchaseOrderQbitId}-manager-login`}
+                          data-t1eq-qbit-type="action-button"
+                          data-t1eq-qbit-scope={QBIT_SCOPE}
                           type="button"
                           onClick={() => handleManagerLogin(purchaseOrder.id)}
                           className={warningButtonClass}
@@ -1801,20 +2009,36 @@ export default function PurchaseOrdersPage() {
                     )}
 
                     {recommendedInventoryVisibleByPoId[purchaseOrder.id] && (
-                      <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-5 rounded-2xl border border-zinc-200 bg-white p-4">
+                      <div data-t1eq-tile="true" data-t1eq-page-card="true"
+                        data-t1eq-qbit-id={`${purchaseOrderQbitId}-recommended-panel`}
+                        data-t1eq-qbit-type="page-card"
+                        data-t1eq-qbit-scope={QBIT_SCOPE}
+                        className="mt-5 rounded-2xl border border-zinc-200 bg-white p-4">
                         <div className="flex flex-col justify-between gap-3 md:flex-row md:items-start">
                           <div>
-                            <h3 className="text-xl font-bold">
+                            <h3
+                              data-t1eq-qbit-id={`${purchaseOrderQbitId}-recommended-title`}
+                              data-t1eq-qbit-type="text"
+                              data-t1eq-qbit-scope={QBIT_SCOPE}
+                              className="text-xl font-bold">
                               Recommended Inventory
                             </h3>
 
-                            <p className="mt-1 text-sm text-black/60">
+                            <p
+                              data-t1eq-qbit-id={`${purchaseOrderQbitId}-recommended-description`}
+                              data-t1eq-qbit-type="text"
+                              data-t1eq-qbit-scope={QBIT_SCOPE}
+                              className="mt-1 text-sm text-black/60">
                               Select low-stock inventory items to add as
                               Inventory Stock lines.
                             </p>
                           </div>
 
-                          <div className="text-sm font-semibold text-black/60">
+                          <div
+                            data-t1eq-qbit-id={`${purchaseOrderQbitId}-recommended-selected-summary`}
+                            data-t1eq-qbit-type="text"
+                            data-t1eq-qbit-scope={QBIT_SCOPE}
+                            className="text-sm font-semibold text-black/60">
                             Selected:{" "}
                             {selectedRecommendedTotals.selectedCount} item(s),{" "}
                             {selectedRecommendedTotals.selectedQuantity} qty,{" "}
@@ -1826,6 +2050,9 @@ export default function PurchaseOrdersPage() {
 
                         <div className="mt-4 flex flex-wrap gap-3">
                           <button data-t1eq-action-button="true"
+                            data-t1eq-qbit-id={`${purchaseOrderQbitId}-recommended-select-all`}
+                            data-t1eq-qbit-type="action-button"
+                            data-t1eq-qbit-scope={QBIT_SCOPE}
                             type="button"
                             onClick={() =>
                               selectAllRecommendedInventory(purchaseOrder.id)
@@ -1836,6 +2063,9 @@ export default function PurchaseOrdersPage() {
                           </button>
 
                           <button data-t1eq-action-button="true"
+                            data-t1eq-qbit-id={`${purchaseOrderQbitId}-recommended-unselect-all`}
+                            data-t1eq-qbit-type="action-button"
+                            data-t1eq-qbit-scope={QBIT_SCOPE}
                             type="button"
                             onClick={() =>
                               unselectAllRecommendedInventory(purchaseOrder.id)
@@ -1846,6 +2076,9 @@ export default function PurchaseOrdersPage() {
                           </button>
 
                           <button data-t1eq-action-button="true"
+                            data-t1eq-qbit-id={`${purchaseOrderQbitId}-recommended-add-selected`}
+                            data-t1eq-qbit-type="action-button"
+                            data-t1eq-qbit-scope={QBIT_SCOPE}
                             type="button"
                             onClick={() =>
                               addSelectedRecommendedInventoryToPurchaseOrder(
@@ -1859,7 +2092,11 @@ export default function PurchaseOrdersPage() {
                         </div>
 
                         {recommendedInventoryItems.length === 0 ? (
-                          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-4 rounded-xl border border-dashed border-zinc-300 bg-zinc-50 p-5 text-center text-black/60">
+                          <div data-t1eq-tile="true" data-t1eq-page-card="true"
+                            data-t1eq-qbit-id={`${purchaseOrderQbitId}-recommended-empty`}
+                            data-t1eq-qbit-type="page-card"
+                            data-t1eq-qbit-scope={QBIT_SCOPE}
+                            className="mt-4 rounded-xl border border-dashed border-zinc-300 bg-zinc-50 p-5 text-center text-black/60">
                             No recommended inventory items found.
                           </div>
                         ) : (
@@ -1872,13 +2109,21 @@ export default function PurchaseOrdersPage() {
 
                               const isSelected = selectedIds.includes(item.id);
 
+                              const recommendedItemQbitId = `${purchaseOrderQbitId}-recommended-${item.id}`;
+
                               return (
                                 <label data-t1eq-tile="true" data-t1eq-page-card="true"
+                                  data-t1eq-qbit-id={recommendedItemQbitId}
+                                  data-t1eq-qbit-type="tile"
+                                  data-t1eq-qbit-scope={QBIT_SCOPE}
                                   key={item.id}
                                   className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-zinc-200 bg-zinc-50 p-3"
                                 >
                                   <div className="flex items-center gap-3">
                                     <input data-t1eq-field="true"
+                                      data-t1eq-qbit-id={`${recommendedItemQbitId}-checkbox`}
+                                      data-t1eq-qbit-type="field"
+                                      data-t1eq-qbit-scope={QBIT_SCOPE}
                                       type="checkbox"
                                       checked={isSelected}
                                       onChange={() =>
@@ -1925,7 +2170,11 @@ export default function PurchaseOrdersPage() {
                     {isExpanded && (
                       <div className="mt-5 space-y-3">
                         {lines.length === 0 ? (
-                          <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-dashed border-zinc-300 bg-white p-5 text-center text-black/60">
+                          <div data-t1eq-tile="true" data-t1eq-page-card="true"
+                            data-t1eq-qbit-id={`${purchaseOrderQbitId}-lines-empty`}
+                            data-t1eq-qbit-type="page-card"
+                            data-t1eq-qbit-scope={QBIT_SCOPE}
+                            className="rounded-xl border border-dashed border-zinc-300 bg-white p-5 text-center text-black/60">
                             This purchase order has no lines.
                           </div>
                         ) : (
@@ -1935,32 +2184,57 @@ export default function PurchaseOrdersPage() {
                             const verifiedLiveInventoryCount =
                               verifiedLiveInventoryCountByLineId[line.id] ?? "";
 
+                            const lineQbitId = `${purchaseOrderQbitId}-line-${line.id}`;
+
                             return (
                               <div data-t1eq-tile="true" data-t1eq-page-card="true"
+                                data-t1eq-qbit-id={lineQbitId}
+                                data-t1eq-qbit-type="tile"
+                                data-t1eq-qbit-scope={QBIT_SCOPE}
                                 key={line.id}
                                 className="rounded-2xl border border-zinc-200 bg-white p-4"
                               >
                                 <div className="flex flex-col justify-between gap-3 md:flex-row md:items-start">
                                   <div>
-                                    <div className="text-lg font-bold">
+                                    <div
+                                      data-t1eq-qbit-id={`${lineQbitId}-part-number`}
+                                      data-t1eq-qbit-type="text"
+                                      data-t1eq-qbit-scope={QBIT_SCOPE}
+                                      className="text-lg font-bold">
                                       {line.partNumber || "No part number"}
                                     </div>
 
-                                    <div className="text-black/70">
+                                    <div
+                                      data-t1eq-qbit-id={`${lineQbitId}-description`}
+                                      data-t1eq-qbit-type="text"
+                                      data-t1eq-qbit-scope={QBIT_SCOPE}
+                                      className="text-black/70">
                                       {line.description || "No description"}
                                     </div>
 
-                                    <div className="mt-1 text-sm font-semibold text-black/50">
+                                    <div
+                                      data-t1eq-qbit-id={`${lineQbitId}-class`}
+                                      data-t1eq-qbit-type="text"
+                                      data-t1eq-qbit-scope={QBIT_SCOPE}
+                                      className="mt-1 text-sm font-semibold text-black/50">
                                       {line.lineClass}
                                     </div>
                                   </div>
 
                                   <div className="text-right">
-                                    <div className="text-xl font-bold">
+                                    <div
+                                      data-t1eq-qbit-id={`${lineQbitId}-total`}
+                                      data-t1eq-qbit-type="text"
+                                      data-t1eq-qbit-scope={QBIT_SCOPE}
+                                      className="text-xl font-bold">
                                       {formatCurrency(line.total)}
                                     </div>
 
-                                    <div className="text-sm text-black/60">
+                                    <div
+                                      data-t1eq-qbit-id={`${lineQbitId}-qty-cost`}
+                                      data-t1eq-qbit-type="text"
+                                      data-t1eq-qbit-scope={QBIT_SCOPE}
+                                      className="text-sm text-black/60">
                                       {line.quantity} ×{" "}
                                       {formatCurrency(line.cost)}
                                     </div>
@@ -1968,7 +2242,11 @@ export default function PurchaseOrdersPage() {
                                 </div>
 
                                 {isReceivingLineClass(line.lineClass) && (
-                                  <div data-t1eq-tile="true" data-t1eq-page-card="true" className="mt-4 rounded-xl border border-zinc-200 bg-zinc-50 p-3">
+                                  <div data-t1eq-tile="true" data-t1eq-page-card="true"
+                                    data-t1eq-qbit-id={`${lineQbitId}-receiving-location`}
+                                    data-t1eq-qbit-type="page-card"
+                                    data-t1eq-qbit-scope={QBIT_SCOPE}
+                                    className="mt-4 rounded-xl border border-zinc-200 bg-zinc-50 p-3">
                                     <div className="text-sm font-semibold text-black/60">
                                       Receiving Location
                                     </div>
@@ -1992,7 +2270,11 @@ export default function PurchaseOrdersPage() {
 
                                 {line.lineClass === "Inventory Stock" && (
                                   <div className="mt-4 grid gap-3 md:grid-cols-3">
-                                    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-zinc-200 bg-zinc-50 p-3">
+                                    <div data-t1eq-tile="true" data-t1eq-page-card="true"
+                                      data-t1eq-qbit-id={`${lineQbitId}-current-qty`}
+                                      data-t1eq-qbit-type="page-card"
+                                      data-t1eq-qbit-scope={QBIT_SCOPE}
+                                      className="rounded-xl border border-zinc-200 bg-zinc-50 p-3">
                                       <div className="text-sm font-semibold text-black/60">
                                         Current Qty On Hand
                                       </div>
@@ -2003,7 +2285,11 @@ export default function PurchaseOrdersPage() {
                                       </div>
                                     </div>
 
-                                    <div data-t1eq-tile="true" data-t1eq-page-card="true" className="rounded-xl border border-zinc-200 bg-zinc-50 p-3">
+                                    <div data-t1eq-tile="true" data-t1eq-page-card="true"
+                                      data-t1eq-qbit-id={`${lineQbitId}-projected-qty`}
+                                      data-t1eq-qbit-type="page-card"
+                                      data-t1eq-qbit-scope={QBIT_SCOPE}
+                                      className="rounded-xl border border-zinc-200 bg-zinc-50 p-3">
                                       <div className="text-sm font-semibold text-black/60">
                                         Quantity on hand including this order
                                       </div>
@@ -2021,6 +2307,9 @@ export default function PurchaseOrdersPage() {
                                       </span>
 
                                       <input data-t1eq-field="true"
+                                        data-t1eq-qbit-id={`${lineQbitId}-verified-count`}
+                                        data-t1eq-qbit-type="field"
+                                        data-t1eq-qbit-scope={QBIT_SCOPE}
                                         type="number"
                                         min="0"
                                         value={verifiedLiveInventoryCount}
