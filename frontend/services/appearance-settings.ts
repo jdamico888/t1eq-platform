@@ -261,10 +261,34 @@ export const defaultAppearanceSettings: AppearanceSettings = {
 };
 
 export const logoPlacementOptions: LogoPlacement[] = [
-  "Sidebar",
-  "Background",
+  "Side Bar Header",
+  "Page Background",
   "Both",
 ];
+
+/**
+ * Placements were once called "Sidebar" and "Background". Anyone who saved
+ * appearance settings before the rename still has the old value in local
+ * storage, and without this it would fail validation and silently snap back
+ * to the default — losing their choice.
+ */
+const legacyLogoPlacements: Record<string, LogoPlacement> = {
+  Sidebar: "Side Bar Header",
+  Background: "Page Background",
+  Both: "Both",
+};
+
+function normalizeLogoPlacement(value: unknown): LogoPlacement {
+  if (valueIsOneOf(value, logoPlacementOptions)) {
+    return value;
+  }
+
+  if (typeof value === "string" && legacyLogoPlacements[value]) {
+    return legacyLogoPlacements[value];
+  }
+
+  return defaultAppearanceSettings.logoPlacement;
+}
 
 export const tileOrientationOptions: TileOrientation[] = [
   "Grid",
@@ -616,9 +640,7 @@ function normalizeAppearanceSettings(
 
     logoUrl: settings.logoUrl ?? "",
 
-    logoPlacement: valueIsOneOf(settings.logoPlacement, logoPlacementOptions)
-      ? settings.logoPlacement
-      : defaultAppearanceSettings.logoPlacement,
+    logoPlacement: normalizeLogoPlacement(settings.logoPlacement),
 
     accentHue: normalizedAccentHue,
 

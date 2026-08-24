@@ -13,6 +13,13 @@ export type InventoryItemImage = {
   capturedDate: string;
 };
 
+/**
+ * Where an item sits within its location. "Row" is only meaningful on a
+ * Truck location, where it means which side of the truck the item is
+ * stored on.
+ */
+export type InventoryRow = "Inside" | "Outside";
+
 export type InventoryItem = {
   id: string;
 
@@ -21,6 +28,13 @@ export type InventoryItem = {
   description?: string;
 
   quantityOnHand: number;
+
+  /**
+   * How many individual pieces come in one package (a box of 25 clips
+   * has quantityPerPackage 25). Used to convert package counts to piece
+   * counts when receiving.
+   */
+  quantityPerPackage?: number;
 
   minimumQuantity: number;
   minimumStock: number;
@@ -31,7 +45,34 @@ export type InventoryItem = {
   sellPrice: number;
   price: number;
 
+  /**
+   * True once someone with pricing rights has typed a sell price by hand.
+   * While false, the sell price is kept in step with cost using the markup
+   * from Business Setup. Once true, restocking at a new cost no longer
+   * recalculates it — a manager's decision stands until it is changed
+   * deliberately.
+   */
+  sellPriceOverridden?: boolean;
+
+  /**
+   * Display name of the location. Kept for older records and list views;
+   * locationId is the real link to a record from
+   * services/inventory-locations.ts.
+   */
   location?: string;
+
+  locationId?: string;
+
+  /**
+   * Structured storage address within the location. binLocation below is
+   * kept in sync as a human-readable summary of these
+   * ("Outside · B · 3 · 14") so existing screens keep working.
+   */
+  row?: InventoryRow;
+  section?: string;
+  shelf?: string;
+  bin?: string;
+
   binLocation?: string;
 
   manufacturer?: string;
@@ -65,6 +106,16 @@ export type InventoryItem = {
    * Use this for multiple required item photos later.
    */
   itemImages?: InventoryItemImage[];
+
+  /**
+   * The four photos captured by the Add Item flow. Each is a data URL.
+   * They are also mirrored into itemImages with labels so any screen that
+   * renders the image collection picks them up automatically.
+   */
+  itemPhotoFrontUrl?: string;
+  itemPhotoSideUrl?: string;
+  itemPhotoLabelUrl?: string;
+  receiptPhotoUrl?: string;
 
   requiredPhotoCaptured?: boolean;
   requiredPhotoCapturedDate?: string;

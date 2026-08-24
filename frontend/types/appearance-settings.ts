@@ -8,7 +8,19 @@ export type AppFontFamily =
   | "Courier New";
 export type AppFontSize = "Small" | "Medium" | "Large" | "Extra Large";
 export type ThreeDEffectLevel = "Off" | "Subtle" | "Medium" | "Strong";
-export type LogoPlacement = "Sidebar" | "Background" | "Both";
+/**
+ * Where the uploaded logo is shown.
+ *
+ * These exact strings are written to the <html> element as
+ * data-t1eq-logo-placement and matched by selectors in
+ * app/appearance-theme.css — renaming one means renaming it there too.
+ * Settings saved under the older "Sidebar"/"Background" names are migrated
+ * on read (see normalizeLogoPlacement in services/appearance-settings.ts).
+ */
+export type LogoPlacement =
+  | "Side Bar Header"
+  | "Page Background"
+  | "Both";
 
 export type QBitPageScope =
   | "Dashboard"

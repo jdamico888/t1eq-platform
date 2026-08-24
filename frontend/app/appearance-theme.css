@@ -439,7 +439,7 @@ html[data-t1eq-tile-orientation="Compact"] [data-t1eq-tile-grid="true"] {
    LOGO — SIDEBAR
    ========================================================= */
 
-html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Sidebar"]
+html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Side Bar Header"]
   [data-t1eq-logo-box="true"],
 html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Both"]
   [data-t1eq-logo-box="true"] {
@@ -449,7 +449,7 @@ html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Both"]
   background-position: center;
 }
 
-html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Sidebar"]
+html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Side Bar Header"]
   [data-t1eq-logo-fallback="true"],
 html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Both"]
   [data-t1eq-logo-fallback="true"] {
@@ -481,7 +481,7 @@ html[style*="--t1eq-logo-url"] [data-t1eq-business-card="true"] {
  * Page-wide logo watermark.
  * Only shows when placement is Background or Both.
  */
-html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Background"]
+html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Page Background"]
   [data-t1eq-page-background="true"],
 html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Both"]
   [data-t1eq-page-background="true"] {
@@ -491,7 +491,7 @@ html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Both"]
 /*
  * Keep page content above the watermark.
  */
-html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Background"]
+html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Page Background"]
   [data-t1eq-page-background="true"]
   > *,
 html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Both"]
@@ -504,7 +504,7 @@ html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Both"]
 /*
  * Watermark layer.
  */
-html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Background"]
+html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Page Background"]
   [data-t1eq-page-background="true"]::before,
 html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Both"]
   [data-t1eq-page-background="true"]::before {
@@ -535,7 +535,7 @@ html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Both"]
 }
 
 @media (max-width: 1023px) {
-  html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Background"]
+  html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Page Background"]
     [data-t1eq-page-background="true"]::before,
   html[style*="--t1eq-logo-url"][data-t1eq-logo-placement="Both"]
     [data-t1eq-page-background="true"]::before {

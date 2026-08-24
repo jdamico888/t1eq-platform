@@ -2,6 +2,7 @@ import type {
   InventoryItem,
   InventoryItemImage,
   InventoryItemImageSource,
+  InventoryRow,
 } from "@/types/inventory-item";
 
 const STORAGE_KEY = "t1eq-inventory-items";
@@ -72,6 +73,66 @@ function buildLegacyPrimaryImage(item: Partial<InventoryItem>) {
   } satisfies InventoryItemImage;
 }
 
+function normalizeRow(value: unknown): InventoryRow | undefined {
+  if (value === "Inside" || value === "Outside") {
+    return value;
+  }
+
+  return undefined;
+}
+
+function optionalTrimmed(value: unknown): string | undefined {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const trimmedValue = value.trim();
+
+  return trimmedValue ? trimmedValue : undefined;
+}
+
+/**
+ * Builds the human-readable storage summary from the structured parts, so
+ * older screens that only read binLocation keep showing something useful.
+ * Falls back to whatever binLocation was already stored when no structured
+ * parts are present.
+ */
+function buildBinLocationSummary(item: Partial<InventoryItem>) {
+  const parts = [item.row, item.section, item.shelf, item.bin]
+    .map(optionalTrimmed)
+    .filter((part): part is string => Boolean(part));
+
+  if (parts.length === 0) {
+    return optionalTrimmed(item.binLocation);
+  }
+
+  return parts.join(" · ");
+}
+
+/**
+ * The Add Item flow captures four named photos. Mirror them into the
+ * itemImages collection so screens that render images pick them up without
+ * needing to know about the individual fields.
+ */
+function buildNamedPhotoImages(item: Partial<InventoryItem>) {
+  const namedPhotos: Array<{ url?: string; label: string }> = [
+    { url: item.itemPhotoFrontUrl, label: "Item photo — front" },
+    { url: item.itemPhotoSideUrl, label: "Item photo — side" },
+    { url: item.itemPhotoLabelUrl, label: "Item photo — label" },
+    { url: item.receiptPhotoUrl, label: "Receipt photo" },
+  ];
+
+  return namedPhotos
+    .filter((photo) => Boolean(photo.url))
+    .map((photo) => ({
+      id: `named-${photo.label.toLowerCase().replace(/[^a-z]+/g, "-")}`,
+      imageUrl: photo.url as string,
+      source: "Unknown" as InventoryItemImageSource,
+      label: photo.label,
+      capturedDate: item.updatedDate ?? item.createdDate ?? createTimestamp(),
+    })) satisfies InventoryItemImage[];
+}
+
 function normalizeItemImages(item: Partial<InventoryItem>) {
   const normalizedImages = Array.isArray(item.itemImages)
     ? item.itemImages
@@ -91,16 +152,26 @@ function normalizeItemImages(item: Partial<InventoryItem>) {
 
   const legacyPrimaryImage = buildLegacyPrimaryImage(item);
 
-  if (legacyPrimaryImage && !hasPrimaryImage) {
-    return [legacyPrimaryImage, ...normalizedImages];
-  }
+  const namedPhotoImages = buildNamedPhotoImages(item).filter(
+    (namedImage) =>
+      !normalizedImages.some((image) => image.label === namedImage.label)
+  );
 
-  return normalizedImages;
+  const baseImages =
+    legacyPrimaryImage && !hasPrimaryImage
+      ? [legacyPrimaryImage, ...normalizedImages]
+      : normalizedImages;
+
+  return [...baseImages, ...namedPhotoImages];
 }
 
 function normalizeInventoryItem(item: Partial<InventoryItem>): InventoryItem {
   const now = createTimestamp();
-  const imageUrl = item.imageUrl ?? "";
+
+  // The Add Item flow captures a front photo rather than the older single
+  // imageUrl, so fall back to it — otherwise new items have no thumbnail in
+  // list views.
+  const imageUrl = item.imageUrl ?? item.itemPhotoFrontUrl ?? "";
   const itemImages = normalizeItemImages(item);
   const requiredPhotoSource = normalizeImageSource(item.requiredPhotoSource);
 
@@ -113,6 +184,11 @@ function normalizeInventoryItem(item: Partial<InventoryItem>): InventoryItem {
 
     quantityOnHand: safeNumber(item.quantityOnHand),
 
+    quantityPerPackage:
+      item.quantityPerPackage === undefined
+        ? undefined
+        : safeNumber(item.quantityPerPackage),
+
     minimumQuantity: safeNumber(item.minimumQuantity ?? item.minimumStock),
     minimumStock: safeNumber(item.minimumStock ?? item.minimumQuantity),
     idealStock: safeNumber(item.idealStock),
@@ -122,8 +198,17 @@ function normalizeInventoryItem(item: Partial<InventoryItem>): InventoryItem {
     sellPrice: safeNumber(item.sellPrice ?? item.price),
     price: safeNumber(item.price ?? item.sellPrice),
 
+    sellPriceOverridden: item.sellPriceOverridden ?? false,
+
     location: item.location,
-    binLocation: item.binLocation,
+    locationId: optionalTrimmed(item.locationId),
+
+    row: normalizeRow(item.row),
+    section: optionalTrimmed(item.section),
+    shelf: optionalTrimmed(item.shelf),
+    bin: optionalTrimmed(item.bin),
+
+    binLocation: buildBinLocationSummary(item),
 
     manufacturer: item.manufacturer,
     supplierName: item.supplierName,
@@ -139,6 +224,11 @@ function normalizeInventoryItem(item: Partial<InventoryItem>): InventoryItem {
     manufacturerImageUrl: item.manufacturerImageUrl,
 
     itemImages,
+
+    itemPhotoFrontUrl: item.itemPhotoFrontUrl,
+    itemPhotoSideUrl: item.itemPhotoSideUrl,
+    itemPhotoLabelUrl: item.itemPhotoLabelUrl,
+    receiptPhotoUrl: item.receiptPhotoUrl,
 
     requiredPhotoCaptured: Boolean(item.requiredPhotoCaptured ?? imageUrl),
     requiredPhotoCapturedDate:

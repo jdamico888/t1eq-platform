@@ -1,9 +1,15 @@
 import type { TechnicianProfile } from "@/types/technician-profile";
+import type { PermissionFunctionKey } from "@/types/role-permissions";
 
 import {
   getActiveTechnicianProfiles,
   getTechnicianProfileById,
 } from "@/services/technician-profiles";
+
+import {
+  getRolePermissionsSettings,
+  hasPermission,
+} from "@/services/role-permissions";
 
 export const AUTH_SESSION_UPDATED_EVENT = "t1eq-auth-session-updated";
 
@@ -64,6 +70,38 @@ export function clearCurrentSessionTechnician(): void {
   localStorage.removeItem(SESSION_STORAGE_KEY);
 
   window.dispatchEvent(new CustomEvent(AUTH_SESSION_UPDATED_EVENT));
+}
+
+/**
+ * Whether the person currently logged in is allowed to use a given app
+ * function, resolved through the Role assigned on their employee record.
+ *
+ * Before any employee exists (see loginRequiresSetup) nothing is gating
+ * anything yet, so this returns true — otherwise a fresh install would be
+ * unable to use the very screens needed to set up the first user.
+ *
+ * Note this is a UI convenience gate only, not enforcement. Everything
+ * still lives in this browser's localStorage and a determined user can
+ * edit it directly. Real enforcement arrives with the backend.
+ */
+export function currentUserHasPermission(
+  functionKey: PermissionFunctionKey
+): boolean {
+  if (loginRequiresSetup()) {
+    return true;
+  }
+
+  const currentTechnician = getCurrentSessionTechnician();
+
+  if (!currentTechnician) {
+    return false;
+  }
+
+  return hasPermission(
+    getRolePermissionsSettings(),
+    currentTechnician.permissionRoleId,
+    functionKey
+  );
 }
 
 /**

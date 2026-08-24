@@ -3,6 +3,21 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
+import { useRouter } from "next/navigation";
+
+import type { OperationalDashboardChartDefinition } from "@/types/operational-dashboard-chart";
+import {
+  getOperationalDashboardCharts,
+  getVisibleOperationalDashboardCharts,
+  saveOperationalDashboardCharts,
+  updateOperationalDashboardChart,
+} from "@/services/operational-dashboard-charts";
+import { resolveOperationalDashboardChartData } from "@/services/operational-dashboard-metrics";
+import OperationalDashboardChartRenderer from "@/components/dashboard/OperationalDashboardChartRenderer";
+import ArrangeableTileGrid, {
+  type ArrangeableMenuItem,
+} from "@/components/dashboard/ArrangeableTileGrid";
+
 type StoredRecord = Record<string, unknown>;
 
 type DashboardMetrics = {
@@ -1048,6 +1063,101 @@ export default function DashboardPage() {
   const [isSubcategoryChooserOpen, setIsSubcategoryChooserOpen] =
     useState(false);
 
+  /*
+   * Report tiles configured in Settings. Resolved on the client only —
+   * every metric reads from localStorage, which is empty during server
+   * rendering.
+   */
+  const [chartDefinitions, setChartDefinitions] = useState<
+    OperationalDashboardChartDefinition[]
+  >([]);
+
+  /*
+   * Reports configured but not currently on the dashboard — the pool the
+   * right-click picker offers. Held in state rather than read during
+   * render, since reading localStorage at render time would differ between
+   * server and client and trip a hydration mismatch.
+   */
+  const [hiddenChartOptions, setHiddenChartOptions] = useState<
+    { id: string; title: string; metric: string; timeRange: string }[]
+  >([]);
+
+  const router = useRouter();
+
+  function loadChartDefinitions() {
+    setChartDefinitions(
+      getVisibleOperationalDashboardCharts().map((chart) => ({
+        chart,
+        data: resolveOperationalDashboardChartData(chart),
+      }))
+    );
+
+    setHiddenChartOptions(
+      getOperationalDashboardCharts()
+        .filter((chart) => !chart.showOnOperationsDashboard)
+        .map((chart) => ({
+          id: chart.id,
+          title: chart.title,
+          metric: chart.metric,
+          timeRange: chart.timeRange,
+        }))
+    );
+  }
+
+  /**
+   * Reorder is stored as sortOrder on the charts themselves — the field was
+   * already in the model, so dragging needs no separate layout store.
+   */
+  function handleReorderReportTiles(orderedIds: string[]) {
+    const allCharts = getOperationalDashboardCharts();
+
+    const reordered = allCharts.map((chart) => {
+      const position = orderedIds.indexOf(chart.id);
+
+      return position === -1
+        ? chart
+        : { ...chart, sortOrder: position };
+    });
+
+    saveOperationalDashboardCharts(reordered);
+    loadChartDefinitions();
+  }
+
+  /**
+   * Dropping on the trash takes the tile off the dashboard rather than
+   * deleting the report — it stays configured and can be added back from
+   * the right-click picker.
+   */
+  function handleRemoveReportTile(chartId: string) {
+    updateOperationalDashboardChart(chartId, {
+      showOnOperationsDashboard: false,
+    });
+
+    loadChartDefinitions();
+  }
+
+  function handleAddReportTile(chartId: string) {
+    updateOperationalDashboardChart(chartId, {
+      showOnOperationsDashboard: true,
+    });
+
+    loadChartDefinitions();
+  }
+
+  const reportPickerItems: ArrangeableMenuItem[] = [
+    ...hiddenChartOptions.map((chart) => ({
+      label: `Add: ${chart.title}`,
+      description: `${chart.metric} · ${chart.timeRange}`,
+      onSelect: () => handleAddReportTile(chart.id),
+    })),
+    {
+      label: "Create Report Widget…",
+      description: "Build a new live chart from your operations data.",
+      onSelect: () =>
+        router.push("/settings/operational-dashboard-charts"),
+    },
+  ];
+
   useEffect(() => {
     const storedSubcategories = readSelectedSubcategories();
     const dashboardState = calculateDashboardState();
@@ -1058,12 +1168,26 @@ export default function DashboardPage() {
     setSavedSubcategories(storedSubcategories);
     setDraftSubcategories(storedSubcategories);
 
+    loadChartDefinitions();
+
     function refreshDashboard() {
       const refreshedDashboardState = calculateDashboardState();
 
       setMetrics(refreshedDashboardState.metrics);
       setSubcategoryValues(refreshedDashboardState.subcategoryValues);
+
+      loadChartDefinitions();
     }
+
+    /*
+     * Report widgets are meant to read live. The events below cover data
+     * changing; this tick covers time moving — a "Last 7 Days" chart has a
+     * window that slides even when nothing is edited.
+     */
+    const liveRefreshTimer = window.setInterval(
+      loadChartDefinitions,
+      60_000
+    );
 
     window.addEventListener("storage", refreshDashboard);
     window.addEventListener("t1eq-customers-changed", refreshDashboard);
@@ -1079,6 +1203,8 @@ export default function DashboardPage() {
     );
 
     return () => {
+      window.clearInterval(liveRefreshTimer);
+
       window.removeEventListener("storage", refreshDashboard);
       window.removeEventListener("t1eq-customers-changed", refreshDashboard);
       window.removeEventListener("t1eq-equipment-changed", refreshDashboard);
@@ -1555,6 +1681,89 @@ export default function DashboardPage() {
               href="/invoices"
             />
           </div>
+        </section>
+
+        <section
+          data-t1eq-qbit-type="section"
+          data-t1eq-qbit-id="dashboard-reports-section"
+          data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+          className="overflow-visible"
+        >
+          <div
+            data-t1eq-qbit-type="section"
+            data-t1eq-qbit-id="dashboard-reports-header"
+            data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+            className="mb-4 flex flex-col gap-4 md:flex-row md:items-end md:justify-between"
+          >
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.24em] text-slate-400">
+                Information Tiles
+              </p>
+
+              <h2 className="mt-1 text-2xl font-black text-white">
+                Reports &amp; Charts
+              </h2>
+            </div>
+
+            <Link
+              data-t1eq-action-button="true"
+              data-t1eq-qbit-type="action-button"
+              data-t1eq-qbit-id="dashboard-reports-configure"
+              data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+              href="/settings/operational-dashboard-charts"
+              className="rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-black text-white transition hover:bg-white/20"
+            >
+              Configure Reports
+            </Link>
+          </div>
+
+          <ArrangeableTileGrid
+            tiles={chartDefinitions.map((definition) => ({
+              id: definition.chart.id,
+              spanClassName:
+                definition.chart.size === "Large"
+                  ? "md:col-span-2 xl:col-span-3"
+                  : definition.chart.size === "Medium"
+                  ? "xl:col-span-2"
+                  : undefined,
+              content: (
+                <div
+                  data-t1eq-tile="true"
+                  data-t1eq-qbit-type="tile"
+                  data-t1eq-qbit-id={`dashboard-report-${definition.chart.id}`}
+                  data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+                >
+                  <OperationalDashboardChartRenderer
+                    chart={definition.chart}
+                    data={definition.data}
+                  />
+                </div>
+              ),
+            }))}
+            onReorder={handleReorderReportTiles}
+            onRemove={handleRemoveReportTile}
+            menuItems={reportPickerItems}
+            emptyState={
+              <div
+                data-t1eq-tile="true"
+                data-t1eq-page-card="true"
+                data-t1eq-qbit-type="tile"
+                data-t1eq-qbit-id="dashboard-reports-empty"
+                data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+                className="rounded-2xl border border-dashed border-white/20 bg-white/5 p-8 text-center"
+              >
+                <p className="text-sm font-bold text-white/70">
+                  No report tiles yet.
+                </p>
+
+                <p className="mt-1 text-sm font-semibold text-white/50">
+                  Right-click here to add one, or use Configure Reports to
+                  build a chart from your repair orders, invoices,
+                  inventory, and purchase orders.
+                </p>
+              </div>
+            }
+          />
         </section>
       </div>
     </main>

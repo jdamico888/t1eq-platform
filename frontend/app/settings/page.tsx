@@ -2,6 +2,20 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import type { AppSettings } from "@/services/app-settings";
+import {
+  defaultAppSettings,
+  getAppSettings,
+  saveAppSettings,
+} from "@/services/app-settings";
+
+import type { MarkupTier } from "@/types/pricing";
+import {
+  createMarkupTierId,
+  sortMarkupTiers,
+  validateMarkupTiers,
+} from "@/services/pricing";
+
 type AppearanceSettings = {
   themeName: string;
   accentColor: string;
@@ -161,12 +175,17 @@ export default function SettingsPage() {
   const [selectedLogoDataUrl, setSelectedLogoDataUrl] = useState("");
   const [saveMessage, setSaveMessage] = useState("");
 
+  const [appSettings, setAppSettings] = useState<AppSettings>(
+    defaultAppSettings
+  );
+
   useEffect(() => {
     const storedBrandSettings = readStoredBrandSettings();
     const storedAppearanceSettings = readStoredAppearanceSettings();
 
     setBrandSettings(storedBrandSettings);
     setAppearanceSettings(storedAppearanceSettings);
+    setAppSettings(getAppSettings());
     setSelectedLogoDataUrl(storedBrandSettings.logoDataUrl);
     setSelectedLogoFileName(storedBrandSettings.logoFileName);
 
@@ -209,6 +228,91 @@ export default function SettingsPage() {
   function handleSaveAppearance() {
     saveAppearanceSettings(appearanceSettings);
     setSaveMessage("Appearance saved.");
+  }
+
+  function updateBusinessSetting<K extends keyof AppSettings>(
+    key: K,
+    value: AppSettings[K]
+  ) {
+    setAppSettings((current) => ({ ...current, [key]: value }));
+    setSaveMessage("");
+  }
+
+  function handleSaveBusinessSetup() {
+    saveAppSettings(appSettings);
+    setSaveMessage("Business setup saved.");
+  }
+
+  const markupTierValidation = useMemo(
+    () => validateMarkupTiers(appSettings.partsMarkupTiers),
+    [appSettings.partsMarkupTiers]
+  );
+
+  function updateMarkupTier<K extends keyof MarkupTier>(
+    tierId: string,
+    key: K,
+    value: MarkupTier[K]
+  ) {
+    setAppSettings((current) => ({
+      ...current,
+      partsMarkupTiers: current.partsMarkupTiers.map((tier) =>
+        tier.id === tierId ? { ...tier, [key]: value } : tier
+      ),
+    }));
+
+    setSaveMessage("");
+  }
+
+  function handleAddMarkupTier() {
+    setAppSettings((current) => {
+      const sortedTiers = sortMarkupTiers(current.partsMarkupTiers);
+      const highestTier = sortedTiers[sortedTiers.length - 1];
+
+      // Start the new band just above wherever the current rules end, so
+      // the common case needs no editing to be valid.
+      const nextMinCost =
+        highestTier && highestTier.maxCost !== null
+          ? Math.round((highestTier.maxCost + 0.01) * 100) / 100
+          : 0;
+
+      return {
+        ...current,
+        partsMarkupTiers: [
+          ...current.partsMarkupTiers,
+          {
+            id: createMarkupTierId(),
+            minCost: nextMinCost,
+            maxCost: null,
+            markupPercent: current.partsMarkupPercent,
+          },
+        ],
+      };
+    });
+
+    setSaveMessage("");
+  }
+
+  function handleRemoveMarkupTier(tierId: string) {
+    setAppSettings((current) => ({
+      ...current,
+      partsMarkupTiers: current.partsMarkupTiers.filter(
+        (tier) => tier.id !== tierId
+      ),
+    }));
+
+    setSaveMessage("");
+  }
+
+  function handleSaveParts() {
+    // Overlapping rules have no single right answer, so they block the save.
+    // Gaps are only warnings — the general markup covers them.
+    if (markupTierValidation.errors.length > 0) {
+      setSaveMessage(`Not saved — ${markupTierValidation.errors[0]}`);
+      return;
+    }
+
+    saveAppSettings(appSettings);
+    setSaveMessage("Parts setup saved.");
   }
 
   function handleResetAppearance() {
@@ -275,6 +379,621 @@ export default function SettingsPage() {
             </div>
           )}
         </header>
+
+        <section data-t1eq-tile="true" data-t1eq-page-card="true"
+          data-t1eq-qbit-type="page-card"
+          data-t1eq-qbit-id="settings-page-business-setup"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className="rounded-[28px] border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur">
+          <div className="mb-6">
+            <p
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="settings-page-business-setup-overline"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="text-xs font-black uppercase tracking-[0.24em] text-slate-400"
+            >
+              Business Setup
+            </p>
+
+            <h2
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="settings-page-business-setup-title"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-2 text-2xl font-black"
+            >
+              Rates &amp; Markup
+            </h2>
+
+            <p
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="settings-page-business-setup-description"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-2 max-w-3xl text-sm font-medium text-slate-300"
+            >
+              These drive invoice totals and the suggested retail price on new
+              inventory items.
+            </p>
+          </div>
+
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            <label className="block">
+              <span
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="settings-page-labor-rate-label"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="text-xs font-black uppercase tracking-wide text-slate-400"
+              >
+                Labor Rate ($/hr)
+              </span>
+
+              <input data-t1eq-field="true"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-id="settings-page-labor-rate"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                type="number"
+                min="0"
+                step="1"
+                value={appSettings.laborRate}
+                onChange={(event) =>
+                  updateBusinessSetting("laborRate", Number(event.target.value))
+                }
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm font-bold text-white outline-none focus:border-orange-400"
+              />
+            </label>
+
+            <label className="block">
+              <span
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="settings-page-inspection-rate-label"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="text-xs font-black uppercase tracking-wide text-slate-400"
+              >
+                Inspection Rate ($/hr)
+              </span>
+
+              <input data-t1eq-field="true"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-id="settings-page-inspection-rate"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                type="number"
+                min="0"
+                step="1"
+                value={appSettings.inspectionLaborRate}
+                onChange={(event) =>
+                  updateBusinessSetting(
+                    "inspectionLaborRate",
+                    Number(event.target.value)
+                  )
+                }
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm font-bold text-white outline-none focus:border-orange-400"
+              />
+            </label>
+
+            <label className="block">
+              <span
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="settings-page-tax-rate-label"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="text-xs font-black uppercase tracking-wide text-slate-400"
+              >
+                Tax Rate (%)
+              </span>
+
+              <input data-t1eq-field="true"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-id="settings-page-tax-rate"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                type="number"
+                min="0"
+                step="0.001"
+                value={(appSettings.taxRate * 100).toFixed(3)}
+                onChange={(event) =>
+                  updateBusinessSetting(
+                    "taxRate",
+                    Number(event.target.value) / 100
+                  )
+                }
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm font-bold text-white outline-none focus:border-orange-400"
+              />
+            </label>
+
+          </div>
+
+          <div className="mt-6">
+            <button data-t1eq-action-button="true"
+              data-t1eq-qbit-type="action-button"
+              data-t1eq-qbit-id="settings-page-save-business-setup"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              type="button"
+              onClick={handleSaveBusinessSetup}
+              className="rounded-2xl bg-orange-500 px-5 py-3 text-sm font-black uppercase tracking-wide text-white shadow-xl shadow-orange-950/30 hover:bg-orange-400"
+            >
+              Save Business Setup
+            </button>
+          </div>
+        </section>
+
+        <section data-t1eq-tile="true" data-t1eq-page-card="true"
+          data-t1eq-qbit-type="page-card"
+          data-t1eq-qbit-id="settings-page-parts"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className="rounded-[28px] border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur">
+          <div className="mb-6">
+            <p
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="settings-page-parts-overline"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="text-xs font-black uppercase tracking-[0.24em] text-slate-400"
+            >
+              Parts
+            </p>
+
+            <h2
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="settings-page-parts-title"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-2 text-2xl font-black"
+            >
+              Pricing &amp; Stocking Thresholds
+            </h2>
+
+            <p
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="settings-page-parts-description"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-2 max-w-3xl text-sm font-medium text-slate-300"
+            >
+              How parts are priced, and when a part you keep buying should be
+              suggested for stocking.
+            </p>
+          </div>
+
+          <div className="grid gap-5 md:grid-cols-2">
+            <label className="block">
+              <span
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="settings-page-parts-markup-label"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="text-xs font-black uppercase tracking-wide text-slate-400"
+              >
+                General Markup (%)
+              </span>
+
+              <input data-t1eq-field="true"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-id="settings-page-parts-markup"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                type="number"
+                min="0"
+                step="1"
+                value={appSettings.partsMarkupPercent}
+                onChange={(event) =>
+                  updateBusinessSetting(
+                    "partsMarkupPercent",
+                    Number(event.target.value)
+                  )
+                }
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm font-bold text-white outline-none focus:border-orange-400"
+              />
+
+              <span
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="settings-page-parts-markup-hint"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="mt-2 block text-xs font-semibold text-slate-400"
+              >
+                A $100 part sells for{" "}
+                {(100 * (1 + (appSettings.partsMarkupPercent || 0) / 100)).toFixed(2)}
+                {appSettings.partsMarkupTiers.length > 0
+                  ? " — unless a rule below covers that cost."
+                  : ""}
+              </span>
+            </label>
+
+            <label className="block">
+              <span
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="settings-page-stocking-window-label"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="text-xs font-black uppercase tracking-wide text-slate-400"
+              >
+                Look Back Over (days)
+              </span>
+
+              <input data-t1eq-field="true"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-id="settings-page-stocking-window"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                type="number"
+                min="1"
+                step="1"
+                value={appSettings.stockingLookbackDays}
+                onChange={(event) =>
+                  updateBusinessSetting(
+                    "stockingLookbackDays",
+                    Number(event.target.value)
+                  )
+                }
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm font-bold text-white outline-none focus:border-orange-400"
+              />
+
+              <span
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="settings-page-stocking-window-hint"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="mt-2 block text-xs font-semibold text-slate-400"
+              >
+                Usage older than this stops counting toward a suggestion.
+              </span>
+            </label>
+          </div>
+
+          <div className="mt-8">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p
+                  data-t1eq-qbit-type="text"
+                  data-t1eq-qbit-id="settings-page-markup-rules-heading"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
+                  className="text-xs font-black uppercase tracking-wide text-slate-400"
+                >
+                  Markup Rules By Cost (Optional)
+                </p>
+
+                <p
+                  data-t1eq-qbit-type="text"
+                  data-t1eq-qbit-id="settings-page-markup-rules-description"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
+                  className="mt-1 text-sm font-medium text-slate-300"
+                >
+                  Override the general markup for parts in a cost range.
+                  Ranges can&apos;t overlap; anything they don&apos;t cover
+                  uses the general markup above.
+                </p>
+              </div>
+
+              <button data-t1eq-action-button="true"
+                data-t1eq-qbit-type="action-button"
+                data-t1eq-qbit-id="settings-page-add-markup-rule"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                type="button"
+                onClick={handleAddMarkupTier}
+                className="rounded-2xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-black uppercase tracking-wide text-white hover:bg-white/20"
+              >
+                + Add Rule
+              </button>
+            </div>
+
+            {appSettings.partsMarkupTiers.length === 0 ? (
+              <div data-t1eq-tile="true" data-t1eq-page-card="true"
+                data-t1eq-qbit-type="tile"
+                data-t1eq-qbit-id="settings-page-markup-rules-empty"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="mt-4 rounded-2xl border border-dashed border-white/15 bg-black/20 p-6 text-center text-sm font-semibold text-slate-400"
+              >
+                No rules — every part uses the general markup.
+              </div>
+            ) : (
+              <div className="mt-4 space-y-3">
+                {sortMarkupTiers(appSettings.partsMarkupTiers).map((tier) => (
+                  <div data-t1eq-tile="true" data-t1eq-page-card="true"
+                    key={tier.id}
+                    data-t1eq-qbit-type="tile"
+                    data-t1eq-qbit-id={`settings-page-markup-rule-${tier.id}`}
+                    data-t1eq-qbit-scope={QBIT_SCOPE}
+                    className="grid items-end gap-4 rounded-2xl border border-white/10 bg-black/20 p-4 md:grid-cols-4"
+                  >
+                    <label className="block">
+                      <span className="text-xs font-black uppercase tracking-wide text-slate-400">
+                        Cost From ($)
+                      </span>
+
+                      <input data-t1eq-field="true"
+                        data-t1eq-qbit-type="field"
+                        data-t1eq-qbit-id={`settings-page-markup-rule-${tier.id}-min`}
+                        data-t1eq-qbit-scope={QBIT_SCOPE}
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={tier.minCost}
+                        onChange={(event) =>
+                          updateMarkupTier(
+                            tier.id,
+                            "minCost",
+                            Number(event.target.value)
+                          )
+                        }
+                        className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm font-bold text-white outline-none focus:border-orange-400"
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="text-xs font-black uppercase tracking-wide text-slate-400">
+                        Cost To ($)
+                      </span>
+
+                      <input data-t1eq-field="true"
+                        data-t1eq-qbit-type="field"
+                        data-t1eq-qbit-id={`settings-page-markup-rule-${tier.id}-max`}
+                        data-t1eq-qbit-scope={QBIT_SCOPE}
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={tier.maxCost === null ? "" : tier.maxCost}
+                        placeholder="No limit"
+                        onChange={(event) =>
+                          updateMarkupTier(
+                            tier.id,
+                            "maxCost",
+                            event.target.value.trim() === ""
+                              ? null
+                              : Number(event.target.value)
+                          )
+                        }
+                        className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm font-bold text-white outline-none focus:border-orange-400"
+                      />
+
+                      <span className="mt-1 block text-xs font-semibold text-slate-500">
+                        Leave blank for &ldquo;and above&rdquo;.
+                      </span>
+                    </label>
+
+                    <label className="block">
+                      <span className="text-xs font-black uppercase tracking-wide text-slate-400">
+                        Marked Up (%)
+                      </span>
+
+                      <input data-t1eq-field="true"
+                        data-t1eq-qbit-type="field"
+                        data-t1eq-qbit-id={`settings-page-markup-rule-${tier.id}-percent`}
+                        data-t1eq-qbit-scope={QBIT_SCOPE}
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={tier.markupPercent}
+                        onChange={(event) =>
+                          updateMarkupTier(
+                            tier.id,
+                            "markupPercent",
+                            Number(event.target.value)
+                          )
+                        }
+                        className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm font-bold text-white outline-none focus:border-orange-400"
+                      />
+                    </label>
+
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-xs font-semibold text-slate-400">
+                        {tier.minCost >= 0 && tier.markupPercent >= 0
+                          ? `$${tier.minCost.toFixed(2)} part → $${(
+                              tier.minCost *
+                              (1 + (tier.markupPercent || 0) / 100)
+                            ).toFixed(2)}`
+                          : ""}
+                      </span>
+
+                      <button data-t1eq-action-button="true"
+                        data-t1eq-qbit-type="action-button"
+                        data-t1eq-qbit-id={`settings-page-markup-rule-${tier.id}-remove`}
+                        data-t1eq-qbit-scope={QBIT_SCOPE}
+                        type="button"
+                        onClick={() => handleRemoveMarkupTier(tier.id)}
+                        className="rounded-xl border border-red-400/30 bg-red-500/10 px-3 py-2 text-xs font-black uppercase tracking-wide text-red-200 hover:bg-red-500/20"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {markupTierValidation.errors.length > 0 && (
+              <div data-t1eq-tile="true" data-t1eq-page-card="true"
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="settings-page-markup-rule-errors"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="mt-4 rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3"
+              >
+                <div className="text-xs font-black uppercase tracking-wide text-red-200">
+                  Fix before saving
+                </div>
+
+                <ul className="mt-2 space-y-1 text-sm font-semibold text-red-100">
+                  {markupTierValidation.errors.map((error) => (
+                    <li key={error}>{error}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {markupTierValidation.warnings.length > 0 && (
+              <div data-t1eq-tile="true" data-t1eq-page-card="true"
+                data-t1eq-qbit-type="text"
+                data-t1eq-qbit-id="settings-page-markup-rule-warnings"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                className="mt-4 rounded-2xl border border-amber-400/30 bg-amber-500/10 px-4 py-3"
+              >
+                <div className="text-xs font-black uppercase tracking-wide text-amber-200">
+                  Worth knowing
+                </div>
+
+                <ul className="mt-2 space-y-1 text-sm font-semibold text-amber-100">
+                  {markupTierValidation.warnings.map((warning) => (
+                    <li key={warning}>{warning}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-6">
+            <p
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="settings-page-stocking-heading"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="text-xs font-black uppercase tracking-wide text-slate-400"
+            >
+              Start Stocking A Part When Either Is Met
+            </p>
+
+            <div className="mt-4 grid gap-5 md:grid-cols-2">
+              <label className="block">
+                <span
+                  data-t1eq-qbit-type="text"
+                  data-t1eq-qbit-id="settings-page-stocking-jobs-label"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
+                  className="text-xs font-black uppercase tracking-wide text-slate-400"
+                >
+                  Used On This Many Jobs
+                </span>
+
+                <input data-t1eq-field="true"
+                  data-t1eq-qbit-type="field"
+                  data-t1eq-qbit-id="settings-page-stocking-jobs"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
+                  type="number"
+                  min="1"
+                  step="1"
+                  value={appSettings.stockingThresholdJobs}
+                  onChange={(event) =>
+                    updateBusinessSetting(
+                      "stockingThresholdJobs",
+                      Number(event.target.value)
+                    )
+                  }
+                  className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm font-bold text-white outline-none focus:border-orange-400"
+                />
+
+                <span className="mt-2 block text-xs font-semibold text-slate-400">
+                  Separate jobs, not pieces — recurring demand.
+                </span>
+              </label>
+
+              <label className="block">
+                <span
+                  data-t1eq-qbit-type="text"
+                  data-t1eq-qbit-id="settings-page-stocking-quantity-label"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
+                  className="text-xs font-black uppercase tracking-wide text-slate-400"
+                >
+                  Or This Many Pieces Used
+                </span>
+
+                <input data-t1eq-field="true"
+                  data-t1eq-qbit-type="field"
+                  data-t1eq-qbit-id="settings-page-stocking-quantity"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
+                  type="number"
+                  min="1"
+                  step="1"
+                  value={appSettings.stockingThresholdQuantity}
+                  onChange={(event) =>
+                    updateBusinessSetting(
+                      "stockingThresholdQuantity",
+                      Number(event.target.value)
+                    )
+                  }
+                  className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm font-bold text-white outline-none focus:border-orange-400"
+                />
+
+                <span className="mt-2 block text-xs font-semibold text-slate-400">
+                  Catches consumables. Set high to judge on jobs alone.
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <p
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="settings-page-restocking-heading"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="text-xs font-black uppercase tracking-wide text-slate-400"
+            >
+              Restocking Defaults For Newly Stocked Parts
+            </p>
+
+            <div className="mt-4 grid gap-5 md:grid-cols-2">
+              <label className="block">
+                <span
+                  data-t1eq-qbit-type="text"
+                  data-t1eq-qbit-id="settings-page-default-minimum-label"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
+                  className="text-xs font-black uppercase tracking-wide text-slate-400"
+                >
+                  Minimum On Hand
+                </span>
+
+                <input data-t1eq-field="true"
+                  data-t1eq-qbit-type="field"
+                  data-t1eq-qbit-id="settings-page-default-minimum"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={appSettings.defaultMinimumStock}
+                  onChange={(event) =>
+                    updateBusinessSetting(
+                      "defaultMinimumStock",
+                      Number(event.target.value)
+                    )
+                  }
+                  className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm font-bold text-white outline-none focus:border-orange-400"
+                />
+
+                <span className="mt-2 block text-xs font-semibold text-slate-400">
+                  Drop to this and the part is due for reorder.
+                </span>
+              </label>
+
+              <label className="block">
+                <span
+                  data-t1eq-qbit-type="text"
+                  data-t1eq-qbit-id="settings-page-default-ideal-label"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
+                  className="text-xs font-black uppercase tracking-wide text-slate-400"
+                >
+                  Restock Up To
+                </span>
+
+                <input data-t1eq-field="true"
+                  data-t1eq-qbit-type="field"
+                  data-t1eq-qbit-id="settings-page-default-ideal"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={appSettings.defaultIdealStock}
+                  onChange={(event) =>
+                    updateBusinessSetting(
+                      "defaultIdealStock",
+                      Number(event.target.value)
+                    )
+                  }
+                  className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm font-bold text-white outline-none focus:border-orange-400"
+                />
+
+                <span className="mt-2 block text-xs font-semibold text-slate-400">
+                  How many to bring it back to when reordering.
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <button data-t1eq-action-button="true"
+              data-t1eq-qbit-type="action-button"
+              data-t1eq-qbit-id="settings-page-save-parts"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              type="button"
+              onClick={handleSaveParts}
+              className="rounded-2xl bg-orange-500 px-5 py-3 text-sm font-black uppercase tracking-wide text-white shadow-xl shadow-orange-950/30 hover:bg-orange-400"
+            >
+              Save Parts Setup
+            </button>
+          </div>
+        </section>
 
         <section className="grid gap-6 lg:grid-cols-2">
           <div data-t1eq-tile="true" data-t1eq-page-card="true"

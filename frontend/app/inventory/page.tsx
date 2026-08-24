@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import AddItemButton from "@/components/inventory/AddItemButton";
+
 const QBIT_SCOPE = "inventory-hub";
 
 const pageClass = "min-h-screen bg-zinc-100 p-6 text-black";
@@ -84,28 +86,39 @@ export default function InventoryPage() {
         data-t1eq-qbit-scope={QBIT_SCOPE}
         className={headerClass}
       >
-        <p className="text-sm font-black uppercase tracking-wide text-zinc-500">
-          Tier One Equipment
-        </p>
+        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
+          <div>
+            <p className="text-sm font-black uppercase tracking-wide text-zinc-500">
+              Tier One Equipment
+            </p>
 
-        <h1
-          data-t1eq-qbit-type="text"
-          data-t1eq-qbit-id="inventory-title"
-          data-t1eq-qbit-scope={QBIT_SCOPE}
-          className="mt-2 text-4xl font-black text-black"
-        >
-          Inventory
-        </h1>
+            <h1
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="inventory-title"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-2 text-4xl font-black text-black"
+            >
+              Inventory
+            </h1>
 
-        <p
-          data-t1eq-qbit-type="text"
-          data-t1eq-qbit-id="inventory-description"
-          data-t1eq-qbit-scope={QBIT_SCOPE}
-          className="mt-2 max-w-3xl text-base font-semibold text-zinc-600"
-        >
-          Manage stocked parts, purchase order receiving, company tools,
-          transactions, discrepancies, and truck stock from one inventory hub.
-        </p>
+            <p
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="inventory-description"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-2 max-w-3xl text-base font-semibold text-zinc-600"
+            >
+              Manage stocked parts, purchase order receiving, company tools,
+              transactions, discrepancies, and truck stock from one inventory
+              hub.
+            </p>
+          </div>
+
+          <AddItemButton
+            qbitId="inventory-hub-add-item"
+            variant="light"
+            label="+ Add Item"
+          />
+        </div>
       </header>
 
       <section

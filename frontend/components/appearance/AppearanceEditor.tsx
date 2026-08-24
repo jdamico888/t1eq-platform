@@ -41,9 +41,12 @@ import {
   removeQBitOverride,
   saveQBitOverrides,
   updateQBitOverride,
+  qBitFontOptions,
   type QBitDescriptor,
   type QBitElementType,
+  type QBitFontFamily,
   type QBitOverride,
+  type QBitTextAlign,
 } from "@/services/qbit-appearance";
 
 type Position = {
@@ -615,6 +618,15 @@ export default function AppearanceEditor() {
     setLogoUploadError,
   ] = useState("");
 
+  /*
+   * The LOGO section in the element panel starts collapsed, so selecting a
+   * logo element does not push the styling controls out of view.
+   */
+  const [
+    logoSectionOpen,
+    setLogoSectionOpen,
+  ] = useState(false);
+
   const selectedElement =
     useMemo(() => {
       if (!selectedDescriptor) {
@@ -654,6 +666,64 @@ export default function AppearanceEditor() {
 
       return fresh;
     }, [selectedDescriptor]);
+
+  /*
+   * The logo controls belong on whatever a person would click when they
+   * want to change the logo — the places it actually shows up:
+   *
+   *  - the logo box itself
+   *  - the page background (the logo watermarks onto it)
+   *  - the content container sitting directly on that background, which is
+   *    what a click usually lands on: the background itself is only
+   *    reachable at its padding edges
+   *  - the sidebar background
+   *  - anywhere on the sidebar top tile, including the "T1" placeholder and
+   *    the company name, since the whole tile reads as the brand block
+   *
+   * Deliberately not "anything inside a page background" — that is every
+   * element on every page, and the button would follow you everywhere.
+   */
+  const selectionCarriesLogo =
+    useMemo(() => {
+      if (!selectedDescriptor) {
+        return false;
+      }
+
+      if (
+        selectedDescriptor.type === "logo" ||
+        selectedDescriptor.type === "background" ||
+        selectedDescriptor.type === "sidebar"
+      ) {
+        return true;
+      }
+
+      if (!selectedElement) {
+        return false;
+      }
+
+      const pageBackgroundSelector =
+        '[data-t1eq-page-background="true"]';
+
+      if (
+        selectedElement.matches(
+          pageBackgroundSelector
+        ) ||
+        selectedElement.parentElement?.matches(
+          pageBackgroundSelector
+        )
+      ) {
+        return true;
+      }
+
+      return Boolean(
+        selectedElement.closest(
+          '[data-t1eq-qbit-id="sidebar-brand-card"]'
+        )
+      );
+    }, [
+      selectedDescriptor,
+      selectedElement,
+    ]);
 
   /* =========================================================
      Q-BIT LOCK STATE
@@ -2909,6 +2979,171 @@ export default function AppearanceEditor() {
                       }
                     />
                   </label>
+
+                  {/* Windows-style text controls */}
+                  <div className="space-y-3 rounded-xl border border-zinc-200 bg-zinc-50 p-3">
+                    <p className="text-[10px] font-black uppercase tracking-wide text-zinc-500">
+                      Text
+                    </p>
+
+                    <label className="block">
+                      <span className={fieldLabelClass}>
+                        Font
+                      </span>
+
+                      <select
+                        value={
+                          selectedOverride?.fontFamily ??
+                          "Inherit"
+                        }
+                        onChange={(event) =>
+                          updateSelectedOverride({
+                            fontFamily: event.target
+                              .value as QBitFontFamily,
+                          })
+                        }
+                        className={inputClass}
+                      >
+                        {qBitFontOptions.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label className="block">
+                      <span className={fieldLabelClass}>
+                        Size
+                      </span>
+
+                      <input
+                        type="number"
+                        min={8}
+                        max={96}
+                        value={selectedOverride?.fontSize ?? 14}
+                        onChange={(event) =>
+                          updateSelectedOverride({
+                            fontSize: Number(event.target.value),
+                          })
+                        }
+                        className={inputClass}
+                      />
+                    </label>
+
+                    <div>
+                      <span className={fieldLabelClass}>
+                        Style
+                      </span>
+
+                      <div className="mt-1 flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            updateSelectedOverride({
+                              bold: !selectedOverride?.bold,
+                            })
+                          }
+                          className={
+                            selectedOverride?.bold
+                              ? "flex-1 rounded-lg border border-orange-400 bg-orange-100 px-3 py-2 text-sm font-black text-orange-900"
+                              : "flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-black text-black hover:bg-zinc-50"
+                          }
+                        >
+                          B
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            updateSelectedOverride({
+                              italic: !selectedOverride?.italic,
+                            })
+                          }
+                          className={
+                            selectedOverride?.italic
+                              ? "flex-1 rounded-lg border border-orange-400 bg-orange-100 px-3 py-2 text-sm font-black italic text-orange-900"
+                              : "flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-black italic text-black hover:bg-zinc-50"
+                          }
+                        >
+                          I
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            updateSelectedOverride({
+                              underline:
+                                !selectedOverride?.underline,
+                            })
+                          }
+                          className={
+                            selectedOverride?.underline
+                              ? "flex-1 rounded-lg border border-orange-400 bg-orange-100 px-3 py-2 text-sm font-black text-orange-900 underline"
+                              : "flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-black text-black underline hover:bg-zinc-50"
+                          }
+                        >
+                          U
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <span className={fieldLabelClass}>
+                        Alignment
+                      </span>
+
+                      <div className="mt-1 flex gap-2">
+                        {(
+                          [
+                            "left",
+                            "center",
+                            "right",
+                          ] as QBitTextAlign[]
+                        ).map((alignment) => (
+                          <button
+                            key={alignment}
+                            type="button"
+                            onClick={() =>
+                              updateSelectedOverride({
+                                textAlign: alignment,
+                              })
+                            }
+                            className={
+                              selectedOverride?.textAlign ===
+                              alignment
+                                ? "flex-1 rounded-lg border border-orange-400 bg-orange-100 px-2 py-2 text-[11px] font-black capitalize text-orange-900"
+                                : "flex-1 rounded-lg border border-zinc-300 bg-white px-2 py-2 text-[11px] font-black capitalize text-black hover:bg-zinc-50"
+                            }
+                          >
+                            {alignment}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Logo controls, wherever the logo actually appears */}
+                  {selectionCarriesLogo && (
+                    <div className="space-y-3 rounded-xl border border-zinc-200 bg-zinc-50 p-3">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setLogoSectionOpen(
+                            (current) => !current
+                          )
+                        }
+                        className="flex w-full items-center justify-between rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs font-black text-black transition hover:bg-zinc-50"
+                      >
+                        <span>LOGO</span>
+                        <span>
+                          {logoSectionOpen ? "−" : "+"}
+                        </span>
+                      </button>
+
+                      {logoSectionOpen && renderLogoControls()}
+                    </div>
+                  )}
 
                   <button
                     type="button"

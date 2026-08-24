@@ -19,6 +19,44 @@ export type QBitDescriptor = {
   scope: string;
 };
 
+export type QBitTextAlign = "left" | "center" | "right";
+
+/**
+ * Fonts offered in the editor. "Inherit" hands the element back to whatever
+ * the app's own stylesheet says, rather than pinning a face on it.
+ */
+export type QBitFontFamily =
+  | "Inherit"
+  | "System"
+  | "Arial"
+  | "Georgia"
+  | "Times New Roman"
+  | "Courier New"
+  | "Verdana"
+  | "Tahoma";
+
+export const qBitFontOptions: QBitFontFamily[] = [
+  "Inherit",
+  "System",
+  "Arial",
+  "Georgia",
+  "Times New Roman",
+  "Courier New",
+  "Verdana",
+  "Tahoma",
+];
+
+const qBitFontStacks: Record<QBitFontFamily, string> = {
+  Inherit: "",
+  System: 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif',
+  Arial: "Arial, Helvetica, sans-serif",
+  Georgia: 'Georgia, "Times New Roman", serif',
+  "Times New Roman": '"Times New Roman", Times, serif',
+  "Courier New": '"Courier New", Courier, monospace',
+  Verdana: "Verdana, Geneva, sans-serif",
+  Tahoma: "Tahoma, Geneva, sans-serif",
+};
+
 export type QBitOverride = {
   id: string;
   type: QBitElementType;
@@ -27,6 +65,18 @@ export type QBitOverride = {
   backgroundColor?: string;
   borderColor?: string;
   textColor?: string;
+
+  /**
+   * Typography, written to the element and its text-bearing descendants —
+   * the same targets textColor uses, because the app sets type on the child
+   * elements rather than on the container.
+   */
+  fontFamily?: QBitFontFamily;
+  fontSize?: number;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  textAlign?: QBitTextAlign;
 
   width?: number;
   height?: number;
@@ -499,6 +549,104 @@ function restoreTextColor(
   });
 }
 
+const typographyProperties = [
+  "font-family",
+  "font-size",
+  "font-weight",
+  "font-style",
+  "text-decoration-line",
+  "text-align",
+];
+
+/*
+ * Typography goes onto the same targets as text colour — the element plus
+ * its text-bearing descendants — because the application sets type on the
+ * children, so styling only the container would be overridden.
+ *
+ * Note this means picking a size for a container flattens every piece of
+ * text inside it to that size. Reset This Element puts it back.
+ */
+function applyTypography(
+  element: HTMLElement,
+  override: QBitOverride
+): void {
+  const targets = getTextTargets(element);
+
+  targets.forEach((target) => {
+    if (
+      override.fontFamily &&
+      override.fontFamily !== "Inherit"
+    ) {
+      setQBitProperty(
+        target,
+        "font-family",
+        qBitFontStacks[override.fontFamily]
+      );
+    }
+
+    if (
+      typeof override.fontSize === "number" &&
+      Number.isFinite(override.fontSize) &&
+      override.fontSize > 0
+    ) {
+      setQBitProperty(
+        target,
+        "font-size",
+        `${override.fontSize}px`
+      );
+    }
+
+    if (typeof override.bold === "boolean") {
+      setQBitProperty(
+        target,
+        "font-weight",
+        override.bold ? "700" : "400"
+      );
+    }
+
+    if (typeof override.italic === "boolean") {
+      setQBitProperty(
+        target,
+        "font-style",
+        override.italic ? "italic" : "normal"
+      );
+    }
+
+    if (typeof override.underline === "boolean") {
+      setQBitProperty(
+        target,
+        "text-decoration-line",
+        override.underline ? "underline" : "none"
+      );
+    }
+
+    if (override.textAlign) {
+      setQBitProperty(
+        target,
+        "text-align",
+        override.textAlign
+      );
+    }
+  });
+}
+
+function restoreTypography(
+  element: HTMLElement
+): void {
+  getTextTargets(
+    element
+  ).forEach((target) => {
+    typographyProperties.forEach(
+      (property) => {
+        restoreQBitProperty(
+          target,
+          property
+        );
+      }
+    );
+  });
+}
+
 /*
  * Restore only properties that Q-Bit previously captured.
  *
@@ -540,6 +688,10 @@ export function clearQBitOverrideStyles(
   );
 
   restoreTextColor(
+    element
+  );
+
+  restoreTypography(
     element
   );
 }
@@ -584,6 +736,8 @@ export function applyQBitOverride(
       override.textColor
     );
   }
+
+  applyTypography(element, override);
 
   if (
     typeof override.width ===
