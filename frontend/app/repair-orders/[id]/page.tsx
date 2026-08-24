@@ -914,6 +914,10 @@ export default function RepairOrderWorkspacePage() {
           <RepairOrderActionItems
             actionItems={repairOrder.actionItems}
             assignedTruckId={repairOrder.assignedTruckId}
+            repairOrderId={repairOrder.id}
+            repairOrderNumber={
+              repairOrder.repairOrderNumber ?? repairOrder.ro
+            }
             onEdit={openEditActionItemModal}
             onDelete={handleDeleteActionItem}
             onUpdate={handleUpdateActionItem}

@@ -12,6 +12,8 @@ import {
   saveInventoryItems,
 } from "@/services/inventory";
 
+import AddItemButton from "@/components/inventory/AddItemButton";
+
 type InventoryItemFormState = {
   id: string;
   partNumber: string;
@@ -380,13 +382,12 @@ export default function InventoryItemsPage() {
     setStatusMessage("");
   }
 
-  function beginCreateItem() {
-    setEditingItemId(null);
-    setFormState(createEmptyFormState());
-    setShowForm(true);
-    setStatusMessage("");
-  }
-
+  /*
+   * New parts are added through the shared Add Item flow
+   * (components/inventory/AddItemModal), which is the single path for every
+   * kind of inventory addition. The form below is now only ever opened to
+   * edit an item that already exists.
+   */
   function beginEditItem(item: InventoryItem) {
     setEditingItemId(item.id);
     setFormState(convertItemToFormState(item));
@@ -476,13 +477,21 @@ export default function InventoryItemsPage() {
       return;
     }
 
-    const newOrUpdatedItem = convertFormStateToItem(formState, editingItem);
+    // The form only opens for an existing item now, but guard rather than
+    // assume — saving with nothing to update would otherwise silently do
+    // nothing.
+    if (!editingItem) {
+      setStatusMessage(
+        "Nothing to update. Use Add Item to add a new part."
+      );
+      return;
+    }
 
-    const nextItems = editingItem
-      ? inventoryItems.map((item) =>
-          item.id === editingItem.id ? newOrUpdatedItem : item
-        )
-      : [newOrUpdatedItem, ...inventoryItems];
+    const updatedItem = convertFormStateToItem(formState, editingItem);
+
+    const nextItems = inventoryItems.map((item) =>
+      item.id === editingItem.id ? updatedItem : item
+    );
 
     saveInventoryItems(nextItems);
     setInventoryItems(nextItems);
@@ -490,9 +499,7 @@ export default function InventoryItemsPage() {
     setEditingItemId(null);
     setFormState(createEmptyFormState());
     setShowForm(false);
-    setStatusMessage(
-      editingItem ? "Inventory item updated." : "Inventory item created."
-    );
+    setStatusMessage("Inventory item updated.");
   }
 
   function handleDeleteItem(itemId: string) {
@@ -554,16 +561,12 @@ export default function InventoryItemsPage() {
               Refresh
             </button>
 
-            <button data-t1eq-action-button="true"
-              type="button"
-              onClick={beginCreateItem}
-              data-t1eq-qbit-id="inventory-items-add"
-              data-t1eq-qbit-type="action-button"
-              data-t1eq-qbit-scope={QBIT_SCOPE}
-              className={primaryButtonClass}
-            >
-              Add Inventory Item
-            </button>
+            <AddItemButton
+              qbitId="inventory-items-add-item"
+              variant="light"
+              label="+ Add Item"
+              onAdded={refreshInventoryItems}
+            />
           </div>
         </div>
 
@@ -578,7 +581,7 @@ export default function InventoryItemsPage() {
         <section data-t1eq-page-card="true" data-t1eq-qbit-id="inventory-items-form" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className={`${sectionClass} mb-6`}>
           <div className="mb-5">
             <h2 data-t1eq-qbit-id="inventory-items-form-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-2xl font-black text-black">
-              {editingItem ? "Edit Inventory Item" : "Add Inventory Item"}
+              Edit Inventory Item
             </h2>
 
             <p data-t1eq-qbit-id="inventory-items-form-description" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-1 text-sm font-semibold text-zinc-600">

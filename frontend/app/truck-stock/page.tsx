@@ -8,6 +8,8 @@ import type { TechnicianProfile } from "@/types/technician-profile";
 
 import { getInventoryItems } from "@/services/inventory";
 
+import AddItemButton from "@/components/inventory/AddItemButton";
+
 import {
   getTruckTransactionsByTruck,
   type TruckStockTransaction,
@@ -297,19 +299,37 @@ export default function TruckStockPage() {
     <main className="min-h-screen bg-slate-950 p-6 text-white">
       <div className="mx-auto max-w-7xl space-y-6">
         <section data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="truck-stock-header" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
-          <div data-t1eq-qbit-id="truck-stock-overline" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-semibold uppercase tracking-[0.25em] text-white/50">
-            T1EQ Field Inventory
+          <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
+            <div>
+              <div data-t1eq-qbit-id="truck-stock-overline" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-semibold uppercase tracking-[0.25em] text-white/50">
+                T1EQ Field Inventory
+              </div>
+
+              <h1 data-t1eq-qbit-id="truck-stock-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 text-4xl font-bold text-white">
+                Truck Stock
+              </h1>
+
+              <p data-t1eq-qbit-id="truck-stock-description" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 max-w-3xl text-sm leading-6 text-white/60">
+                Add service trucks in the field, assign technicians or
+                inspectors, load inventory from warehouse stock, replenish low
+                truck stock, and track truck-level part quantities.
+              </p>
+            </div>
+
+            {/*
+              Pre-selects whichever truck is being viewed, so stocking a
+              truck does not mean re-picking it in the modal. Location ids
+              for trucks are "truck:{id}" — see services/inventory-locations.
+            */}
+            <AddItemButton
+              qbitId="truck-stock-add-item"
+              variant="dark"
+              label="+ Add Item"
+              initialLocationId={
+                selectedTruckId ? `truck:${selectedTruckId}` : undefined
+              }
+            />
           </div>
-
-          <h1 data-t1eq-qbit-id="truck-stock-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 text-4xl font-bold text-white">
-            Truck Stock
-          </h1>
-
-          <p data-t1eq-qbit-id="truck-stock-description" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 max-w-3xl text-sm leading-6 text-white/60">
-            Add service trucks in the field, assign technicians or inspectors,
-            load inventory from warehouse stock, replenish low truck stock, and
-            track truck-level part quantities.
-          </p>
         </section>
 
         <section className="grid gap-6 lg:grid-cols-3">

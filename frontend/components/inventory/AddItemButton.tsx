@@ -20,6 +20,8 @@ type AddItemButtonProps = {
   mode?: AddItemMode;
 
   initialPartNumber?: string;
+  initialDescription?: string;
+  initialCost?: number;
   initialLocationId?: string;
 
   /**
@@ -48,6 +50,8 @@ export default function AddItemButton({
   label = "Add Item",
   mode = "inventory",
   initialPartNumber,
+  initialDescription,
+  initialCost,
   initialLocationId,
   variant = "light",
   onAdded,
@@ -78,6 +82,8 @@ export default function AddItemButton({
         onAdded={handleAdded}
         mode={mode}
         initialPartNumber={initialPartNumber}
+        initialDescription={initialDescription}
+        initialCost={initialCost}
         initialLocationId={initialLocationId}
       />
     </>

@@ -23,6 +23,15 @@ import RepairOrderPartEntryForm from "./repair-order-part-entry-form";
 type RepairOrderActionItemsProps = {
   actionItems: RepairOrderActionItem[];
   assignedTruckId?: string;
+
+  /**
+   * Passed down to the part entry form so a part bought mid-job through
+   * the on-the-fly flow is attributed to this repair order in sales
+   * history — which is what makes the "used on N separate jobs" stocking
+   * threshold meaningful.
+   */
+  repairOrderId?: string;
+  repairOrderNumber?: string;
   onEdit?: (actionItem: RepairOrderActionItem) => void;
   onDelete?: (actionItem: RepairOrderActionItem) => void;
   onUpdate?: (actionItem: RepairOrderActionItem) => void;
@@ -135,6 +144,8 @@ function RepairOrderActionItemAssignmentSummary({
 export default function RepairOrderActionItems({
   actionItems,
   assignedTruckId,
+  repairOrderId,
+  repairOrderNumber,
   onEdit,
   onDelete,
   onUpdate,
@@ -400,6 +411,11 @@ export default function RepairOrderActionItems({
 
             <div className="mt-5">
               <RepairOrderPartEntryForm
+                repairOrderId={repairOrderId}
+                repairOrderNumber={repairOrderNumber}
+                actionItemId={actionItem.id}
+                technicianId={actionItem.assignedTechnicianId}
+                technicianName={actionItem.assignedTechnicianName}
                 onSubmit={(partEntry) =>
                   handleAddPartEntry(actionItem, partEntry)
                 }

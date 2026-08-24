@@ -13,6 +13,8 @@ import { getPurchaseOrders } from "../../../services/purchase-orders";
 import { getCompanyTools } from "../../../services/company-tools";
 import { getOpenInventoryDiscrepancies } from "../../../services/inventory-discrepancies";
 
+import AddItemButton from "@/components/inventory/AddItemButton";
+
 type ReceivingLineRecord = {
   purchaseOrder: PurchaseOrder;
   line: PurchaseOrderLine;
@@ -238,6 +240,12 @@ export default function InventoryReceivingPage() {
             </div>
 
             <div className="flex flex-wrap gap-3">
+              <AddItemButton
+                qbitId="inventory-receiving-add-item"
+                variant="light"
+                label="+ Add Item"
+              />
+
               <a href="/inventory"
                 data-t1eq-qbit-type="action-button"
                 data-t1eq-qbit-id="inventory-receiving-link-inventory"

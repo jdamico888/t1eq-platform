@@ -26,6 +26,13 @@ import {
 import { createInventoryDiscrepancy } from "../../services/inventory-discrepancies";
 import { createCompanyTool } from "../../services/company-tools";
 
+import type { StockingSuggestion } from "@/types/part-usage";
+import {
+  getStockingSuggestions,
+  PART_USAGE_UPDATED_EVENT,
+} from "@/services/part-usage";
+import AddItemButton from "@/components/inventory/AddItemButton";
+
 type StockLocationKind = "Warehouse" | "Truck";
 
 type PurchaseOrderStatusTileFilter = "All" | "Open" | "Received" | null;
@@ -403,6 +410,36 @@ export default function PurchaseOrdersPage() {
   const [managerCodeByPoId, setManagerCodeByPoId] = useState<
     Record<string, string>
   >({});
+
+  /*
+   * Parts the shop keeps buying at counter price but does not stock, which
+   * have crossed the threshold set in Setup → Parts. Distinct from the
+   * recommended-inventory panel inside each PO, which only looks at items
+   * already stocked that have dropped below their minimum.
+   */
+  const [stockingSuggestions, setStockingSuggestions] = useState<
+    StockingSuggestion[]
+  >([]);
+
+  function refreshStockingSuggestions() {
+    setStockingSuggestions(getStockingSuggestions());
+  }
+
+  useEffect(() => {
+    refreshStockingSuggestions();
+
+    window.addEventListener(
+      PART_USAGE_UPDATED_EVENT,
+      refreshStockingSuggestions
+    );
+
+    return () => {
+      window.removeEventListener(
+        PART_USAGE_UPDATED_EVENT,
+        refreshStockingSuggestions
+      );
+    };
+  }, []);
 
   useEffect(() => {
     const loadedPurchaseOrders = getPurchaseOrders();
@@ -1439,6 +1476,98 @@ export default function PurchaseOrdersPage() {
             </div>
           </button>
         </section>
+
+        {stockingSuggestions.length > 0 && (
+          <section data-t1eq-tile="true" data-t1eq-page-card="true"
+            data-t1eq-qbit-id="purchase-orders-stocking-suggestions"
+            data-t1eq-qbit-type="page-card"
+            data-t1eq-qbit-scope={QBIT_SCOPE}
+            className="rounded-3xl border-2 border-amber-300 bg-amber-50 p-6 shadow-sm"
+          >
+            <div className="mb-1 text-sm font-black uppercase tracking-wide text-amber-700">
+              Suggested To Stock
+            </div>
+
+            <h2
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="purchase-orders-stocking-suggestions-title"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="text-2xl font-black text-black"
+            >
+              Parts You Keep Buying
+            </h2>
+
+            <p
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="purchase-orders-stocking-suggestions-description"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-1 max-w-3xl text-sm font-semibold text-amber-900"
+            >
+              These were bought at counter price during jobs rather than
+              pulled from stock, and have crossed the threshold set in
+              Setup&nbsp;&rarr;&nbsp;Parts.
+            </p>
+
+            <div className="mt-5 space-y-3">
+              {stockingSuggestions.map((suggestion) => (
+                <div data-t1eq-tile="true"
+                  key={suggestion.partNumber}
+                  data-t1eq-qbit-type="tile"
+                  data-t1eq-qbit-id={`purchase-orders-stocking-suggestion-${suggestion.partNumber}`}
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
+                  className="flex flex-col justify-between gap-4 rounded-2xl border border-amber-200 bg-white p-4 md:flex-row md:items-center"
+                >
+                  <div className="min-w-0">
+                    <div className="text-lg font-black text-black">
+                      {suggestion.partNumber}
+                    </div>
+
+                    <div className="text-sm font-semibold text-zinc-600">
+                      {suggestion.description}
+                      {suggestion.manufacturer
+                        ? ` · ${suggestion.manufacturer}`
+                        : ""}
+                    </div>
+
+                    {/* The evidence, so the suggestion argues its own case */}
+                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs font-bold text-zinc-500">
+                      <span className={suggestion.metJobThreshold ? "text-amber-700" : ""}>
+                        {suggestion.jobCount} separate job
+                        {suggestion.jobCount === 1 ? "" : "s"}
+                      </span>
+
+                      <span className={suggestion.metQuantityThreshold ? "text-amber-700" : ""}>
+                        {suggestion.totalQuantity} piece
+                        {suggestion.totalQuantity === 1 ? "" : "s"} used
+                      </span>
+
+                      <span>
+                        Avg cost {formatCurrency(suggestion.averageCost)}
+                      </span>
+
+                      <span>
+                        Sold for {formatCurrency(suggestion.totalSellValue)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <AddItemButton
+                    qbitId={`purchase-orders-stock-suggestion-${suggestion.partNumber}`}
+                    variant="light"
+                    label="Start Stocking"
+                    initialPartNumber={suggestion.partNumber}
+                    initialDescription={suggestion.description}
+                    initialCost={suggestion.averageCost}
+                    onAdded={() => {
+                      setInventoryItems(getInventoryItems());
+                      refreshStockingSuggestions();
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {showCreatePurchaseOrderForm && (
           <section data-t1eq-tile="true" data-t1eq-page-card="true"

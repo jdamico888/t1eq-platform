@@ -19,6 +19,7 @@ import {
   resolveMarkupPercent,
 } from "@/services/pricing";
 import { currentUserHasPermission } from "@/services/auth";
+import { recordPartUsage } from "@/services/part-usage";
 
 const QBIT_SCOPE = "add-item-modal";
 
@@ -50,10 +51,31 @@ type AddItemModalProps = {
   initialPartNumber?: string;
 
   /**
+   * Pre-fills description and cost — used when acting on a stocking
+   * suggestion, where both are already known from purchase history.
+   */
+  initialDescription?: string;
+  initialCost?: number;
+
+  /**
    * Pre-selects a location — used when opening from Truck Stock, so the
    * truck the user is already looking at is the default.
    */
   initialLocationId?: string;
+
+  /**
+   * Which job this part was bought for. Supplied by the on-the-fly flow so
+   * the purchase can be written to part sales history, which is what feeds
+   * stocking suggestions — see services/part-usage.ts.
+   */
+  usageContext?: {
+    repairOrderId?: string;
+    repairOrderNumber?: string;
+    scheduleEventId?: string;
+    actionItemId?: string;
+    technicianId?: string;
+    technicianName?: string;
+  };
 };
 
 type AddItemFormState = {
@@ -68,6 +90,7 @@ type AddItemFormState = {
   shelf: string;
   bin: string;
   quantityOnHand: string;
+  quantityUsedOnJob: string;
   cost: string;
   sellPrice: string;
 };
@@ -84,6 +107,7 @@ const emptyForm: AddItemFormState = {
   shelf: "",
   bin: "",
   quantityOnHand: "",
+  quantityUsedOnJob: "",
   cost: "",
   sellPrice: "",
 };
@@ -168,7 +192,10 @@ export default function AddItemModal({
   onAdded,
   mode = "inventory",
   initialPartNumber,
+  initialDescription,
+  initialCost,
   initialLocationId,
+  usageContext,
 }: AddItemModalProps) {
   const isOnTheFly = mode === "onTheFly";
 
@@ -203,18 +230,56 @@ export default function AddItemModal({
     setPhotos({});
     setSellPriceEditedManually(false);
 
+    const seededCost =
+      typeof initialCost === "number" && initialCost > 0
+        ? String(initialCost)
+        : "";
+
     setForm({
       ...emptyForm,
       partNumber: initialPartNumber ?? "",
+      partDescription: initialDescription ?? "",
+      cost: seededCost,
+      // Keep the suggested price in step with a seeded cost, so the field
+      // is not left showing zero against a real cost.
+      sellPrice: seededCost
+        ? String(
+            calculateSuggestedSellPrice(Number(seededCost), getMarkupSettings())
+          )
+        : "",
       locationId: initialLocationId ?? "",
     });
-  }, [open, initialPartNumber, initialLocationId]);
+  }, [
+    open,
+    initialPartNumber,
+    initialDescription,
+    initialCost,
+    initialLocationId,
+  ]);
 
   const selectedLocation = locations.find(
     (location) => location.id === form.locationId
   );
 
   const isTruckLocation = selectedLocation?.type === "Truck";
+
+  /*
+   * On-the-fly quantities: what was bought, and how much of it went onto
+   * this job. Blank "used" means all of it — the common case is buying
+   * exactly what the job needs.
+   */
+  const quantityPurchased = Number(form.quantity) || 0;
+
+  const quantityUsedOnJob = form.quantityUsedOnJob.trim()
+    ? Number(form.quantityUsedOnJob) || 0
+    : quantityPurchased;
+
+  const leftoverQuantity = Math.max(
+    quantityPurchased - quantityUsedOnJob,
+    0
+  );
+
+  const hasLeftoverStock = isOnTheFly && leftoverQuantity > 0;
 
   /**
    * The markup that actually applied to the cost as typed — a matching cost
@@ -288,9 +353,32 @@ export default function AddItemModal({
       nextErrors.push("Part Description is required.");
     }
 
-    // A part bought mid-job is fitted, not shelved — so where it would have
-    // been stored is optional. Stocking inventory still has to say where it
-    // went, or it cannot be found again.
+    /*
+     * A part bought mid-job and fitted in full never touches a shelf, so
+     * there is nowhere to record. Buy three and fit one, though, and the
+     * other two are real stock that has to be findable — so the storage
+     * address becomes required exactly when something is left over.
+     */
+    if (isOnTheFly && hasLeftoverStock) {
+      if (!form.locationId) {
+        nextErrors.push(
+          "Some of this is left over — say where the remainder is stored."
+        );
+      }
+
+      if (!form.section.trim()) {
+        nextErrors.push("Section is required for the leftover stock.");
+      }
+
+      if (!form.shelf.trim()) {
+        nextErrors.push("Shelf is required for the leftover stock.");
+      }
+
+      if (!form.bin.trim()) {
+        nextErrors.push("Bin is required for the leftover stock.");
+      }
+    }
+
     if (!isOnTheFly) {
       if (!form.locationId) {
         nextErrors.push("Inventory Location is required.");
@@ -395,7 +483,15 @@ export default function AddItemModal({
 
     const partNumber = form.partNumber.trim();
     const partDescription = form.partDescription.trim();
-    const quantity = Number(form.quantity);
+
+    /*
+     * Only what is left over becomes stock. A part bought and fitted the
+     * same hour was never on hand, so counting it into inventory would
+     * overstate what the shop actually holds.
+     */
+    const quantity = isOnTheFly
+      ? leftoverQuantity
+      : Number(form.quantity);
 
     const sharedFields = {
       manufacturer: form.manufacturer.trim() || undefined,
@@ -480,6 +576,43 @@ export default function AddItemModal({
       };
     }
 
+    /**
+     * Writes the purchase to part sales history. Only on-the-fly buys are
+     * recorded as such — that is the signal the shop is paying counter
+     * price for something it does not keep, which is what stocking
+     * suggestions are built from.
+     */
+    function recordOnTheFlyUsage(inventoryItemId?: string) {
+      if (!isOnTheFly || quantityUsedOnJob <= 0) {
+        return;
+      }
+
+      const sellPriceForJob =
+        managerOverridePrice ??
+        calculateSuggestedSellPrice(costValue, markupSettings);
+
+      recordPartUsage({
+        partNumber,
+        description: partDescription,
+        manufacturer: form.manufacturer.trim() || undefined,
+
+        quantity: quantityUsedOnJob,
+        cost: costValue,
+        sellPrice: sellPriceForJob,
+
+        source: "Bought On The Fly",
+
+        inventoryItemId,
+
+        repairOrderId: usageContext?.repairOrderId,
+        repairOrderNumber: usageContext?.repairOrderNumber,
+        scheduleEventId: usageContext?.scheduleEventId,
+        actionItemId: usageContext?.actionItemId,
+        technicianId: usageContext?.technicianId,
+        technicianName: usageContext?.technicianName,
+      });
+    }
+
     // Receiving more of something already stocked adds to it rather than
     // creating a duplicate catalog entry.
     if (existingItem) {
@@ -497,6 +630,8 @@ export default function AddItemModal({
         partDescription,
         existingItem.id
       );
+
+      recordOnTheFlyUsage(existingItem.id);
 
       if (updatedItem) {
         onAdded?.(updatedItem);
@@ -520,6 +655,8 @@ export default function AddItemModal({
       partDescription,
       newItem.id
     );
+
+    recordOnTheFlyUsage(newItem.id);
 
     onAdded?.(newItem);
     onClose();
@@ -667,6 +804,33 @@ export default function AddItemModal({
             />
           </label>
 
+          {isOnTheFly && (
+            <label className="block">
+              <span className={labelClass}>Used On This Job</span>
+
+              <input data-t1eq-field="true"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-id="add-item-quantity-used"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                type="number"
+                min="0"
+                step="1"
+                value={form.quantityUsedOnJob}
+                onChange={(event) =>
+                  updateField("quantityUsedOnJob", event.target.value)
+                }
+                placeholder={form.quantity || "All of it"}
+                className={inputClass}
+              />
+
+              <span className="mt-2 block text-xs font-semibold text-slate-400">
+                {hasLeftoverStock
+                  ? `${leftoverQuantity} left over — say where it goes below.`
+                  : "Leave blank if the whole lot went onto this job."}
+              </span>
+            </label>
+          )}
+
           <label className="block">
             <span className={labelClass}>Qty On Hand (Counted)</span>
             <input data-t1eq-field="true"
@@ -701,7 +865,9 @@ export default function AddItemModal({
             Storage Location
             {isOnTheFly && (
               <span className="ml-2 font-semibold normal-case tracking-normal text-slate-400">
-                — optional for a part being fitted now
+                {hasLeftoverStock
+                  ? `— required for the ${leftoverQuantity} left over`
+                  : "— not needed, the whole lot is being fitted now"}
               </span>
             )}
           </h3>
