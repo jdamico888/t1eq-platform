@@ -49,7 +49,48 @@ export type InvoiceLineItem = {
   sourceId?: string;
   sourceType?: InvoiceLineItemSourceType;
 
+  /**
+   * The part this line bills, when it came from stock. Carried through from
+   * the repair order so a manager's price decision made on the invoice can
+   * reach the inventory record, the same way it does from an RO line.
+   */
+  inventoryItemId?: string;
+  partNumber?: string;
+
   notes?: string;
+};
+
+/**
+ * One recorded change to an invoice that had already left Draft.
+ *
+ * Once an invoice has been saved or sent to the customer, it is a document
+ * someone else is holding. Changing it silently after that is what makes a
+ * record of account indefensible, so every later edit is kept as an
+ * amendment: what moved, who moved it, when, and what the invoice's status
+ * was at the time.
+ */
+export type InvoiceAmendment = {
+  id: string;
+
+  changedDate: string;
+
+  changedByTechnicianId?: string;
+  changedByName: string;
+
+  /** The invoice's status when the change was made. */
+  statusAtChange: InvoiceStatus;
+
+  /** Human-readable field name, e.g. "Unit Price" or "Quantity". */
+  field: string;
+
+  /** Which line moved. Absent for an invoice-level field. */
+  lineItemId?: string;
+  lineDescription?: string;
+
+  previousValue: string;
+  newValue: string;
+
+  reason?: string;
 };
 
 export type InvoiceCustomerSnapshot = {
@@ -121,6 +162,12 @@ export type Invoice = {
   paidDate?: string;
 
   lineItems: InvoiceLineItem[];
+
+  /**
+   * Every change made after the invoice left Draft, oldest first. Empty or
+   * absent on an invoice that has only ever been edited as a draft.
+   */
+  amendments?: InvoiceAmendment[];
 
   notes?: string;
 

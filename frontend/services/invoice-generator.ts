@@ -170,6 +170,8 @@ function createLineItem({
   actionItem,
   sourceId,
   sourceType,
+  inventoryItemId,
+  partNumber,
   notes,
 }: {
   id: string;
@@ -182,6 +184,8 @@ function createLineItem({
   actionItem?: RepairOrderActionItem;
   sourceId?: string;
   sourceType: InvoiceLineItem["sourceType"];
+  inventoryItemId?: string;
+  partNumber?: string;
   notes?: string;
 }): InvoiceLineItem | null {
   if (!shouldKeepLineItem(quantity, unitPrice, total)) {
@@ -205,6 +209,9 @@ function createLineItem({
 
     sourceId,
     sourceType,
+
+    inventoryItemId,
+    partNumber,
 
     notes: optionalString(notes),
   };
@@ -390,6 +397,13 @@ function createLineItemFromPartEntry(
     actionItem,
     sourceId: partEntry.id,
     sourceType: "Part Entry",
+
+    /*
+     * The link back to stock, so a manager correcting this price on the
+     * invoice can reach the part the same way they can from the RO.
+     */
+    inventoryItemId: partEntry.inventoryItemId,
+    partNumber: partEntry.partNumber,
     notes: partEntry.notes,
   });
 }

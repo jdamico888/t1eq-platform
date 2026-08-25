@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import type { Invoice } from "@/types/invoice";
 
 import { getInvoices, updateInvoice } from "@/services/invoices";
+import InvoiceLineItemsPanel from "@/components/invoices/InvoiceLineItemsPanel";
 
 const QBIT_SCOPE = "invoice-detail";
 
@@ -510,65 +511,10 @@ export default function InvoiceDetailPage() {
           </div>
         </section>
 
-        <section data-t1eq-tile="true" data-t1eq-page-card="true"
-          data-t1eq-qbit-type="page-card"
-          data-t1eq-qbit-id="invoice-detail-line-items"
-          data-t1eq-qbit-scope={QBIT_SCOPE}
-          className="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
-          <h2
-            data-t1eq-qbit-type="text"
-            data-t1eq-qbit-id="invoice-detail-line-items-title"
-            data-t1eq-qbit-scope={QBIT_SCOPE}
-            className="text-2xl font-bold text-white"
-          >
-            Line Items
-          </h2>
-
-          <div data-t1eq-tile="true" data-t1eq-page-card="true"
-            data-t1eq-qbit-type="section"
-            data-t1eq-qbit-id="invoice-detail-line-items-table"
-            data-t1eq-qbit-scope={QBIT_SCOPE}
-            className="mt-5 overflow-hidden rounded-2xl border border-white/10">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-white/10 text-white/70">
-                <tr>
-                  <th className="p-3">Description</th>
-                  <th className="p-3 text-right">Qty</th>
-                  <th className="p-3 text-right">Unit Price</th>
-                  <th className="p-3 text-right">Total</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {invoice.lineItems.map((lineItem) => (
-                  <tr
-                    key={lineItem.id}
-                    data-t1eq-qbit-type="tile"
-                    data-t1eq-qbit-id={`invoice-detail-line-item-${lineItem.id}`}
-                    data-t1eq-qbit-scope={QBIT_SCOPE}
-                    className="border-t border-white/10"
-                  >
-                    <td className="p-3 text-white">
-                      {lineItem.description}
-                    </td>
-
-                    <td className="p-3 text-right text-white">
-                      {lineItem.quantity}
-                    </td>
-
-                    <td className="p-3 text-right text-white">
-                      {formatCurrency(lineItem.unitPrice)}
-                    </td>
-
-                    <td className="p-3 text-right font-semibold text-white">
-                      {formatCurrency(lineItem.total)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
+        <InvoiceLineItemsPanel
+          invoice={invoice}
+          onInvoiceChanged={loadInvoice}
+        />
 
         <section data-t1eq-tile="true" data-t1eq-page-card="true"
           data-t1eq-qbit-type="page-card"

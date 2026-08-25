@@ -1,11 +1,12 @@
 import type {
   Invoice,
+  InvoiceAmendment,
   InvoiceLineItem,
   InvoiceLineItemType,
   InvoiceStatus,
 } from "@/types/invoice";
 
-export type { Invoice, InvoiceLineItem };
+export type { Invoice, InvoiceAmendment, InvoiceLineItem };
 
 export type InvoiceInput = Partial<Invoice> & Record<string, unknown>;
 
@@ -97,8 +98,44 @@ function normalizeInvoiceLineItem(
     sourceId: optionalString(lineItem.sourceId),
     sourceType: lineItem.sourceType,
 
+    inventoryItemId: optionalString(lineItem.inventoryItemId),
+    partNumber: optionalString(lineItem.partNumber),
+
     notes: optionalString(lineItem.notes),
   };
+}
+
+/**
+ * Amendments are the invoice's record of account. A malformed one is
+ * dropped rather than guessed at — a record that cannot be trusted is
+ * worse than a record that is short.
+ */
+function normalizeInvoiceAmendments(value: unknown): InvoiceAmendment[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .filter(
+      (amendment): amendment is Partial<InvoiceAmendment> =>
+        Boolean(amendment) &&
+        typeof amendment === "object" &&
+        !Array.isArray(amendment)
+    )
+    .map((amendment) => ({
+      id: safeString(amendment.id, createId("AMEND")),
+      changedDate: safeString(amendment.changedDate, ""),
+      changedByTechnicianId: optionalString(amendment.changedByTechnicianId),
+      changedByName: safeString(amendment.changedByName, "Unknown"),
+      statusAtChange: normalizeInvoiceStatus(amendment.statusAtChange),
+      field: safeString(amendment.field, "Change"),
+      lineItemId: optionalString(amendment.lineItemId),
+      lineDescription: optionalString(amendment.lineDescription),
+      previousValue: safeString(amendment.previousValue, "—"),
+      newValue: safeString(amendment.newValue, "—"),
+      reason: optionalString(amendment.reason),
+    }))
+    .filter((amendment) => amendment.changedDate.length > 0);
 }
 
 function normalizeInvoiceLineItems(value: unknown): InvoiceLineItem[] {
@@ -250,6 +287,8 @@ function normalizeInvoice(invoice: InvoiceInput): Invoice {
     paidDate: optionalString(invoice.paidDate),
 
     lineItems,
+
+    amendments: normalizeInvoiceAmendments(invoice.amendments),
 
     notes: optionalString(invoice.notes),
 

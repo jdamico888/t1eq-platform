@@ -7,7 +7,17 @@ import type { RepairOrderPartEntry } from "@/types/repair-order";
 import type { InventoryItem } from "@/types/inventory-item";
 
 import { getInventoryItems } from "@/services/inventory";
-import { getSuggestedSellPrice } from "@/services/pricing";
+import {
+  calculateSuggestedSellPrice,
+  getMarkupSettings,
+  getSuggestedSellPrice,
+  type MarkupSettingsSnapshot,
+} from "@/services/pricing";
+import { currentUserHasPermission } from "@/services/auth";
+import {
+  applyManagerSellPriceOverride,
+  describePartPriceOverride,
+} from "@/services/part-price-override";
 
 import Typeahead, {
   type TypeaheadOption,
@@ -117,9 +127,40 @@ export function RepairOrderPartEntryForm(props: RepairOrderPartEntryFormProps) {
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
   const [isAddItemOpen, setIsAddItemOpen] = useState(false);
 
+  /*
+   * Cost is an observation a technician records. Sell price is a decision,
+   * so it is a manager's field — everyone else sees the system's suggestion
+   * read-only. Resolved in an effect: reading permissions during render
+   * answers differently on the server than on the client and would trip a
+   * hydration mismatch.
+   */
+  const [canEditCharges, setCanEditCharges] = useState(false);
+
+  const [markupSettings, setMarkupSettings] =
+    useState<MarkupSettingsSnapshot>({ generalPercent: 0, tiers: [] });
+
+  /**
+   * Whether the sell price on screen is a manager's typed decision rather
+   * than the system's suggestion. Only a typed price writes back to
+   * inventory, so merely opening and saving a line changes nothing.
+   */
+  const [sellPriceEditedManually, setSellPriceEditedManually] =
+    useState(false);
+
+  /**
+   * A linked part whose price a manager already set by hand. Its price must
+   * not be recalculated from cost behind their back.
+   */
+  const [linkedItemPriceOverridden, setLinkedItemPriceOverridden] =
+    useState(false);
+
+  const [priceWriteBackMessage, setPriceWriteBackMessage] = useState("");
+
   /* Inventory is only readable on the client. */
   useEffect(() => {
     setInventoryItems(getInventoryItems());
+    setCanEditCharges(currentUserHasPermission("editCharges"));
+    setMarkupSettings(getMarkupSettings());
   }, []);
 
   function refreshInventory() {
@@ -159,9 +200,40 @@ export function RepairOrderPartEntryForm(props: RepairOrderPartEntryFormProps) {
       String(item.sellPrice || item.price || getSuggestedSellPrice(item.cost ?? 0))
     );
 
+    /* Filled by the system from the record, not typed by this person. */
+    setSellPriceEditedManually(false);
+    setLinkedItemPriceOverridden(Boolean(item.sellPriceOverridden));
+    setPriceWriteBackMessage("");
+
     if (item.imageUrl) {
       setPartImageUrlValue(item.imageUrl);
     }
+  }
+
+  /**
+   * Cost drives the suggested sell price, so that a technician entering a
+   * cost never has to price the part. It stops following once a manager
+   * types a price, and never touches a part whose price a manager already
+   * set by hand in inventory.
+   */
+  function handleCostChange(nextCost: string) {
+    setCost(nextCost);
+
+    if (sellPriceEditedManually || linkedItemPriceOverridden) {
+      return;
+    }
+
+    const parsedCost = toNumber(nextCost);
+
+    setSellPrice(
+      String(calculateSuggestedSellPrice(parsedCost, markupSettings))
+    );
+  }
+
+  function handleSellPriceChange(nextSellPrice: string) {
+    setSellPrice(nextSellPrice);
+    setSellPriceEditedManually(true);
+    setPriceWriteBackMessage("");
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -196,6 +268,30 @@ export function RepairOrderPartEntryForm(props: RepairOrderPartEntryFormProps) {
       updatedDate: now,
     };
 
+    /*
+     * A manager's price decision made during review becomes the part's
+     * price in inventory, and holds there until someone edits it in
+     * Inventory. Only a typed price counts — the system's own suggestion
+     * saving unchanged must not mark the record as manager-set.
+     *
+     * A part bought for this job that was never stocked has no record to
+     * write to; the service reports that rather than failing.
+     */
+    if (canEditCharges && sellPriceEditedManually && linkedInventoryItemId) {
+      const overrideResult = applyManagerSellPriceOverride({
+        inventoryItemId: linkedInventoryItemId,
+        sellPrice: parsedSellPrice,
+        canEditCharges,
+      });
+
+      setPriceWriteBackMessage(describePartPriceOverride(overrideResult) ?? "");
+
+      if (overrideResult.status === "applied") {
+        setLinkedItemPriceOverridden(true);
+        refreshInventory();
+      }
+    }
+
     resolveCallback(props)?.(partEntry);
   }
 
@@ -215,6 +311,14 @@ export function RepairOrderPartEntryForm(props: RepairOrderPartEntryFormProps) {
                 setPartNumberValue(value);
                 // Typing over a chosen part breaks the inventory link.
                 setLinkedInventoryItemId(undefined);
+
+                /*
+                 * The override flag belonged to the part that was linked.
+                 * Left set, it would go on blocking cost-driven pricing
+                 * for whatever part is keyed next.
+                 */
+                setLinkedItemPriceOverridden(false);
+                setPriceWriteBackMessage("");
               }}
               onSelect={(option) => {
                 if (option.data) {
@@ -282,21 +386,46 @@ export function RepairOrderPartEntryForm(props: RepairOrderPartEntryFormProps) {
               min="0"
               step="0.01"
               value={cost}
-              onChange={(event) => setCost(event.target.value)}
+              onChange={(event) => handleCostChange(event.target.value)}
               className={fieldClass}
             />
           </label>
 
           <label className="block">
-            <span className={fieldLabelClass}>Sell Price</span>
+            <span className={fieldLabelClass}>
+              Sell Price
+              {!canEditCharges && (
+                <span className="ml-2 font-bold normal-case tracking-normal text-zinc-400">
+                  set by markup
+                </span>
+              )}
+            </span>
+
             <input data-t1eq-field="true"
               type="number"
               min="0"
               step="0.01"
               value={sellPrice}
-              onChange={(event) => setSellPrice(event.target.value)}
-              className={fieldClass}
+              onChange={(event) => handleSellPriceChange(event.target.value)}
+              readOnly={!canEditCharges}
+              aria-readonly={!canEditCharges}
+              title={
+                canEditCharges
+                  ? undefined
+                  : "Sell price is calculated from cost at the markup in Business Setup. A manager can override it during review."
+              }
+              className={
+                canEditCharges
+                  ? fieldClass
+                  : `${fieldClass} cursor-not-allowed bg-zinc-100 text-zinc-500`
+              }
             />
+
+            {canEditCharges && linkedInventoryItemId && (
+              <span className="mt-1 block text-xs font-semibold text-zinc-500">
+                Changing this updates the part&rsquo;s price in Inventory.
+              </span>
+            )}
           </label>
 
           <label className="block">
@@ -318,6 +447,21 @@ export function RepairOrderPartEntryForm(props: RepairOrderPartEntryFormProps) {
             className={fieldClass}
           />
         </label>
+
+        {/*
+          A change to a shared record is never silent — the manager who
+          made it sees exactly what moved and what it means.
+        */}
+        {priceWriteBackMessage && (
+          <p
+            data-t1eq-qbit-type="information-balloon"
+            data-t1eq-qbit-id="repair-order-part-price-write-back"
+            data-t1eq-qbit-scope="repair-order-part-entry"
+            className="rounded-xl border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-800"
+          >
+            {priceWriteBackMessage}
+          </p>
+        )}
 
         <div className="flex gap-3">
           <button data-t1eq-action-button="true"
