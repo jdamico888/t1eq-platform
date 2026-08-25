@@ -116,32 +116,11 @@ const DASHBOARD_TILE_DEFINITIONS: DashboardTileDefinition[] = [
     description:
       "Customer account records, billing information, contact details, service locations, and account-level service history.",
     quickAction: { label: "Add Customer", href: "/customers" },
-    subcategories: [
-      {
-        id: "accounts",
-        label: "Accounts",
-        description: "Customer account records and billing profiles.",
-        href: "/customers",
-      },
-      {
-        id: "contacts",
-        label: "Contacts",
-        description: "Customer contact names, phone numbers, and emails.",
-        href: "/customers",
-      },
-      {
-        id: "locations",
-        label: "Locations",
-        description: "Customer service locations and site records.",
-        href: "/customers",
-      },
-      {
-        id: "history",
-        label: "History",
-        description: "Customer service and repair-order history.",
-        href: "/customers",
-      },
-    ],
+    /*
+     * A customer is created while booking an appointment or opening a
+     * repair order, not by coming here to file one.
+     */
+    subcategories: [],
   },
   {
     id: "equipment",
@@ -152,32 +131,11 @@ const DASHBOARD_TILE_DEFINITIONS: DashboardTileDefinition[] = [
     description:
       "Customer-owned equipment records, model and serial data, location assignment, service history, and inspection readiness.",
     quickAction: { label: "Add Equipment", href: "/equipment" },
-    subcategories: [
-      {
-        id: "assets",
-        label: "Assets",
-        description: "Equipment asset records by customer.",
-        href: "/equipment",
-      },
-      {
-        id: "model-serial",
-        label: "Model / Serial",
-        description: "Model, serial, manufacturer, and asset tags.",
-        href: "/equipment",
-      },
-      {
-        id: "locations",
-        label: "Locations",
-        description: "Current equipment site or service location.",
-        href: "/equipment",
-      },
-      {
-        id: "service-history",
-        label: "Service History",
-        description: "Repair and inspection history for each asset.",
-        href: "/equipment",
-      },
-    ],
+    /*
+     * Equipment is recorded against the customer it belongs to, in the
+     * same flow. Browsing to it to add one is the long way round.
+     */
+    subcategories: [],
   },
   {
     id: "repair-orders",
@@ -1035,6 +993,12 @@ function DashboardTile({
         </p>
       </div>
 
+      {/*
+        Rendered only when there is something to put in it. An empty grid
+        still carries its top margin, which left a gap under the count on
+        tiles that have no subcategories.
+      */}
+      {selectedSubcategories.length > 0 && (
       <div
         data-t1eq-qbit-type="section"
         data-t1eq-qbit-id={`dashboard-tile-${tile.id}-subcategories`}
@@ -1070,6 +1034,7 @@ function DashboardTile({
           </div>
         ))}
       </div>
+      )}
 
       <InfoBalloon
         id={`dashboard-tile-${tile.id}-information-balloon`}
@@ -1578,7 +1543,9 @@ export default function DashboardPage() {
               data-t1eq-qbit-scope={DASHBOARD_SCOPE}
               className="grid gap-4 lg:grid-cols-3"
             >
-              {DASHBOARD_TILE_DEFINITIONS.map((tile) => {
+              {DASHBOARD_TILE_DEFINITIONS.filter(
+                (tile) => tile.subcategories.length > 0
+              ).map((tile) => {
                 const selectedIds = draftSubcategories[tile.id] ?? [];
 
                 return (

@@ -3,70 +3,16 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-type SidebarItem = {
-  id: string;
-  label: string;
-  href: string;
-};
+import { sidebarNavigationItems } from "@/constants/navigation";
 
-const SIDEBAR_ITEMS: SidebarItem[] = [
-  {
-    id: "dashboard",
-    label: "Dashboard",
-    href: "/dashboard",
-  },
-  {
-    id: "customers",
-    label: "Customers",
-    href: "/customers",
-  },
-  {
-    id: "equipment",
-    label: "Equipment",
-    href: "/equipment",
-  },
-  {
-    id: "repair-orders",
-    label: "Repair Orders",
-    href: "/repair-orders",
-  },
-  {
-    id: "dispatch",
-    label: "Dispatch",
-    href: "/dispatch",
-  },
-  {
-    id: "inventory",
-    label: "Inventory",
-    href: "/inventory",
-  },
-  {
-    id: "purchase-orders",
-    label: "Purchase Orders",
-    href: "/purchase-orders",
-  },
-  {
-    id: "suppliers",
-    label: "Suppliers",
-    href: "/suppliers",
-  },
-  {
-    id: "invoices",
-    label: "Invoices",
-    href: "/invoices",
-  },
-  {
-    id: "reports",
-    label: "Reports",
-    href: "/reports",
-  },
-  {
-    id: "settings",
-    label: "Settings",
-    href: "/settings",
-  },
-];
-
+/**
+ * The main sidebar.
+ *
+ * It used to carry its own copy of the navigation list, which had drifted
+ * from the shared one: this file had a Reports link to a page that was
+ * never built, and the shared list had four destinations this never
+ * showed. There is one list now, in constants/navigation.ts.
+ */
 export default function SidebarNav() {
   const pathname = usePathname();
 
@@ -77,7 +23,14 @@ export default function SidebarNav() {
       data-t1eq-qbit-scope="global"
       className="space-y-2"
     >
-      {SIDEBAR_ITEMS.map((item) => {
+      {sidebarNavigationItems.map((item) => {
+        /*
+         * The Q-Bit id was hand-written before and matched the href in
+         * every single case, so deriving it here keeps every appearance
+         * override already applied to these buttons.
+         */
+        const qbitId = item.href.replace(/^\//, "");
+
         const isActive =
           pathname === item.href ||
           (item.href !== "/dashboard" &&
@@ -85,12 +38,12 @@ export default function SidebarNav() {
 
         return (
           <Link
-            key={item.id}
+            key={item.href}
             href={item.href}
             data-t1eq-sidebar-button="true"
             data-t1eq-sidebar-button-active={isActive ? "true" : undefined}
             data-t1eq-qbit-type="sidebar-button"
-            data-t1eq-qbit-id={`sidebar-${item.id}`}
+            data-t1eq-qbit-id={`sidebar-${qbitId}`}
             data-t1eq-qbit-scope="global"
             className={`block rounded-xl px-4 py-3 text-sm font-semibold transition ${
               isActive

@@ -154,6 +154,33 @@ const panelHeight = 760;
 
 const dockSize = 160;
 
+/**
+ * Q-Bit's artwork does not fill its own canvas, and that is why "drag it
+ * to the top" kept stopping short.
+ *
+ * Both PNGs are 1536x1024 — three-by-two — so dropping them in a square
+ * box with object-contain letterboxed them by 27px before anything else.
+ * On top of that the character sits low in frame: measured from the alpha
+ * channel, the first visible pixel is 22.3% down in qbit-rest and 11.7%
+ * down in qbit-edit. Roughly fifty pixels of nothing above his head.
+ *
+ * So the graphic is drawn at its true aspect and pulled up by its own
+ * empty band, with the button cropped to what remains. The box someone
+ * drags is then the shape they can actually see, and its top edge is the
+ * top of Q-Bit.
+ *
+ * Re-measure these fractions if the artwork is ever replaced.
+ */
+const qbitGraphicWidth = 160;
+const qbitGraphicAspect = 1536 / 1024;
+const qbitDrawnHeight = qbitGraphicWidth / qbitGraphicAspect;
+
+const qbitRestEmptyTopFraction = 0.223;
+const qbitEditEmptyTopFraction = 0.117;
+
+/** Used by the clamps, so the avatar can reach the bottom edge too. */
+const dockHeight = Math.round(qbitDrawnHeight);
+
 const objectMinWidth = 32;
 const objectMinHeight = 32;
 
@@ -235,7 +262,7 @@ function getDefaultDockPosition(): Position {
 
     y: Math.max(
       16,
-      window.innerHeight - dockSize - 24
+      window.innerHeight - dockHeight - 24
     ),
   };
 }
@@ -292,7 +319,7 @@ function clampDockPosition(
       Math.max(editorTopGutter, position.y),
       Math.max(
         editorTopGutter,
-        window.innerHeight - dockSize - editorEdgeGutter
+        window.innerHeight - dockHeight - editorEdgeGutter
       )
     ),
   };
@@ -494,26 +521,54 @@ function friendlyTypeName(
   }
 }
 
+function QBitGraphic({
+  src,
+  emptyTopFraction,
+}: {
+  src: string;
+  emptyTopFraction: number;
+}) {
+  const emptyTop =
+    qbitDrawnHeight * emptyTopFraction;
+
+  return (
+    <span
+      aria-hidden="true"
+      className="block overflow-hidden"
+      style={{
+        width: qbitGraphicWidth,
+        height: qbitDrawnHeight - emptyTop,
+      }}
+    >
+      <img
+        src={src}
+        alt=""
+        draggable={false}
+        className="block max-w-none drop-shadow-2xl"
+        style={{
+          width: qbitGraphicWidth,
+          height: qbitDrawnHeight,
+          marginTop: -emptyTop,
+        }}
+      />
+    </span>
+  );
+}
+
 function InactiveQBitGraphic() {
   return (
-    <img
+    <QBitGraphic
       src="/appearance/qbit-rest.png"
-      alt=""
-      aria-hidden="true"
-      draggable={false}
-      className="h-40 w-40 object-contain drop-shadow-2xl"
+      emptyTopFraction={qbitRestEmptyTopFraction}
     />
   );
 }
 
 function ActiveQBitGraphic() {
   return (
-    <img
+    <QBitGraphic
       src="/appearance/qbit-edit.png"
-      alt=""
-      aria-hidden="true"
-      draggable={false}
-      className="h-40 w-40 object-contain drop-shadow-2xl"
+      emptyTopFraction={qbitEditEmptyTopFraction}
     />
   );
 }
@@ -2531,7 +2586,7 @@ export default function AppearanceEditor() {
             true
           );
         }}
-        className="fixed z-[10000] flex h-40 w-40 touch-none select-none items-center justify-center bg-transparent p-0 transition hover:scale-105"
+        className="fixed z-[10000] flex touch-none select-none items-start justify-center bg-transparent p-0 transition hover:scale-105"
         style={
           dockStyle
         }
