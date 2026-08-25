@@ -29,7 +29,8 @@ import {
   clampRowSpan,
   measureCanvasHeight,
   resolvePlacements,
-  settleCanvas,
+  bringToFront,
+  surfaceBuriedTiles,
   toStackOrder,
   type TileSizeHint,
 } from "@/services/tile-canvas";
@@ -104,7 +105,10 @@ type Gesture = {
  * Tiles positioned on a grid canvas rather than flowed in a row.
  *
  * Drag one anywhere and it stays; drag its corner to resize; drop it on a
- * neighbour and the neighbour is pushed clear rather than hidden beneath.
+ * neighbour and it simply sits on top. Overlap is allowed on purpose —
+ * shoving neighbours aside to prevent it meant a small nudge could fling
+ * another tile to the bottom of the page, which was the worse trade.
+ *
  * Positions are grid units, so the arrangement survives a resize, and
  * below tablet width the canvas stacks in reading order instead of
  * scattering tiles off a narrow screen.
@@ -344,6 +348,13 @@ export default function FreeformTileCanvas({
       return;
     }
 
+    /*
+       Raised on pick-up rather than on drop, so the tile is in front for
+       the whole drag instead of sliding under its neighbours until you
+       let go.
+    */
+    setPlacements((current) => bringToFront(current, tileId));
+
     setGesture({
       kind,
       tileId,
@@ -456,7 +467,12 @@ export default function FreeformTileCanvas({
         };
       });
 
-      setPlacements(settleCanvas(next, activeGesture.tileId));
+      /*
+       * No settling: tiles are allowed to sit on top of each other. The
+       * moved tile simply lands where it was dropped, and paint order
+       * puts it in front.
+       */
+      setPlacements(next);
 
       /*
        * The tile snaps to cells, but the pointer does not. This is the
@@ -528,9 +544,16 @@ export default function FreeformTileCanvas({
           )
         );
       } else {
-        setLayout(
-          saveDashboardSectionPlacements(sectionKey, placementsRef.current)
-        );
+        /*
+         * A drop or a resize can leave a tile with nothing showing, and a
+         * tile with nothing showing has no edge to grab and no way back.
+         * Settling here lifts any such tile to the front — overlap is
+         * kept, unreachability is not.
+         */
+        const settled = surfaceBuriedTiles(placementsRef.current);
+
+        setPlacements(settled);
+        setLayout(saveDashboardSectionPlacements(sectionKey, settled));
       }
     }
 
