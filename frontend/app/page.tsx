@@ -14,6 +14,21 @@ import { getInventoryItems, getLowStockItems } from "@/services/inventory";
 import { getPurchaseOrders } from "@/services/purchase-orders";
 import { getTrucks } from "@/services/truck-stock";
 
+import ArrangeableTileGrid, {
+  type ArrangeableMenuItem,
+} from "@/components/dashboard/ArrangeableTileGrid";
+import {
+  DASHBOARD_LAYOUT_CHANGED_EVENT,
+  arrangeDashboardTiles,
+  createEmptySectionLayout,
+  getDashboardSectionLayout,
+  hideDashboardTile,
+  resetDashboardSectionLayout,
+  saveDashboardSectionOrder,
+  showDashboardTile,
+  type DashboardSectionLayout,
+} from "@/services/dashboard-layout";
+
 type DashboardTileTone = "Normal" | "Attention" | "Warning" | "Good";
 
 type DashboardTileMetric = {
@@ -330,6 +345,14 @@ export default function OperationsDashboardPage() {
     users: 0,
   });
 
+  /*
+   * How the person has arranged the category tiles. Empty until the effect
+   * below reads it, so the first client render matches what the server
+   * rendered and hydration stays quiet.
+   */
+  const [categoryTileLayout, setCategoryTileLayout] =
+    useState<DashboardSectionLayout>(createEmptySectionLayout);
+
   useEffect(() => {
     setPurchaseOrders(getPurchaseOrders());
     setInventoryItems(getInventoryItems());
@@ -338,6 +361,29 @@ export default function OperationsDashboardPage() {
     setCompanyTools(getCompanyTools());
     setTrucks(getTrucks());
     setLocalCounts(loadLocalCounts());
+
+    function loadCategoryTileLayout() {
+      setCategoryTileLayout(getDashboardSectionLayout("categoryTiles"));
+    }
+
+    loadCategoryTileLayout();
+
+    /* Keeps a second tab in step after a drag. */
+    window.addEventListener(
+      DASHBOARD_LAYOUT_CHANGED_EVENT,
+      loadCategoryTileLayout
+    );
+
+    window.addEventListener("storage", loadCategoryTileLayout);
+
+    return () => {
+      window.removeEventListener(
+        DASHBOARD_LAYOUT_CHANGED_EVENT,
+        loadCategoryTileLayout
+      );
+
+      window.removeEventListener("storage", loadCategoryTileLayout);
+    };
   }, []);
 
   const openPurchaseOrders = useMemo(
@@ -543,6 +589,55 @@ export default function OperationsDashboardPage() {
     },
   ];
 
+  const arrangedCategoryTiles = arrangeDashboardTiles(
+    dashboardCategories,
+    (category) => category.id,
+    categoryTileLayout
+  );
+
+  /*
+   * The trash takes a tile off the dashboard; it does not delete anything.
+   * Every removed tile is listed in the right-click picker, so a tile is
+   * always one press away from coming back.
+   */
+  function handleReorderCategoryTiles(orderedIds: string[]) {
+    setCategoryTileLayout(
+      saveDashboardSectionOrder("categoryTiles", orderedIds)
+    );
+  }
+
+  function handleRemoveCategoryTile(tileId: string) {
+    setCategoryTileLayout(hideDashboardTile("categoryTiles", tileId));
+  }
+
+  const hasCategoryTileLayout =
+    categoryTileLayout.order.length > 0 ||
+    categoryTileLayout.hidden.length > 0;
+
+  const categoryTilePickerItems: ArrangeableMenuItem[] = [
+    ...arrangedCategoryTiles.hidden.map((category) => ({
+      label: `Add: ${category.title}`,
+      description: "Put this tile back on the dashboard.",
+      onSelect: () =>
+        setCategoryTileLayout(
+          showDashboardTile("categoryTiles", category.id)
+        ),
+    })),
+
+    ...(hasCategoryTileLayout
+      ? [
+          {
+            label: "Reset Category Tiles",
+            description: "Return every tile to its original place.",
+            onSelect: () =>
+              setCategoryTileLayout(
+                resetDashboardSectionLayout("categoryTiles")
+              ),
+          },
+        ]
+      : []),
+  ];
+
   return (
     <div className={pageClass}>
       <header data-t1eq-page-card="true"
@@ -652,21 +747,41 @@ export default function OperationsDashboardPage() {
             data-t1eq-qbit-scope={QBIT_SCOPE}
             className="mt-1 text-sm font-semibold text-zinc-600"
           >
-            Click any tile to open that category’s main menu.
+            Click any tile to open that category’s main menu. Drag to
+            arrange, drag to the trash to remove, right-click to add back.
           </p>
         </div>
 
-        <div
-          data-t1eq-tile-grid="true"
-          data-t1eq-qbit-type="section"
-          data-t1eq-qbit-id="operations-dashboard-tile-grid"
-          data-t1eq-qbit-scope={QBIT_SCOPE}
-          className={dashboardGridClass}
-        >
-          {dashboardCategories.map((category) => (
-            <DashboardCategoryCard key={category.title} {...category} />
-          ))}
-        </div>
+        <ArrangeableTileGrid
+          allowLinkDrag
+          qbitId="operations-dashboard-tile-grid"
+          qbitScope={QBIT_SCOPE}
+          gridClassName={dashboardGridClass}
+          tiles={arrangedCategoryTiles.visible.map((category) => ({
+            id: category.id,
+            content: <DashboardCategoryCard {...category} />,
+          }))}
+          onReorder={handleReorderCategoryTiles}
+          onRemove={handleRemoveCategoryTile}
+          menuItems={categoryTilePickerItems}
+          emptyState={
+            <div
+              data-t1eq-page-card="true"
+              data-t1eq-qbit-type="page-card"
+              data-t1eq-qbit-id="operations-dashboard-tile-grid-empty"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-8 text-center"
+            >
+              <p className="text-sm font-black text-black">
+                No category tiles on the dashboard.
+              </p>
+
+              <p className="mt-1 text-sm font-semibold text-zinc-600">
+                Right-click here to put them back. Nothing was deleted.
+              </p>
+            </div>
+          }
+        />
       </section>
     </div>
   );

@@ -15,7 +15,10 @@ import { createId, createTimestamp } from "@/lib/storage";
 import type {
   RepairOrderActionItem,
   RepairOrderActionItemType,
+  RepairOrderPartEntry,
 } from "@/types/repair-orders";
+
+import ActionItemPartPicker from "./ActionItemPartPicker";
 
 type ActionItemQuickAddProps = {
   customer: { id?: string; name: string };
@@ -59,6 +62,13 @@ export default function ActionItemQuickAdd({
   const [partsDescription, setPartsDescription] = useState("");
   const [partsTotal, setPartsTotal] = useState("");
 
+  /*
+   * Structured parts, separate from the free-text estimate above. At
+   * booking time nobody may know the parts yet, so both coexist: the
+   * estimate covers the quote, these cover what was actually used.
+   */
+  const [partEntries, setPartEntries] = useState<RepairOrderPartEntry[]>([]);
+
   const [laborDescription, setLaborDescription] = useState("");
   const [laborTotal, setLaborTotal] = useState("");
 
@@ -90,6 +100,7 @@ export default function ActionItemQuickAdd({
     setInstructions("");
     setPartsDescription("");
     setPartsTotal("");
+    setPartEntries([]);
     setLaborDescription("");
     setLaborTotal("");
     setTravelDescription("");
@@ -111,7 +122,22 @@ export default function ActionItemQuickAdd({
       site
     );
 
-    const parsedPartsTotal = parseAmount(partsTotal);
+    const partEntriesTotal = partEntries.reduce(
+      (runningTotal, entry) => runningTotal + entry.total,
+      0
+    );
+
+    const typedPartsTotal = parseAmount(partsTotal);
+
+    /*
+     * Real part entries are the better number when they exist — the typed
+     * figure was only ever an estimate. Falling back keeps a line that was
+     * quoted but never itemised working exactly as before.
+     */
+    const parsedPartsTotal =
+      partEntries.length > 0
+        ? Math.round(partEntriesTotal * 100) / 100
+        : typedPartsTotal;
     const parsedLaborTotal = parseAmount(laborTotal);
     const parsedTravelTotal = parseAmount(travelTotal);
     const parsedMiscTotal = parseAmount(miscTotal);
@@ -148,6 +174,8 @@ export default function ActionItemQuickAdd({
 
       generatedPartsDescription: partsDescription.trim() || undefined,
       generatedPartsTotal: parsedPartsTotal,
+
+      partEntries: partEntries.length > 0 ? partEntries : undefined,
 
       generatedLaborDescription: laborDescription.trim() || undefined,
       generatedLaborTotal: parsedLaborTotal,
@@ -224,6 +252,13 @@ export default function ActionItemQuickAdd({
           className={inputClass}
         />
       </label>
+
+      <ActionItemPartPicker
+        qbitId={qbitId ? `${qbitId}-part-picker` : undefined}
+        theme={theme}
+        partEntries={partEntries}
+        onChange={setPartEntries}
+      />
 
       <div className="grid gap-4 md:grid-cols-2">
         <FieldPair

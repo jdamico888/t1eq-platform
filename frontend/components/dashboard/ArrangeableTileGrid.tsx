@@ -30,6 +30,24 @@ type ArrangeableTileGridProps = {
   menuItems: ArrangeableMenuItem[];
   gridClassName?: string;
   emptyState?: ReactNode;
+
+  /**
+   * For sections whose tiles ARE links — the command tiles and quick
+   * actions are each a single <a>. Without this the press would be read as
+   * "using the control" and the tile would never pick up.
+   *
+   * A tile that was dragged does not navigate: the click that follows the
+   * drag is swallowed. A tile that was only clicked still navigates.
+   */
+  allowLinkDrag?: boolean;
+
+  /**
+   * Q-Bit matches its overrides on id + scope, so every grid on a page
+   * needs its own. Without these, editing one grid's appearance would
+   * silently restyle every other grid in the program.
+   */
+  qbitId?: string;
+  qbitScope?: string;
 };
 
 /**
@@ -68,15 +86,24 @@ function isQBitEditing(): boolean {
 /**
  * Tiles can contain links and buttons. A press that starts on one of those
  * is the person trying to use the control, not rearrange the tile.
+ *
+ * The exception is a section built out of link tiles, where the anchor IS
+ * the tile — there, the anchor has to stay draggable or nothing in the
+ * section could ever be picked up.
  */
-function isInteractiveTarget(target: EventTarget | null): boolean {
+function isInteractiveTarget(
+  target: EventTarget | null,
+  allowLinkDrag: boolean
+): boolean {
   if (!(target instanceof Element)) {
     return false;
   }
 
-  return Boolean(
-    target.closest("a, button, input, select, textarea")
-  );
+  const selector = allowLinkDrag
+    ? "button, input, select, textarea"
+    : "a, button, input, select, textarea";
+
+  return Boolean(target.closest(selector));
 }
 
 export default function ArrangeableTileGrid({
@@ -86,6 +113,9 @@ export default function ArrangeableTileGrid({
   menuItems,
   gridClassName = "grid gap-4 md:grid-cols-2 xl:grid-cols-3",
   emptyState,
+  allowLinkDrag = false,
+  qbitId = "arrangeable-tile-grid",
+  qbitScope = QBIT_SCOPE,
 }: ArrangeableTileGridProps) {
   const [orderedIds, setOrderedIds] = useState<string[]>(() =>
     tiles.map((tile) => tile.id)
@@ -117,7 +147,21 @@ export default function ArrangeableTileGrid({
   const dragStateRef = useRef<DragState | null>(null);
   dragStateRef.current = dragState;
 
-  /* Keep local order in step with incoming tiles, but never mid-drag. */
+  /*
+   * A drag that ends on a link tile would otherwise fire a click and
+   * navigate away from the dashboard the person was just rearranging.
+   */
+  const suppressNextClickRef = useRef(false);
+  const suppressClickTimerRef = useRef<number | null>(null);
+
+  /*
+   * Keep local order in step with incoming tiles, but never mid-drag.
+   *
+   * This compares the sequence rather than the membership, because a saved
+   * layout arriving after mount changes the order without changing who is
+   * in it — matching on membership alone would have left the grid showing
+   * the default order until a tile was added or removed.
+   */
   useEffect(() => {
     if (dragStateRef.current) {
       return;
@@ -125,15 +169,26 @@ export default function ArrangeableTileGrid({
 
     const incomingIds = tiles.map((tile) => tile.id);
 
-    const sameMembers =
+    const sameSequence =
       incomingIds.length === orderedIdsRef.current.length &&
-      incomingIds.every((id) => orderedIdsRef.current.includes(id));
+      incomingIds.every(
+        (id, index) => orderedIdsRef.current[index] === id
+      );
 
-    if (!sameMembers) {
+    if (!sameSequence) {
       setOrderedIds(incomingIds);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tiles]);
+
+  /* Nothing should outlive the component holding a timer. */
+  useEffect(() => {
+    return () => {
+      if (suppressClickTimerRef.current !== null) {
+        window.clearTimeout(suppressClickTimerRef.current);
+      }
+    };
+  }, []);
 
   /* Q-Bit owns the surface while its editor is open. */
   useEffect(() => {
@@ -291,7 +346,10 @@ export default function ArrangeableTileGrid({
     event: React.PointerEvent<HTMLDivElement>,
     tileId: string
   ) {
-    if (qBitEditing || isInteractiveTarget(event.target)) {
+    if (
+      qBitEditing ||
+      isInteractiveTarget(event.target, allowLinkDrag)
+    ) {
       return;
     }
 
@@ -423,6 +481,23 @@ export default function ArrangeableTileGrid({
     const activeDrag = dragStateRef.current;
 
     if (activeDrag) {
+      /*
+       * The tile was dragged, so the click the browser is about to
+       * synthesize is not a click on the link — swallow it. The timer is
+       * the release valve for the case where no click ever arrives, so a
+       * later real click is not eaten by a stale flag.
+       */
+      suppressNextClickRef.current = true;
+
+      if (suppressClickTimerRef.current !== null) {
+        window.clearTimeout(suppressClickTimerRef.current);
+      }
+
+      suppressClickTimerRef.current = window.setTimeout(() => {
+        suppressNextClickRef.current = false;
+        suppressClickTimerRef.current = null;
+      }, 400);
+
       if (isOverTrash) {
         onRemove(activeDrag.tileId);
 
@@ -438,6 +513,22 @@ export default function ArrangeableTileGrid({
     setDragState(null);
     setDragDelta({ x: 0, y: 0 });
     setIsOverTrash(false);
+  }
+
+  function handleClickCapture(event: React.MouseEvent) {
+    if (!suppressNextClickRef.current) {
+      return;
+    }
+
+    suppressNextClickRef.current = false;
+
+    if (suppressClickTimerRef.current !== null) {
+      window.clearTimeout(suppressClickTimerRef.current);
+      suppressClickTimerRef.current = null;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
   }
 
   function handleContextMenu(event: React.MouseEvent) {
@@ -459,9 +550,10 @@ export default function ArrangeableTileGrid({
   return (
     <div
       data-t1eq-qbit-type="section"
-      data-t1eq-qbit-id="arrangeable-tile-grid"
-      data-t1eq-qbit-scope={QBIT_SCOPE}
+      data-t1eq-qbit-id={qbitId}
+      data-t1eq-qbit-scope={qbitScope}
       onContextMenu={handleContextMenu}
+      onClickCapture={handleClickCapture}
       onPointerDown={handleGridPointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={finishGesture}
@@ -481,18 +573,36 @@ export default function ArrangeableTileGrid({
                 onPointerDown={(event) =>
                   handleTilePointerDown(event, tile.id)
                 }
-                style={
-                  isDragging
+                /*
+                 * Dragging a link is a native browser gesture that would
+                 * hand the pointer to the ghost-image drag and cancel
+                 * ours. Stopping it at the wrapper covers every anchor
+                 * inside the tile.
+                 */
+                onDragStart={(event) => {
+                  if (allowLinkDrag) {
+                    event.preventDefault();
+                  }
+                }}
+                style={{
+                  /*
+                   * Holding a link on a phone pops the browser's own
+                   * "open in new tab" callout, which would steal the hold
+                   * that is meant to pick the tile up.
+                   */
+                  WebkitTouchCallout: allowLinkDrag ? "none" : undefined,
+
+                  ...(isDragging
                     ? {
                         transform: `translate(${dragDelta.x}px, ${dragDelta.y}px) scale(1.03)`,
                         // Let elementFromPoint see what is underneath.
-                        pointerEvents: "none",
+                        pointerEvents: "none" as const,
                         zIndex: 40,
-                        position: "relative",
-                        touchAction: "none",
+                        position: "relative" as const,
+                        touchAction: "none" as const,
                       }
-                    : undefined
-                }
+                    : {}),
+                }}
                 className={[
                   tile.spanClassName ?? "",
                   qBitEditing
@@ -517,8 +627,8 @@ export default function ArrangeableTileGrid({
         <div
           data-arrangeable-trash="true"
           data-t1eq-qbit-type="section"
-          data-t1eq-qbit-id="arrangeable-tile-grid-trash"
-          data-t1eq-qbit-scope={QBIT_SCOPE}
+          data-t1eq-qbit-id={`${qbitId}-trash`}
+          data-t1eq-qbit-scope={qbitScope}
           className={[
             "fixed top-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-2xl border-2 px-6 py-4 shadow-2xl transition",
             isOverTrash
@@ -539,8 +649,8 @@ export default function ArrangeableTileGrid({
         <div
           ref={menuRef}
           data-t1eq-qbit-type="section"
-          data-t1eq-qbit-id="arrangeable-tile-grid-menu"
-          data-t1eq-qbit-scope={QBIT_SCOPE}
+          data-t1eq-qbit-id={`${qbitId}-menu`}
+          data-t1eq-qbit-scope={qbitScope}
           style={{
             top: Math.min(menuPosition.y, window.innerHeight - 220),
             left: Math.min(menuPosition.x, window.innerWidth - 300),

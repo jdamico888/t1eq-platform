@@ -17,6 +17,17 @@ import OperationalDashboardChartRenderer from "@/components/dashboard/Operationa
 import ArrangeableTileGrid, {
   type ArrangeableMenuItem,
 } from "@/components/dashboard/ArrangeableTileGrid";
+import {
+  DASHBOARD_LAYOUT_CHANGED_EVENT,
+  arrangeDashboardTiles,
+  createEmptySectionLayout,
+  getDashboardSectionLayout,
+  hideDashboardTile,
+  resetDashboardSectionLayout,
+  saveDashboardSectionOrder,
+  showDashboardTile,
+  type DashboardSectionLayout,
+} from "@/services/dashboard-layout";
 
 type StoredRecord = Record<string, unknown>;
 
@@ -396,6 +407,84 @@ const DASHBOARD_TILE_DEFINITIONS: DashboardTileDefinition[] = [
         href: "/invoices",
       },
     ],
+  },
+];
+
+type QuickActionDefinition = {
+  id: string;
+  title: string;
+  description: string;
+  href: string;
+};
+
+/*
+ * These were written straight into the markup. They are data now so the
+ * same drag, trash, and picker behaviour that the command tiles have can
+ * reach them too.
+ */
+const QUICK_ACTION_DEFINITIONS: QuickActionDefinition[] = [
+  {
+    id: "create-repair-order",
+    title: "Create Repair Order",
+    description:
+      "Start a new repair order with customer concern, equipment assignment, technician routing, labor, parts, photos, and billing workflow.",
+    href: "/repair-orders",
+  },
+  {
+    id: "add-customer",
+    title: "Add Customer",
+    description:
+      "Create or update customer account information, contacts, billing data, and optional service-location records.",
+    href: "/customers",
+  },
+  {
+    id: "add-equipment",
+    title: "Add Equipment",
+    description:
+      "Create a customer equipment record with model, serial, asset data, location, and future inspection or repair history.",
+    href: "/equipment",
+  },
+  {
+    id: "add-inventory-item",
+    title: "Add Inventory Item",
+    description:
+      "Create warehouse inventory with part numbers, pictures, cross references, cost, sell price, quantity, and minimum stock levels.",
+    href: "/inventory",
+  },
+  {
+    id: "inventory-transactions",
+    title: "Inventory Transactions",
+    description:
+      "Review warehouse receipts, repair-order consumption, returns, adjustments, references, and full inventory audit history.",
+    href: "/inventory/transactions",
+  },
+  {
+    id: "purchase-orders",
+    title: "Purchase Orders",
+    description:
+      "Begin procurement workflow for supplier orders, receiving, incoming quantity tracking, discrepancy review, and inventory replenishment.",
+    href: "/purchase-orders",
+  },
+  {
+    id: "truck-stock",
+    title: "Truck Stock",
+    description:
+      "Create service trucks, assign technicians, load inventory from warehouse stock to field vehicles, and review field stock movement.",
+    href: "/truck-stock",
+  },
+  {
+    id: "dispatch",
+    title: "Dispatch",
+    description:
+      "Review scheduling, dispatch workload, assigned technicians, open repair orders, and field service routing.",
+    href: "/dispatch",
+  },
+  {
+    id: "invoices",
+    title: "Invoices",
+    description:
+      "Generate or review customer invoices from repair-order billing summaries, inspection charges, repair charges, parts, and other charges.",
+    href: "/invoices",
   },
 ];
 
@@ -927,7 +1016,14 @@ function DashboardTile({
       data-t1eq-qbit-scope={DASHBOARD_SCOPE}
       href={tile.href}
       aria-label={`${tile.label}. ${tile.description}`}
-      className="group relative z-0 overflow-visible rounded-[28px] border border-slate-700 bg-slate-900 p-5 text-white shadow-2xl shadow-black/30 outline-none transition hover:z-50 hover:-translate-y-1 hover:border-orange-300 focus-visible:z-50 focus-visible:border-orange-300"
+      /*
+       * block h-full: the tile is an anchor, and it used to be a grid item
+       * itself. Now that the arrangeable grid wraps each tile in a
+       * draggable div, nothing blockifies the anchor any more — without
+       * this it would collapse back to inline and lose its padding and
+       * equal-height row.
+       */
+      className="group relative z-0 block h-full overflow-visible rounded-[28px] border border-slate-700 bg-slate-900 p-5 text-white shadow-2xl shadow-black/30 outline-none transition hover:z-50 hover:-translate-y-1 hover:border-orange-300 focus-visible:z-50 focus-visible:border-orange-300"
     >
       <div
         data-t1eq-qbit-type="section"
@@ -1023,7 +1119,8 @@ function ActionTile({
       data-t1eq-qbit-scope={DASHBOARD_SCOPE}
       href={href}
       aria-label={`${title}. ${description}`}
-      className="group relative z-0 overflow-visible rounded-[24px] border border-slate-700 bg-slate-900 p-5 text-white shadow-xl shadow-black/20 outline-none transition hover:z-50 hover:-translate-y-1 hover:border-orange-300 focus-visible:z-50 focus-visible:border-orange-300"
+      /* block h-full for the same reason as the command tile above. */
+      className="group relative z-0 block h-full overflow-visible rounded-[24px] border border-slate-700 bg-slate-900 p-5 text-white shadow-xl shadow-black/20 outline-none transition hover:z-50 hover:-translate-y-1 hover:border-orange-300 focus-visible:z-50 focus-visible:border-orange-300"
     >
       <h3
         data-t1eq-qbit-type="text"
@@ -1082,7 +1179,23 @@ export default function DashboardPage() {
     { id: string; title: string; metric: string; timeRange: string }[]
   >([]);
 
+  /*
+   * How the person has arranged each section. Empty until the effect below
+   * reads it, so the first client render matches what the server rendered
+   * and hydration stays quiet.
+   */
+  const [commandTileLayout, setCommandTileLayout] =
+    useState<DashboardSectionLayout>(createEmptySectionLayout);
+
+  const [quickActionLayout, setQuickActionLayout] =
+    useState<DashboardSectionLayout>(createEmptySectionLayout);
+
   const router = useRouter();
+
+  function loadSectionLayouts() {
+    setCommandTileLayout(getDashboardSectionLayout("commandTiles"));
+    setQuickActionLayout(getDashboardSectionLayout("quickActions"));
+  }
 
   function loadChartDefinitions() {
     setChartDefinitions(
@@ -1169,6 +1282,7 @@ export default function DashboardPage() {
     setDraftSubcategories(storedSubcategories);
 
     loadChartDefinitions();
+    loadSectionLayouts();
 
     function refreshDashboard() {
       const refreshedDashboardState = calculateDashboardState();
@@ -1190,6 +1304,10 @@ export default function DashboardPage() {
     );
 
     window.addEventListener("storage", refreshDashboard);
+    window.addEventListener(
+      DASHBOARD_LAYOUT_CHANGED_EVENT,
+      loadSectionLayouts
+    );
     window.addEventListener("t1eq-customers-changed", refreshDashboard);
     window.addEventListener("t1eq-equipment-changed", refreshDashboard);
     window.addEventListener("t1eq-repair-orders-changed", refreshDashboard);
@@ -1206,6 +1324,10 @@ export default function DashboardPage() {
       window.clearInterval(liveRefreshTimer);
 
       window.removeEventListener("storage", refreshDashboard);
+      window.removeEventListener(
+        DASHBOARD_LAYOUT_CHANGED_EVENT,
+        loadSectionLayouts
+      );
       window.removeEventListener("t1eq-customers-changed", refreshDashboard);
       window.removeEventListener("t1eq-equipment-changed", refreshDashboard);
       window.removeEventListener(
@@ -1312,6 +1434,107 @@ export default function DashboardPage() {
       }),
     [metrics, savedSubcategories, subcategoryValues]
   );
+
+  const arrangedCommandTiles = useMemo(
+    () =>
+      arrangeDashboardTiles(
+        dashboardTiles,
+        (entry) => entry.tile.id,
+        commandTileLayout
+      ),
+    [dashboardTiles, commandTileLayout]
+  );
+
+  const arrangedQuickActions = useMemo(
+    () =>
+      arrangeDashboardTiles(
+        QUICK_ACTION_DEFINITIONS,
+        (quickAction) => quickAction.id,
+        quickActionLayout
+      ),
+    [quickActionLayout]
+  );
+
+  /*
+   * The trash takes a tile off the dashboard; it does not delete anything.
+   * Every removed tile is listed in the right-click picker, so a tile is
+   * always one press away from coming back.
+   */
+  function handleReorderCommandTiles(orderedIds: string[]) {
+    setCommandTileLayout(
+      saveDashboardSectionOrder("commandTiles", orderedIds)
+    );
+  }
+
+  function handleRemoveCommandTile(tileId: string) {
+    setCommandTileLayout(hideDashboardTile("commandTiles", tileId));
+  }
+
+  function handleReorderQuickActions(orderedIds: string[]) {
+    setQuickActionLayout(
+      saveDashboardSectionOrder("quickActions", orderedIds)
+    );
+  }
+
+  function handleRemoveQuickAction(tileId: string) {
+    setQuickActionLayout(hideDashboardTile("quickActions", tileId));
+  }
+
+  const hasCommandTileLayout =
+    commandTileLayout.order.length > 0 ||
+    commandTileLayout.hidden.length > 0;
+
+  const commandTilePickerItems: ArrangeableMenuItem[] = [
+    ...arrangedCommandTiles.hidden.map(({ tile }) => ({
+      label: `Add: ${tile.label}`,
+      description: "Put this tile back on the dashboard.",
+      onSelect: () =>
+        setCommandTileLayout(showDashboardTile("commandTiles", tile.id)),
+    })),
+
+    ...(hasCommandTileLayout
+      ? [
+          {
+            label: "Reset Command Tiles",
+            description:
+              "Return every command tile to its original place.",
+            onSelect: () =>
+              setCommandTileLayout(
+                resetDashboardSectionLayout("commandTiles")
+              ),
+          },
+        ]
+      : []),
+  ];
+
+  const hasQuickActionLayout =
+    quickActionLayout.order.length > 0 ||
+    quickActionLayout.hidden.length > 0;
+
+  const quickActionPickerItems: ArrangeableMenuItem[] = [
+    ...arrangedQuickActions.hidden.map((quickAction) => ({
+      label: `Add: ${quickAction.title}`,
+      description: "Put this shortcut back on the dashboard.",
+      onSelect: () =>
+        setQuickActionLayout(
+          showDashboardTile("quickActions", quickAction.id)
+        ),
+    })),
+
+    ...(hasQuickActionLayout
+      ? [
+          {
+            label: "Reset Quick Actions",
+            description:
+              "Return every shortcut to its original place.",
+            onSelect: () =>
+              setQuickActionLayout(
+                resetDashboardSectionLayout("quickActions")
+              ),
+          },
+        ]
+      : []),
+  ];
 
   return (
     <main
@@ -1568,27 +1791,49 @@ export default function DashboardPage() {
               </button>
 
               <p className="hidden text-xs font-bold uppercase tracking-[0.18em] text-slate-400 sm:block">
-                Hover any tile for details
+                Hover for details · drag to arrange · right-click to add
               </p>
             </div>
           </div>
 
-          <div
-            data-t1eq-tile-grid="true"
-            data-t1eq-qbit-type="section"
-            data-t1eq-qbit-id="dashboard-command-tiles-grid"
-            data-t1eq-qbit-scope={DASHBOARD_SCOPE}
-            className="grid overflow-visible gap-5 sm:grid-cols-2 xl:grid-cols-3"
-          >
-            {dashboardTiles.map(({ tile, value, selectedSubcategories }) => (
-              <DashboardTile
-                key={tile.id}
-                tile={tile}
-                value={value}
-                selectedSubcategories={selectedSubcategories}
-              />
-            ))}
-          </div>
+          <ArrangeableTileGrid
+            allowLinkDrag
+            qbitId="dashboard-command-tiles-grid"
+            qbitScope={DASHBOARD_SCOPE}
+            gridClassName="grid overflow-visible gap-5 sm:grid-cols-2 xl:grid-cols-3"
+            tiles={arrangedCommandTiles.visible.map(
+              ({ tile, value, selectedSubcategories }) => ({
+                id: tile.id,
+                content: (
+                  <DashboardTile
+                    tile={tile}
+                    value={value}
+                    selectedSubcategories={selectedSubcategories}
+                  />
+                ),
+              })
+            )}
+            onReorder={handleReorderCommandTiles}
+            onRemove={handleRemoveCommandTile}
+            menuItems={commandTilePickerItems}
+            emptyState={
+              <div
+                data-t1eq-page-card="true"
+                data-t1eq-qbit-type="page-card"
+                data-t1eq-qbit-id="dashboard-command-tiles-empty"
+                data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+                className="rounded-[28px] border border-dashed border-slate-700 bg-slate-900/60 p-8 text-center"
+              >
+                <p className="text-sm font-black text-white">
+                  No command tiles on the dashboard.
+                </p>
+
+                <p className="mt-1 text-sm font-semibold text-slate-400">
+                  Right-click here to put them back. Nothing was deleted.
+                </p>
+              </div>
+            }
+          />
         </section>
 
         <section
@@ -1612,75 +1857,43 @@ export default function DashboardPage() {
             </h2>
           </div>
 
-          <div
-            data-t1eq-qbit-type="section"
-            data-t1eq-qbit-id="dashboard-quick-actions-grid"
-            data-t1eq-qbit-scope={DASHBOARD_SCOPE}
-            className="grid overflow-visible gap-5 md:grid-cols-2 xl:grid-cols-3"
-          >
-            <ActionTile
-              id="create-repair-order"
-              title="Create Repair Order"
-              description="Start a new repair order with customer concern, equipment assignment, technician routing, labor, parts, photos, and billing workflow."
-              href="/repair-orders"
-            />
+          <ArrangeableTileGrid
+            allowLinkDrag
+            qbitId="dashboard-quick-actions-grid"
+            qbitScope={DASHBOARD_SCOPE}
+            gridClassName="grid overflow-visible gap-5 md:grid-cols-2 xl:grid-cols-3"
+            tiles={arrangedQuickActions.visible.map((quickAction) => ({
+              id: quickAction.id,
+              content: (
+                <ActionTile
+                  id={quickAction.id}
+                  title={quickAction.title}
+                  description={quickAction.description}
+                  href={quickAction.href}
+                />
+              ),
+            }))}
+            onReorder={handleReorderQuickActions}
+            onRemove={handleRemoveQuickAction}
+            menuItems={quickActionPickerItems}
+            emptyState={
+              <div
+                data-t1eq-page-card="true"
+                data-t1eq-qbit-type="page-card"
+                data-t1eq-qbit-id="dashboard-quick-actions-empty"
+                data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+                className="rounded-[24px] border border-dashed border-slate-700 bg-slate-900/60 p-8 text-center"
+              >
+                <p className="text-sm font-black text-white">
+                  No shortcuts on the dashboard.
+                </p>
 
-            <ActionTile
-              id="add-customer"
-              title="Add Customer"
-              description="Create or update customer account information, contacts, billing data, and optional service-location records."
-              href="/customers"
-            />
-
-            <ActionTile
-              id="add-equipment"
-              title="Add Equipment"
-              description="Create a customer equipment record with model, serial, asset data, location, and future inspection or repair history."
-              href="/equipment"
-            />
-
-            <ActionTile
-              id="add-inventory-item"
-              title="Add Inventory Item"
-              description="Create warehouse inventory with part numbers, pictures, cross references, cost, sell price, quantity, and minimum stock levels."
-              href="/inventory"
-            />
-
-            <ActionTile
-              id="inventory-transactions"
-              title="Inventory Transactions"
-              description="Review warehouse receipts, repair-order consumption, returns, adjustments, references, and full inventory audit history."
-              href="/inventory/transactions"
-            />
-
-            <ActionTile
-              id="purchase-orders"
-              title="Purchase Orders"
-              description="Begin procurement workflow for supplier orders, receiving, incoming quantity tracking, discrepancy review, and inventory replenishment."
-              href="/purchase-orders"
-            />
-
-            <ActionTile
-              id="truck-stock"
-              title="Truck Stock"
-              description="Create service trucks, assign technicians, load inventory from warehouse stock to field vehicles, and review field stock movement."
-              href="/truck-stock"
-            />
-
-            <ActionTile
-              id="dispatch"
-              title="Dispatch"
-              description="Review scheduling, dispatch workload, assigned technicians, open repair orders, and field service routing."
-              href="/dispatch"
-            />
-
-            <ActionTile
-              id="invoices"
-              title="Invoices"
-              description="Generate or review customer invoices from repair-order billing summaries, inspection charges, repair charges, parts, and other charges."
-              href="/invoices"
-            />
-          </div>
+                <p className="mt-1 text-sm font-semibold text-slate-400">
+                  Right-click here to put them back. Nothing was deleted.
+                </p>
+              </div>
+            }
+          />
         </section>
 
         <section
@@ -1718,6 +1931,8 @@ export default function DashboardPage() {
           </div>
 
           <ArrangeableTileGrid
+            qbitId="dashboard-reports-grid"
+            qbitScope={DASHBOARD_SCOPE}
             tiles={chartDefinitions.map((definition) => ({
               id: definition.chart.id,
               spanClassName:
