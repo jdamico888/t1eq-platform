@@ -14,6 +14,8 @@ import {
 
 import AddItemButton from "@/components/inventory/AddItemButton";
 
+import MetricTileGrid from "@/components/dashboard/MetricTileGrid";
+
 type InventoryItemFormState = {
   id: string;
   partNumber: string;
@@ -1009,71 +1011,27 @@ export default function InventoryItemsPage() {
       )}
 
       <section data-t1eq-page-card="true" data-t1eq-qbit-id="inventory-items-list" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className={sectionClass}>
-        <div data-t1eq-tile-grid="true" className={metricGridClass}>
-          <div
-            data-t1eq-tile="true"
-            data-t1eq-page-card="true"
-            data-t1eq-qbit-id="inventory-items-metric-total"
-            data-t1eq-qbit-type="page-card"
-            data-t1eq-qbit-scope={QBIT_SCOPE}
-            className={metricCardClass}
-          >
-            <div data-t1eq-qbit-id="inventory-items-metric-total-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-black uppercase tracking-wide text-zinc-500">
-              Total Items
-            </div>
-            <div data-t1eq-qbit-id="inventory-items-metric-total-value" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 text-4xl font-black text-black">
-              {inventoryItems.length}
-            </div>
-          </div>
-
-          <div
-            data-t1eq-tile="true"
-            data-t1eq-page-card="true"
-            data-t1eq-qbit-id="inventory-items-metric-low-stock"
-            data-t1eq-qbit-type="page-card"
-            data-t1eq-qbit-scope={QBIT_SCOPE}
-            className={metricCardClass}
-          >
-            <div data-t1eq-qbit-id="inventory-items-metric-low-stock-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-black uppercase tracking-wide text-zinc-500">
-              Low Stock
-            </div>
-            <div data-t1eq-qbit-id="inventory-items-metric-low-stock-value" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 text-4xl font-black text-black">
-              {lowStockItems.length}
-            </div>
-          </div>
-
-          <div
-            data-t1eq-tile="true"
-            data-t1eq-page-card="true"
-            data-t1eq-qbit-id="inventory-items-metric-value"
-            data-t1eq-qbit-type="page-card"
-            data-t1eq-qbit-scope={QBIT_SCOPE}
-            className={metricCardClass}
-          >
-            <div data-t1eq-qbit-id="inventory-items-metric-value-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-black uppercase tracking-wide text-zinc-500">
-              Inventory Value
-            </div>
-            <div data-t1eq-qbit-id="inventory-items-metric-value-value" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 text-4xl font-black text-black">
-              {formatCurrency(totalInventoryValue)}
-            </div>
-          </div>
-
-          <div
-            data-t1eq-tile="true"
-            data-t1eq-page-card="true"
-            data-t1eq-qbit-id="inventory-items-metric-search-results"
-            data-t1eq-qbit-type="page-card"
-            data-t1eq-qbit-scope={QBIT_SCOPE}
-            className={metricCardClass}
-          >
-            <div data-t1eq-qbit-id="inventory-items-metric-search-results-label" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-black uppercase tracking-wide text-zinc-500">
-              Search Results
-            </div>
-            <div data-t1eq-qbit-id="inventory-items-metric-search-results-value" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 text-4xl font-black text-black">
-              {filteredItems.length}
-            </div>
-          </div>
-        </div>
+        <MetricTileGrid
+          sectionKey="inventoryItemMetrics"
+          qbitId="inventory-items-metrics"
+          qbitScope={QBIT_SCOPE}
+          gridClassName={metricGridClass}
+          cardClassName={metricCardClass}
+          tiles={[
+            { id: "total", label: "Total Items", value: inventoryItems.length },
+            { id: "low-stock", label: "Low Stock", value: lowStockItems.length },
+            {
+              id: "value",
+              label: "Inventory Value",
+              value: formatCurrency(totalInventoryValue),
+            },
+            {
+              id: "search-results",
+              label: "Search Results",
+              value: filteredItems.length,
+            },
+          ]}
+        />
 
         <div className="mb-5">
           <label className="space-y-2">

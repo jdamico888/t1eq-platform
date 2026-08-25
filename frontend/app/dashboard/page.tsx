@@ -9,14 +9,12 @@ import type { OperationalDashboardChartDefinition } from "@/types/operational-da
 import {
   getOperationalDashboardCharts,
   getVisibleOperationalDashboardCharts,
-  saveOperationalDashboardCharts,
   updateOperationalDashboardChart,
 } from "@/services/operational-dashboard-charts";
 import { resolveOperationalDashboardChartData } from "@/services/operational-dashboard-metrics";
 import OperationalDashboardChartRenderer from "@/components/dashboard/OperationalDashboardChartRenderer";
-import ArrangeableTileGrid, {
-  type ArrangeableMenuItem,
-} from "@/components/dashboard/ArrangeableTileGrid";
+import { type ArrangeableMenuItem } from "@/components/dashboard/ArrangeableTileGrid";
+import FreeformTileCanvas from "@/components/dashboard/FreeformTileCanvas";
 import {
   DASHBOARD_LAYOUT_CHANGED_EVENT,
   arrangeDashboardTiles,
@@ -24,7 +22,6 @@ import {
   getDashboardSectionLayout,
   hideDashboardTile,
   resetDashboardSectionLayout,
-  saveDashboardSectionOrder,
   showDashboardTile,
   type DashboardSectionLayout,
 } from "@/services/dashboard-layout";
@@ -1218,25 +1215,6 @@ export default function DashboardPage() {
   }
 
   /**
-   * Reorder is stored as sortOrder on the charts themselves — the field was
-   * already in the model, so dragging needs no separate layout store.
-   */
-  function handleReorderReportTiles(orderedIds: string[]) {
-    const allCharts = getOperationalDashboardCharts();
-
-    const reordered = allCharts.map((chart) => {
-      const position = orderedIds.indexOf(chart.id);
-
-      return position === -1
-        ? chart
-        : { ...chart, sortOrder: position };
-    });
-
-    saveOperationalDashboardCharts(reordered);
-    loadChartDefinitions();
-  }
-
-  /**
    * Dropping on the trash takes the tile off the dashboard rather than
    * deleting the report — it stays configured and can be added back from
    * the right-click picker.
@@ -1460,20 +1438,8 @@ export default function DashboardPage() {
    * Every removed tile is listed in the right-click picker, so a tile is
    * always one press away from coming back.
    */
-  function handleReorderCommandTiles(orderedIds: string[]) {
-    setCommandTileLayout(
-      saveDashboardSectionOrder("commandTiles", orderedIds)
-    );
-  }
-
   function handleRemoveCommandTile(tileId: string) {
     setCommandTileLayout(hideDashboardTile("commandTiles", tileId));
-  }
-
-  function handleReorderQuickActions(orderedIds: string[]) {
-    setQuickActionLayout(
-      saveDashboardSectionOrder("quickActions", orderedIds)
-    );
   }
 
   function handleRemoveQuickAction(tileId: string) {
@@ -1796,14 +1762,15 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <ArrangeableTileGrid
-            allowLinkDrag
+          <FreeformTileCanvas
+            sectionKey="commandTiles"
             qbitId="dashboard-command-tiles-grid"
             qbitScope={DASHBOARD_SCOPE}
-            gridClassName="grid overflow-visible gap-5 sm:grid-cols-2 xl:grid-cols-3"
             tiles={arrangedCommandTiles.visible.map(
               ({ tile, value, selectedSubcategories }) => ({
                 id: tile.id,
+                defaultColumnSpan: 4,
+                defaultRowSpan: 11,
                 content: (
                   <DashboardTile
                     tile={tile}
@@ -1813,7 +1780,6 @@ export default function DashboardPage() {
                 ),
               })
             )}
-            onReorder={handleReorderCommandTiles}
             onRemove={handleRemoveCommandTile}
             menuItems={commandTilePickerItems}
             emptyState={
@@ -1857,13 +1823,14 @@ export default function DashboardPage() {
             </h2>
           </div>
 
-          <ArrangeableTileGrid
-            allowLinkDrag
+          <FreeformTileCanvas
+            sectionKey="quickActions"
             qbitId="dashboard-quick-actions-grid"
             qbitScope={DASHBOARD_SCOPE}
-            gridClassName="grid overflow-visible gap-5 md:grid-cols-2 xl:grid-cols-3"
             tiles={arrangedQuickActions.visible.map((quickAction) => ({
               id: quickAction.id,
+              defaultColumnSpan: 4,
+              defaultRowSpan: 4,
               content: (
                 <ActionTile
                   id={quickAction.id}
@@ -1873,7 +1840,6 @@ export default function DashboardPage() {
                 />
               ),
             }))}
-            onReorder={handleReorderQuickActions}
             onRemove={handleRemoveQuickAction}
             menuItems={quickActionPickerItems}
             emptyState={
@@ -1930,23 +1896,31 @@ export default function DashboardPage() {
             </Link>
           </div>
 
-          <ArrangeableTileGrid
+          <FreeformTileCanvas
+            sectionKey="reportTiles"
             qbitId="dashboard-reports-grid"
             qbitScope={DASHBOARD_SCOPE}
             tiles={chartDefinitions.map((definition) => ({
               id: definition.chart.id,
-              spanClassName:
+              /*
+               * The chart's configured size is only where it STARTS now.
+               * Once it has been resized on the canvas, that placement is
+               * what holds.
+               */
+              defaultColumnSpan:
                 definition.chart.size === "Large"
-                  ? "md:col-span-2 xl:col-span-3"
+                  ? 12
                   : definition.chart.size === "Medium"
-                  ? "xl:col-span-2"
-                  : undefined,
+                  ? 8
+                  : 4,
+              defaultRowSpan: 12,
               content: (
                 <div
                   data-t1eq-tile="true"
                   data-t1eq-qbit-type="tile"
                   data-t1eq-qbit-id={`dashboard-report-${definition.chart.id}`}
                   data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+                  className="h-full"
                 >
                   <OperationalDashboardChartRenderer
                     chart={definition.chart}
@@ -1955,7 +1929,6 @@ export default function DashboardPage() {
                 </div>
               ),
             }))}
-            onReorder={handleReorderReportTiles}
             onRemove={handleRemoveReportTile}
             menuItems={reportPickerItems}
             emptyState={

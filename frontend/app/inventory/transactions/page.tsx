@@ -8,6 +8,8 @@ import {
   updateInventoryDiscrepancy,
 } from "@/services/inventory-discrepancies";
 
+import MetricTileGrid from "@/components/dashboard/MetricTileGrid";
+
 const QBIT_SCOPE = "inventory-transactions";
 
 const pageClass = "min-h-screen bg-zinc-100 p-6 text-black";
@@ -247,117 +249,35 @@ export default function InventoryTransactionsPage() {
         data-t1eq-qbit-id="inventory-transactions-body"
         data-t1eq-qbit-scope={QBIT_SCOPE}
         className={sectionClass}>
-        <div
-          data-t1eq-tile-grid="true"
-          data-t1eq-qbit-type="section"
-          data-t1eq-qbit-id="inventory-transactions-metrics"
-          data-t1eq-qbit-scope={QBIT_SCOPE}
-          className={metricGridClass}
-        >
-          <div
-            data-t1eq-tile="true"
-            data-t1eq-page-card="true"
-            data-t1eq-qbit-type="page-card"
-            data-t1eq-qbit-id="inventory-transactions-metric-total"
-            data-t1eq-qbit-scope={QBIT_SCOPE}
-            className={metricCardClass}
-          >
-            <div
-              data-t1eq-qbit-type="text"
-              data-t1eq-qbit-id="inventory-transactions-metric-total-label"
-              data-t1eq-qbit-scope={QBIT_SCOPE}
-              className="text-sm font-black uppercase tracking-wide text-zinc-500"
-            >
-              Total Discrepancies
-            </div>
-            <div
-              data-t1eq-qbit-type="text"
-              data-t1eq-qbit-id="inventory-transactions-metric-total-value"
-              data-t1eq-qbit-scope={QBIT_SCOPE}
-              className="mt-2 text-4xl font-black text-black"
-            >
-              {inventoryDiscrepancies.length}
-            </div>
-          </div>
-
-          <div
-            data-t1eq-tile="true"
-            data-t1eq-page-card="true"
-            data-t1eq-qbit-type="page-card"
-            data-t1eq-qbit-id="inventory-transactions-metric-open"
-            data-t1eq-qbit-scope={QBIT_SCOPE}
-            className={metricCardClass}
-          >
-            <div
-              data-t1eq-qbit-type="text"
-              data-t1eq-qbit-id="inventory-transactions-metric-open-label"
-              data-t1eq-qbit-scope={QBIT_SCOPE}
-              className="text-sm font-black uppercase tracking-wide text-zinc-500"
-            >
-              Open / Review
-            </div>
-            <div
-              data-t1eq-qbit-type="text"
-              data-t1eq-qbit-id="inventory-transactions-metric-open-value"
-              data-t1eq-qbit-scope={QBIT_SCOPE}
-              className="mt-2 text-4xl font-black text-black"
-            >
-              {openDiscrepancies.length}
-            </div>
-          </div>
-
-          <div
-            data-t1eq-tile="true"
-            data-t1eq-page-card="true"
-            data-t1eq-qbit-type="page-card"
-            data-t1eq-qbit-id="inventory-transactions-metric-resolved"
-            data-t1eq-qbit-scope={QBIT_SCOPE}
-            className={metricCardClass}
-          >
-            <div
-              data-t1eq-qbit-type="text"
-              data-t1eq-qbit-id="inventory-transactions-metric-resolved-label"
-              data-t1eq-qbit-scope={QBIT_SCOPE}
-              className="text-sm font-black uppercase tracking-wide text-zinc-500"
-            >
-              Resolved
-            </div>
-            <div
-              data-t1eq-qbit-type="text"
-              data-t1eq-qbit-id="inventory-transactions-metric-resolved-value"
-              data-t1eq-qbit-scope={QBIT_SCOPE}
-              className="mt-2 text-4xl font-black text-black"
-            >
-              {resolvedDiscrepancies.length}
-            </div>
-          </div>
-
-          <div
-            data-t1eq-tile="true"
-            data-t1eq-page-card="true"
-            data-t1eq-qbit-type="page-card"
-            data-t1eq-qbit-id="inventory-transactions-metric-dismissed"
-            data-t1eq-qbit-scope={QBIT_SCOPE}
-            className={metricCardClass}
-          >
-            <div
-              data-t1eq-qbit-type="text"
-              data-t1eq-qbit-id="inventory-transactions-metric-dismissed-label"
-              data-t1eq-qbit-scope={QBIT_SCOPE}
-              className="text-sm font-black uppercase tracking-wide text-zinc-500"
-            >
-              Dismissed
-            </div>
-            <div
-              data-t1eq-qbit-type="text"
-              data-t1eq-qbit-id="inventory-transactions-metric-dismissed-value"
-              data-t1eq-qbit-scope={QBIT_SCOPE}
-              className="mt-2 text-4xl font-black text-black"
-            >
-              {dismissedDiscrepancies.length}
-            </div>
-          </div>
-        </div>
+        <MetricTileGrid
+          sectionKey="inventoryTransactionMetrics"
+          qbitId="inventory-transactions-metrics"
+          qbitScope={QBIT_SCOPE}
+          gridClassName={metricGridClass}
+          cardClassName={metricCardClass}
+          tiles={[
+            {
+              id: "total",
+              label: "Total Discrepancies",
+              value: inventoryDiscrepancies.length,
+            },
+            {
+              id: "open",
+              label: "Open / Review",
+              value: openDiscrepancies.length,
+            },
+            {
+              id: "resolved",
+              label: "Resolved",
+              value: resolvedDiscrepancies.length,
+            },
+            {
+              id: "dismissed",
+              label: "Dismissed",
+              value: dismissedDiscrepancies.length,
+            },
+          ]}
+        />
 
         <div className="mb-5">
           <label className="space-y-2">

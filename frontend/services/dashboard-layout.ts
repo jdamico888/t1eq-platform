@@ -16,17 +16,52 @@ const STORAGE_KEY = "t1eq-dashboard-layout-v1";
 export type DashboardSectionKey =
   | "commandTiles"
   | "quickActions"
+  /** The report / chart widgets on the Operations Dashboard. */
+  | "reportTiles"
   /** The Operational Category Tiles on the Operations Dashboard landing page. */
   | "categoryTiles"
   /** The category tiles on the Inventory hub. */
-  | "inventoryCategories";
+  | "inventoryCategories"
+  /** The count tiles at the top of Inventory Items. */
+  | "inventoryItemMetrics"
+  /** The count tiles at the top of Inventory Transactions. */
+  | "inventoryTransactionMetrics"
+  /** The Overview / sub-page link row shown across category pages. */
+  | "categorySubnavigation";
+
+/**
+ * Where a tile sits on the canvas, in grid units rather than pixels.
+ *
+ * Pixels would not survive a resize: a layout arranged on a wide monitor
+ * would be wrong on a laptop and off-screen on a phone. Columns and rows
+ * scale with the container, and below tablet width the canvas collapses to
+ * a single column in row order, so the arrangement degrades instead of
+ * breaking.
+ */
+export type TilePlacement = {
+  id: string;
+
+  /** 0-based, in CANVAS_COLUMNS units. */
+  column: number;
+  row: number;
+
+  columnSpan: number;
+  rowSpan: number;
+};
 
 export type DashboardSectionLayout = {
-  /** Tile ids in the order the person arranged them. */
+  /**
+   * Tile ids in the order the person arranged them. Still used by sections
+   * that flow rather than sit on a canvas, and as the fallback order when
+   * a canvas tile has no placement yet.
+   */
   order: string[];
 
   /** Tile ids dragged to the trash — defined, just not on the dashboard. */
   hidden: string[];
+
+  /** Canvas positions. Empty for a section that has never been arranged. */
+  placements: TilePlacement[];
 };
 
 type DashboardLayoutStore = Partial<
@@ -39,6 +74,7 @@ export function createEmptySectionLayout(): DashboardSectionLayout {
   return {
     order: [],
     hidden: [],
+    placements: [],
   };
 }
 
@@ -53,6 +89,58 @@ function toStringArray(value: unknown): string[] {
   );
 }
 
+/**
+ * A placement that cannot be trusted is worse than no placement — a tile
+ * with a broken position is dropped back to automatic flow rather than
+ * rendered somewhere nonsensical.
+ */
+function toPlacements(value: unknown): TilePlacement[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  const placements: TilePlacement[] = [];
+
+  for (const entry of value) {
+    if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
+      continue;
+    }
+
+    const record = entry as Record<string, unknown>;
+
+    const id = typeof record.id === "string" ? record.id.trim() : "";
+
+    const column = Number(record.column);
+    const row = Number(record.row);
+    const columnSpan = Number(record.columnSpan);
+    const rowSpan = Number(record.rowSpan);
+
+    if (
+      !id ||
+      !Number.isFinite(column) ||
+      !Number.isFinite(row) ||
+      !Number.isFinite(columnSpan) ||
+      !Number.isFinite(rowSpan) ||
+      column < 0 ||
+      row < 0 ||
+      columnSpan < 1 ||
+      rowSpan < 1
+    ) {
+      continue;
+    }
+
+    placements.push({
+      id,
+      column: Math.floor(column),
+      row: Math.floor(row),
+      columnSpan: Math.floor(columnSpan),
+      rowSpan: Math.floor(rowSpan),
+    });
+  }
+
+  return placements;
+}
+
 function normalizeSectionLayout(value: unknown): DashboardSectionLayout {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return createEmptySectionLayout();
@@ -63,6 +151,7 @@ function normalizeSectionLayout(value: unknown): DashboardSectionLayout {
   return {
     order: toStringArray(record.order),
     hidden: toStringArray(record.hidden),
+    placements: toPlacements(record.placements),
   };
 }
 
@@ -93,8 +182,16 @@ function readStore(): DashboardLayoutStore {
     return {
       commandTiles: normalizeSectionLayout(record.commandTiles),
       quickActions: normalizeSectionLayout(record.quickActions),
+      reportTiles: normalizeSectionLayout(record.reportTiles),
       categoryTiles: normalizeSectionLayout(record.categoryTiles),
       inventoryCategories: normalizeSectionLayout(record.inventoryCategories),
+      inventoryItemMetrics: normalizeSectionLayout(record.inventoryItemMetrics),
+      inventoryTransactionMetrics: normalizeSectionLayout(
+        record.inventoryTransactionMetrics
+      ),
+      categorySubnavigation: normalizeSectionLayout(
+        record.categorySubnavigation
+      ),
     };
   } catch {
     return {};
@@ -172,6 +269,20 @@ export function showDashboardTile(
   return updateSectionLayout(sectionKey, (layout) => ({
     ...layout,
     hidden: layout.hidden.filter((id) => id !== tileId),
+  }));
+}
+
+/**
+ * Records the canvas after a move or a resize. Replaces the section's
+ * placements wholesale, because a move settles every other tile too.
+ */
+export function saveDashboardSectionPlacements(
+  sectionKey: DashboardSectionKey,
+  placements: TilePlacement[]
+): DashboardSectionLayout {
+  return updateSectionLayout(sectionKey, (layout) => ({
+    ...layout,
+    placements,
   }));
 }
 
