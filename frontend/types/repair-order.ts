@@ -1,3 +1,5 @@
+import type { SpecialOrderStatus } from "./special-order";
+
 import type {
   CustomerLaborBillingMode,
   EmployeeClockInRule,
@@ -150,6 +152,22 @@ export type RepairOrderPartEntry = {
   sourceTruckName?: string;
 
   partImageUrl?: string;
+
+  /**
+   * Special-order handling for this line. Defaults from the inventory
+   * item's flag, and can be set per line for a one-off order of a part
+   * that is normally stocked.
+   */
+  isSpecialOrder?: boolean;
+  specialOrderStatus?: SpecialOrderStatus;
+
+  /** The prepayment invoice this part was billed on, once one exists. */
+  prepaymentInvoiceId?: string;
+  prepaymentInvoiceNumber?: string;
+
+  /** What the customer actually prepaid, kept so the final invoice can
+   * credit it back rather than billing the part twice. */
+  prepaidAmount?: number;
 
   notes?: string;
 

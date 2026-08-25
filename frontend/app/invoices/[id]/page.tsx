@@ -7,6 +7,7 @@ import type { Invoice } from "@/types/invoice";
 
 import { getInvoices, updateInvoice } from "@/services/invoices";
 import InvoiceLineItemsPanel from "@/components/invoices/InvoiceLineItemsPanel";
+import { markPrepaymentInvoicePaid } from "@/services/special-order-parts";
 
 const QBIT_SCOPE = "invoice-detail";
 
@@ -131,6 +132,17 @@ export default function InvoiceDetailPage() {
       status: nextBalanceDue <= 0 ? "Paid" : "Partial",
       paidDate: nextBalanceDue <= 0 ? now : invoice.paidDate,
     });
+
+    /*
+     * Paying a special-order prepayment is the signal the shop is waiting
+     * for — the parts can be ordered. Moving them here means nobody has to
+     * remember to go back to the appointment and tick them over.
+     *
+     * Only on full payment: a part half paid for is not cleared to order.
+     */
+    if (nextBalanceDue <= 0 && invoice.scheduleEventId) {
+      markPrepaymentInvoicePaid(invoice.scheduleEventId, invoice.id);
+    }
 
     setPaymentAmountInput("");
     setIsRecordingPayment(false);

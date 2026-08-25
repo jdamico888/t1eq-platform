@@ -199,6 +199,7 @@ function normalizeInventoryItem(item: Partial<InventoryItem>): InventoryItem {
     price: safeNumber(item.price ?? item.sellPrice),
 
     sellPriceOverridden: item.sellPriceOverridden ?? false,
+    isSpecialOrder: item.isSpecialOrder ?? false,
 
     location: item.location,
     locationId: optionalTrimmed(item.locationId),

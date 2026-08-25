@@ -8,6 +8,7 @@ import type { RepairOrderPartEntry } from "@/types/repair-order";
 import { getInventoryItems } from "@/services/inventory";
 import { getSuggestedSellPrice } from "@/services/pricing";
 import { createId, createTimestamp } from "@/lib/storage";
+import { resolveInitialSpecialOrderStatus } from "@/services/special-order-parts";
 
 import Typeahead, { type TypeaheadOption } from "./Typeahead";
 import AddItemModal from "@/components/inventory/AddItemModal";
@@ -119,6 +120,8 @@ export default function ActionItemPartPicker({
 
     const timestamp = createTimestamp();
 
+    const isSpecialOrder = Boolean(item.isSpecialOrder);
+
     const entry: RepairOrderPartEntry = {
       id: createId(),
       inventoryItemId: item.id,
@@ -132,12 +135,46 @@ export default function ActionItemPartPicker({
       sellPrice: unitPrice,
       total: unitPrice,
       partImageUrl: item.imageUrl,
+
+      /*
+       * A part flagged special-order in inventory arrives that way. A
+       * normally-stocked part can still be flipped per line below, for a
+       * one-off order.
+       */
+      isSpecialOrder,
+      specialOrderStatus: isSpecialOrder
+        ? resolveInitialSpecialOrderStatus()
+        : undefined,
+
       createdDate: timestamp,
       updatedDate: timestamp,
     };
 
     onChange([...partEntries, entry]);
     setSearchValue("");
+  }
+
+  /**
+   * The flag rides with the entry rather than going through the service,
+   * because an appointment being booked has no id yet — there is nothing
+   * to save against until the appointment itself is stored.
+   */
+  function toggleSpecialOrder(entryId: string, isSpecialOrder: boolean) {
+    onChange(
+      partEntries.map((entry) =>
+        entry.id === entryId
+          ? {
+              ...entry,
+              isSpecialOrder,
+              specialOrderStatus: isSpecialOrder
+                ? (entry.specialOrderStatus ??
+                  resolveInitialSpecialOrderStatus())
+                : undefined,
+              updatedDate: createTimestamp(),
+            }
+          : entry
+      )
+    );
   }
 
   function updateQuantity(entryId: string, nextQuantity: number) {
@@ -229,6 +266,28 @@ export default function ActionItemPartPicker({
                   {entry.description} · {formatCurrency(entry.sellPrice)} each
                   {entry.inventoryItemId ? "" : " · bought for this job"}
                 </div>
+
+                {/*
+                  Special order means the shop does not stock it and has to
+                  buy it in, so the customer pays before it is ordered.
+                */}
+                <label className="mt-1 flex items-center gap-2">
+                  <input data-t1eq-field="true"
+                    data-t1eq-qbit-type="field"
+                    data-t1eq-qbit-id={`${qbitId}-entry-${entry.id}-special-order`}
+                    data-t1eq-qbit-scope={QBIT_SCOPE}
+                    type="checkbox"
+                    checked={Boolean(entry.isSpecialOrder)}
+                    onChange={(event) =>
+                      toggleSpecialOrder(entry.id, event.target.checked)
+                    }
+                    className="h-4 w-4 shrink-0"
+                  />
+
+                  <span className={styles.rowMeta}>
+                    Special order — customer pays before we order it
+                  </span>
+                </label>
               </div>
 
               <div className="flex shrink-0 items-center gap-2">

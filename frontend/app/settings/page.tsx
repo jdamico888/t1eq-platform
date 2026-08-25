@@ -982,6 +982,48 @@ export default function SettingsPage() {
           </div>
 
           <div className="mt-6">
+            <p
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="settings-page-special-order-heading"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="text-xs font-black uppercase tracking-wide text-slate-400"
+            >
+              Special Order Parts
+            </p>
+
+            <label className="mt-4 flex items-start gap-3">
+              <input data-t1eq-field="true"
+                data-t1eq-qbit-type="field"
+                data-t1eq-qbit-id="settings-page-special-order-prepayment"
+                data-t1eq-qbit-scope={QBIT_SCOPE}
+                type="checkbox"
+                checked={appSettings.specialOrderRequiresPrepayment}
+                onChange={(event) =>
+                  updateBusinessSetting(
+                    "specialOrderRequiresPrepayment",
+                    event.target.checked
+                  )
+                }
+                className="mt-1 h-5 w-5 shrink-0 rounded border-white/20 bg-black/30"
+              />
+
+              <span>
+                <span className="block text-sm font-bold text-white">
+                  Require prepayment before ordering
+                </span>
+
+                <span className="mt-1 block text-xs font-semibold text-slate-400">
+                  A part the shop does not stock is money out the door the
+                  moment it is ordered. With this on, an appointment can
+                  raise a parts-only prepayment invoice before anyone
+                  orders anything &mdash; no repair order needed. What the
+                  customer prepays is credited back on the final invoice.
+                </span>
+              </span>
+            </label>
+          </div>
+
+          <div className="mt-6">
             <button data-t1eq-action-button="true"
               data-t1eq-qbit-type="action-button"
               data-t1eq-qbit-id="settings-page-save-parts"

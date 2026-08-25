@@ -45,6 +45,13 @@ export type AppSettings = {
   defaultMinimumStock: number;
   defaultIdealStock: number;
 
+  /**
+   * Whether a special-order part must be paid for before it is ordered.
+   * The shop is out of pocket from the moment it orders a part it does
+   * not stock, so this is on by default.
+   */
+  specialOrderRequiresPrepayment: boolean;
+
   currency: string;
 
   timezone: string;
@@ -86,6 +93,8 @@ export const defaultAppSettings: AppSettings = {
   stockingThresholdJobs: 3,
   stockingThresholdQuantity: 10,
   stockingLookbackDays: 180,
+
+  specialOrderRequiresPrepayment: true,
 
   defaultMinimumStock: 1,
   defaultIdealStock: 3,

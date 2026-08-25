@@ -55,6 +55,13 @@ export type InventoryItem = {
   sellPriceOverridden?: boolean;
 
   /**
+   * A part the shop does not carry and orders in per job. Used as the
+   * default when the part is added to an appointment; whoever adds it can
+   * still mark a normally-stocked part as special-order for one job.
+   */
+  isSpecialOrder?: boolean;
+
+  /**
    * Display name of the location. Kept for older records and list views;
    * locationId is the real link to a record from
    * services/inventory-locations.ts.

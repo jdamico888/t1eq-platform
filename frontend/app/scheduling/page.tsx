@@ -10,6 +10,7 @@ import StatusBadge from "../components/ui/StatusBadge";
 
 import SchedulingConflictsPanel from "@/components/scheduling/scheduling-conflicts-panel";
 import ScheduleEventInvoicePanel from "@/components/scheduling/schedule-event-invoice-panel";
+import SpecialOrderPartsPanel from "@/components/scheduling/special-order-parts-panel";
 
 import CustomerLookup, {
   emptyCustomerLookupValues,
@@ -869,9 +870,23 @@ export default function SchedulingPage() {
 
                           {scheduleEvent.actionItems &&
                             scheduleEvent.actionItems.length > 0 && (
-                              <ScheduleEventInvoicePanel
-                                scheduleEvent={scheduleEvent}
-                              />
+                              <>
+                                {/*
+                                  Special orders sit above the invoicing
+                                  gate on purpose: they are billed and
+                                  tracked before any work happens, so they
+                                  are the first thing to look at on an
+                                  appointment that has them.
+                                */}
+                                <SpecialOrderPartsPanel
+                                  scheduleEvent={scheduleEvent}
+                                  onChanged={loadScheduleEvents}
+                                />
+
+                                <ScheduleEventInvoicePanel
+                                  scheduleEvent={scheduleEvent}
+                                />
+                              </>
                             )}
 
                           {scheduleEvent.notes && (

@@ -3,6 +3,8 @@ import type { RepairOrder, RepairOrderActionItem } from "@/types/repair-order";
 import type { Invoice } from "@/types/invoice";
 
 import { generateInvoiceFromRepairOrder } from "@/services/invoice-generator";
+import { buildPrepaymentCreditLine } from "@/services/special-order-parts";
+import { calculateInvoiceTotals } from "@/services/invoices";
 
 /**
  * Appointments (ScheduleEvents) can be invoiced directly, without ever
@@ -133,8 +135,30 @@ export function generateInvoiceFromScheduleEvent(
     taxRate
   );
 
+  /*
+   * Special-order parts on an appointment were paid for before they were
+   * ordered. They still belong on the final invoice — the customer should
+   * see the whole job — but what they already paid has to come back off,
+   * or the parts are billed a second time.
+   */
+  const prepaymentCreditLine = buildPrepaymentCreditLine(scheduleEvent);
+
+  const lineItems = prepaymentCreditLine
+    ? [...generatedInvoice.lineItems, prepaymentCreditLine]
+    : generatedInvoice.lineItems;
+
+  const totals = prepaymentCreditLine
+    ? calculateInvoiceTotals(lineItems, taxRate)
+    : null;
+
   return {
     ...generatedInvoice,
+
+    lineItems,
+    ...(totals ?? {}),
+    ...(totals
+      ? { balanceDue: Math.max(totals.totalAmount - generatedInvoice.amountPaid, 0) }
+      : {}),
 
     // The appointment stands on its own unless it's actually linked to a
     // real Repair Order — don't let the appointment's internal id leak

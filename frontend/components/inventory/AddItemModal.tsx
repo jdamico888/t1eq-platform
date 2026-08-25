@@ -93,6 +93,7 @@ type AddItemFormState = {
   quantityUsedOnJob: string;
   cost: string;
   sellPrice: string;
+  isSpecialOrder: boolean;
 };
 
 const emptyForm: AddItemFormState = {
@@ -110,6 +111,7 @@ const emptyForm: AddItemFormState = {
   quantityUsedOnJob: "",
   cost: "",
   sellPrice: "",
+  isSpecialOrder: false,
 };
 
 type PhotoSlotKey =
@@ -510,6 +512,13 @@ export default function AddItemModal({
       shelf: form.shelf.trim(),
       bin: form.bin.trim(),
 
+      /*
+       * A part the shop never carries. Marked once here, it arrives on
+       * every appointment as a special order without anyone remembering
+       * to flag it.
+       */
+      isSpecialOrder: form.isSpecialOrder,
+
       ...photos,
     };
 
@@ -770,6 +779,30 @@ export default function AddItemModal({
               }
               className={inputClass}
             />
+          </label>
+
+          {/*
+            A part the shop never carries. Marked once here, it turns up on
+            every appointment as a special order without anyone having to
+            remember. A sibling of the field above, not nested inside it —
+            a label inside a label steals the click.
+          */}
+          <label className="flex items-start gap-2 md:col-span-2">
+            <input data-t1eq-field="true"
+              data-t1eq-qbit-type="field"
+              data-t1eq-qbit-id="add-item-special-order"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              type="checkbox"
+              checked={form.isSpecialOrder}
+              onChange={(event) =>
+                updateField("isSpecialOrder", event.target.checked)
+              }
+              className="mt-0.5 h-4 w-4 shrink-0"
+            />
+
+            <span className="text-xs font-semibold text-slate-400">
+              Special order — not stocked, ordered in per job
+            </span>
           </label>
 
           <label className="block">
