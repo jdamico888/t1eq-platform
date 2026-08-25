@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
-import ArrangeableTileGrid, {
-  type ArrangeableMenuItem,
-} from "@/components/dashboard/ArrangeableTileGrid";
+import { type ArrangeableMenuItem } from "@/components/dashboard/ArrangeableTileGrid";
+import FreeformTileCanvas, {
+  type TileCanvasHandle,
+} from "@/components/dashboard/FreeformTileCanvas";
 import {
   DASHBOARD_LAYOUT_CHANGED_EVENT,
   arrangeDashboardTiles,
@@ -12,7 +13,6 @@ import {
   getDashboardSectionLayout,
   hideDashboardTile,
   resetDashboardSectionLayout,
-  saveDashboardSectionOrder,
   showDashboardTile,
   type DashboardSectionKey,
   type DashboardSectionLayout,
@@ -36,7 +36,6 @@ type MetricTileGridProps = {
   sectionKey: DashboardSectionKey;
   tiles: MetricTile[];
 
-  gridClassName: string;
   cardClassName: string;
 
   /** Q-Bit matches on id + scope, so each grid needs its own. */
@@ -50,7 +49,6 @@ type MetricTileGridProps = {
 export default function MetricTileGrid({
   sectionKey,
   tiles,
-  gridClassName,
   cardClassName,
   qbitId,
   qbitScope,
@@ -64,6 +62,9 @@ export default function MetricTileGrid({
   const [layout, setLayout] = useState<DashboardSectionLayout>(
     createEmptySectionLayout
   );
+
+  /* Right-click is invisible; the button below opens the same picker. */
+  const canvasRef = useRef<TileCanvasHandle | null>(null);
 
   useEffect(() => {
     function loadLayout() {
@@ -104,13 +105,35 @@ export default function MetricTileGrid({
       : []),
   ];
 
+  function openPicker(event: React.MouseEvent<HTMLButtonElement>) {
+    const rect = event.currentTarget.getBoundingClientRect();
+
+    canvasRef.current?.openPicker({ x: rect.left, y: rect.bottom + 8 });
+  }
+
   return (
-    <ArrangeableTileGrid
+    <>
+      <button
+        data-t1eq-action-button="true"
+        data-t1eq-qbit-type="action-button"
+        data-t1eq-qbit-id={`${qbitId}-add-tile`}
+        data-t1eq-qbit-scope={qbitScope}
+        type="button"
+        onClick={openPicker}
+        className="mb-4 rounded-xl border border-zinc-300 bg-white px-3 py-1.5 text-xs font-black uppercase tracking-wide text-black shadow-sm transition hover:bg-zinc-50"
+      >
+        + Add Figure
+      </button>
+
+    <FreeformTileCanvas
+      ref={canvasRef}
+      sectionKey={sectionKey}
       qbitId={qbitId}
       qbitScope={qbitScope}
-      gridClassName={gridClassName}
       tiles={arranged.visible.map((tile) => ({
         id: tile.id,
+        defaultColumnSpan: 3,
+        defaultRowSpan: 5,
         content: (
           <div
             data-t1eq-tile="true"
@@ -140,9 +163,6 @@ export default function MetricTileGrid({
           </div>
         ),
       }))}
-      onReorder={(orderedIds) =>
-        setLayout(saveDashboardSectionOrder(sectionKey, orderedIds))
-      }
       onRemove={(tileId) => setLayout(hideDashboardTile(sectionKey, tileId))}
       menuItems={pickerItems}
       emptyState={
@@ -159,5 +179,6 @@ export default function MetricTileGrid({
         </div>
       }
     />
+    </>
   );
 }

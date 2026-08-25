@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import ArrangeableTileGrid, {
-  type ArrangeableMenuItem,
-} from "@/components/dashboard/ArrangeableTileGrid";
+import { type ArrangeableMenuItem } from "@/components/dashboard/ArrangeableTileGrid";
+import FreeformTileCanvas, {
+  type TileCanvasHandle,
+} from "@/components/dashboard/FreeformTileCanvas";
 import {
   DASHBOARD_LAYOUT_CHANGED_EVENT,
   arrangeDashboardTiles,
@@ -13,7 +14,6 @@ import {
   getDashboardSectionLayout,
   hideDashboardTile,
   resetDashboardSectionLayout,
-  saveDashboardSectionOrder,
   showDashboardTile,
   type DashboardSectionLayout,
 } from "@/services/dashboard-layout";
@@ -29,14 +29,13 @@ export type InventoryCategoryTile = {
 };
 
 /**
- * The grid half of the Inventory hub, split out because the hub page is a
- * server component and the arrangeable grid needs callbacks — functions
- * cannot cross the server/client boundary. The category data stays on the
- * page, where the content belongs, and arrives here as plain objects.
+ * The tile half of the Inventory hub, split out because the hub page is a
+ * server component and the canvas needs callbacks — functions cannot cross
+ * the server/client boundary. The category data stays on the page, where
+ * the content belongs, and arrives here as plain objects.
  */
 type InventoryCategoryGridProps = {
   categories: InventoryCategoryTile[];
-  gridClassName: string;
   cardClassName: string;
   cardTitleClassName: string;
   cardDescriptionClassName: string;
@@ -46,7 +45,6 @@ type InventoryCategoryGridProps = {
 
 export default function InventoryCategoryGrid({
   categories,
-  gridClassName,
   cardClassName,
   cardTitleClassName,
   cardDescriptionClassName,
@@ -60,6 +58,9 @@ export default function InventoryCategoryGrid({
   const [layout, setLayout] = useState<DashboardSectionLayout>(
     createEmptySectionLayout
   );
+
+  /* Right-click is invisible; the button below opens the same picker. */
+  const canvasRef = useRef<TileCanvasHandle | null>(null);
 
   useEffect(() => {
     function loadLayout() {
@@ -89,10 +90,6 @@ export default function InventoryCategoryGrid({
    * the page itself is still reachable by URL. Every removed tile is in
    * the right-click picker.
    */
-  function handleReorder(orderedIds: string[]) {
-    setLayout(saveDashboardSectionOrder(SECTION_KEY, orderedIds));
-  }
-
   function handleRemove(tileId: string) {
     setLayout(hideDashboardTile(SECTION_KEY, tileId));
   }
@@ -118,14 +115,35 @@ export default function InventoryCategoryGrid({
       : []),
   ];
 
+  function openPicker(event: React.MouseEvent<HTMLButtonElement>) {
+    const rect = event.currentTarget.getBoundingClientRect();
+
+    canvasRef.current?.openPicker({ x: rect.left, y: rect.bottom + 8 });
+  }
+
   return (
-    <ArrangeableTileGrid
-      allowLinkDrag
+    <>
+      <button
+        data-t1eq-action-button="true"
+        data-t1eq-qbit-type="action-button"
+        data-t1eq-qbit-id="inventory-categories-add-tile"
+        data-t1eq-qbit-scope={qbitScope}
+        type="button"
+        onClick={openPicker}
+        className="mb-4 rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm font-black text-black shadow-sm transition hover:bg-zinc-50"
+      >
+        + Add Tile
+      </button>
+
+    <FreeformTileCanvas
+      ref={canvasRef}
+      sectionKey={SECTION_KEY}
       qbitId="inventory-categories-grid"
       qbitScope={qbitScope}
-      gridClassName={gridClassName}
       tiles={arranged.visible.map((category) => ({
         id: category.id,
+        defaultColumnSpan: 4,
+        defaultRowSpan: 8,
         content: (
           <Link
             data-t1eq-tile="true"
@@ -164,7 +182,6 @@ export default function InventoryCategoryGrid({
           </Link>
         ),
       }))}
-      onReorder={handleReorder}
       onRemove={handleRemove}
       menuItems={pickerItems}
       emptyState={
@@ -185,5 +202,6 @@ export default function InventoryCategoryGrid({
         </div>
       }
     />
+    </>
   );
 }

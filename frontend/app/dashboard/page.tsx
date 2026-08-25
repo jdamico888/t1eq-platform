@@ -49,6 +49,16 @@ type DashboardSubcategory = {
   href: string;
 };
 
+/**
+ * The one thing someone most often wants to DO in an area, as opposed to
+ * browsing it. Sits as a small button in the tile's top corner so the
+ * action is one press from the dashboard instead of a screen of its own.
+ */
+type DashboardTileQuickAction = {
+  label: string;
+  href: string;
+};
+
 type DashboardTileDefinition = {
   id: string;
   label: string;
@@ -56,6 +66,7 @@ type DashboardTileDefinition = {
   description: string;
   href: string;
   accentClass: string;
+  quickAction: DashboardTileQuickAction;
   subcategories: DashboardSubcategory[];
 };
 
@@ -67,6 +78,16 @@ type SelectedSubcategoryMap = Record<string, string[]>;
 type SubcategoryValueMap = Record<string, Record<string, number>>;
 
 const DASHBOARD_SCOPE = "dashboard";
+
+/**
+ * Marks a canvas tile as a report rather than a command tile.
+ *
+ * Both now share one canvas and therefore one set of saved placements, but
+ * a chart id and a command tile id come from different places and nothing
+ * stops them matching. The prefix keeps them apart, and tells the remove
+ * handler which of the two stores to write to.
+ */
+const REPORT_TILE_PREFIX = "report:";
 
 const DASHBOARD_SUBCATEGORY_STORAGE_KEY =
   "t1eq-dashboard-tile-subcategories-v4";
@@ -94,6 +115,7 @@ const DASHBOARD_TILE_DEFINITIONS: DashboardTileDefinition[] = [
     accentClass: "bg-orange-500",
     description:
       "Customer account records, billing information, contact details, service locations, and account-level service history.",
+    quickAction: { label: "Add Customer", href: "/customers" },
     subcategories: [
       {
         id: "accounts",
@@ -129,6 +151,7 @@ const DASHBOARD_TILE_DEFINITIONS: DashboardTileDefinition[] = [
     accentClass: "bg-cyan-500",
     description:
       "Customer-owned equipment records, model and serial data, location assignment, service history, and inspection readiness.",
+    quickAction: { label: "Add Equipment", href: "/equipment" },
     subcategories: [
       {
         id: "assets",
@@ -164,6 +187,7 @@ const DASHBOARD_TILE_DEFINITIONS: DashboardTileDefinition[] = [
     accentClass: "bg-emerald-500",
     description:
       "Full repair-order workflow for customer concern, diagnosis, labor, parts, technician assignment, photos, signatures, and closeout.",
+    quickAction: { label: "New Repair Order", href: "/repair-orders" },
     subcategories: [
       {
         id: "open",
@@ -205,6 +229,7 @@ const DASHBOARD_TILE_DEFINITIONS: DashboardTileDefinition[] = [
     accentClass: "bg-red-500",
     description:
       "Repair orders that are still active and have not reached completed, closed, invoiced, or cancelled status.",
+    quickAction: { label: "Dispatch", href: "/dispatch" },
     subcategories: [
       {
         id: "scheduled",
@@ -240,6 +265,7 @@ const DASHBOARD_TILE_DEFINITIONS: DashboardTileDefinition[] = [
     accentClass: "bg-violet-500",
     description:
       "Warehouse inventory, part lookup, images, cross references, quantity tracking, cost, sell price, and transaction history.",
+    quickAction: { label: "Add Item", href: "/inventory" },
     subcategories: [
       {
         id: "warehouse",
@@ -275,6 +301,7 @@ const DASHBOARD_TILE_DEFINITIONS: DashboardTileDefinition[] = [
     accentClass: "bg-rose-500",
     description:
       "Inventory items at or below minimum stock thresholds that may need replenishment or purchase-order review.",
+    quickAction: { label: "Order Parts", href: "/purchase-orders" },
     subcategories: [
       {
         id: "reorder",
@@ -310,6 +337,7 @@ const DASHBOARD_TILE_DEFINITIONS: DashboardTileDefinition[] = [
     accentClass: "bg-sky-500",
     description:
       "Field truck inventory, warehouse-to-truck transfer, truck-level stock tracking, technician assignment, and field replenishment.",
+    quickAction: { label: "Transfers", href: "/truck-stock/transactions" },
     subcategories: [
       {
         id: "trucks",
@@ -345,6 +373,7 @@ const DASHBOARD_TILE_DEFINITIONS: DashboardTileDefinition[] = [
     accentClass: "bg-amber-500",
     description:
       "Supplier purchasing workflow, order lines, receiving, inventory replenishment, discrepancy review, and procurement status.",
+    quickAction: { label: "Receiving", href: "/inventory/receiving" },
     subcategories: [
       {
         id: "suppliers",
@@ -380,6 +409,7 @@ const DASHBOARD_TILE_DEFINITIONS: DashboardTileDefinition[] = [
     accentClass: "bg-green-500",
     description:
       "Customer invoice records generated from repair-order billing, labor, parts, other charges, and invoice status.",
+    quickAction: { label: "New Invoice", href: "/invoices" },
     subcategories: [
       {
         id: "drafts",
@@ -406,84 +436,6 @@ const DASHBOARD_TILE_DEFINITIONS: DashboardTileDefinition[] = [
         href: "/invoices",
       },
     ],
-  },
-];
-
-type QuickActionDefinition = {
-  id: string;
-  title: string;
-  description: string;
-  href: string;
-};
-
-/*
- * These were written straight into the markup. They are data now so the
- * same drag, trash, and picker behaviour that the command tiles have can
- * reach them too.
- */
-const QUICK_ACTION_DEFINITIONS: QuickActionDefinition[] = [
-  {
-    id: "create-repair-order",
-    title: "Create Repair Order",
-    description:
-      "Start a new repair order with customer concern, equipment assignment, technician routing, labor, parts, photos, and billing workflow.",
-    href: "/repair-orders",
-  },
-  {
-    id: "add-customer",
-    title: "Add Customer",
-    description:
-      "Create or update customer account information, contacts, billing data, and optional service-location records.",
-    href: "/customers",
-  },
-  {
-    id: "add-equipment",
-    title: "Add Equipment",
-    description:
-      "Create a customer equipment record with model, serial, asset data, location, and future inspection or repair history.",
-    href: "/equipment",
-  },
-  {
-    id: "add-inventory-item",
-    title: "Add Inventory Item",
-    description:
-      "Create warehouse inventory with part numbers, pictures, cross references, cost, sell price, quantity, and minimum stock levels.",
-    href: "/inventory",
-  },
-  {
-    id: "inventory-transactions",
-    title: "Inventory Transactions",
-    description:
-      "Review warehouse receipts, repair-order consumption, returns, adjustments, references, and full inventory audit history.",
-    href: "/inventory/transactions",
-  },
-  {
-    id: "purchase-orders",
-    title: "Purchase Orders",
-    description:
-      "Begin procurement workflow for supplier orders, receiving, incoming quantity tracking, discrepancy review, and inventory replenishment.",
-    href: "/purchase-orders",
-  },
-  {
-    id: "truck-stock",
-    title: "Truck Stock",
-    description:
-      "Create service trucks, assign technicians, load inventory from warehouse stock to field vehicles, and review field stock movement.",
-    href: "/truck-stock",
-  },
-  {
-    id: "dispatch",
-    title: "Dispatch",
-    description:
-      "Review scheduling, dispatch workload, assigned technicians, open repair orders, and field service routing.",
-    href: "/dispatch",
-  },
-  {
-    id: "invoices",
-    title: "Invoices",
-    description:
-      "Generate or review customer invoices from repair-order billing summaries, inspection charges, repair charges, parts, and other charges.",
-    href: "/invoices",
   },
 ];
 
@@ -1002,10 +954,12 @@ function DashboardTile({
   tile,
   value,
   selectedSubcategories,
+  onQuickAction,
 }: {
   tile: DashboardTileDefinition;
   value: string | number;
   selectedSubcategories: DisplaySubcategory[];
+  onQuickAction: (href: string) => void;
 }) {
   return (
     <Link
@@ -1024,6 +978,32 @@ function DashboardTile({
        */
       className="group relative z-0 block h-full overflow-visible rounded-[28px] border border-slate-700 bg-slate-900 p-5 text-white shadow-2xl shadow-black/30 outline-none transition hover:z-50 hover:-translate-y-1 hover:border-orange-300 focus-visible:z-50 focus-visible:border-orange-300"
     >
+      {/*
+        A button rather than a link, because this sits inside the tile's
+        own link and an anchor cannot contain another one. Stopping the
+        click is what keeps pressing it from ALSO opening the tile.
+
+        The canvas already treats a button as "the person is using the
+        control", so pressing this never starts a drag.
+      */}
+      <button
+        data-t1eq-action-button="true"
+        data-t1eq-qbit-type="action-button"
+        data-t1eq-qbit-id={`dashboard-tile-${tile.id}-quick-action`}
+        data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+        type="button"
+        title={tile.quickAction.label}
+        aria-label={tile.quickAction.label}
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          onQuickAction(tile.quickAction.href);
+        }}
+        className="absolute right-4 top-4 z-20 rounded-lg border border-slate-600 bg-slate-800/90 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-slate-200 transition hover:border-orange-300 hover:text-white"
+      >
+        {tile.quickAction.label}
+      </button>
+
       <div
         data-t1eq-qbit-type="section"
         data-t1eq-qbit-id={`dashboard-tile-${tile.id}-accent`}
@@ -1099,45 +1079,6 @@ function DashboardTile({
   );
 }
 
-function ActionTile({
-  id,
-  title,
-  description,
-  href,
-}: {
-  id: string;
-  title: string;
-  description: string;
-  href: string;
-}) {
-  return (
-    <Link
-      data-t1eq-tile="true"
-      data-t1eq-qbit-type="tile"
-      data-t1eq-qbit-id={`dashboard-quick-action-${id}`}
-      data-t1eq-qbit-scope={DASHBOARD_SCOPE}
-      href={href}
-      aria-label={`${title}. ${description}`}
-      /* block h-full for the same reason as the command tile above. */
-      className="group relative z-0 block h-full overflow-visible rounded-[24px] border border-slate-700 bg-slate-900 p-5 text-white shadow-xl shadow-black/20 outline-none transition hover:z-50 hover:-translate-y-1 hover:border-orange-300 focus-visible:z-50 focus-visible:border-orange-300"
-    >
-      <h3
-        data-t1eq-qbit-type="text"
-        data-t1eq-qbit-id={`dashboard-quick-action-${id}-title`}
-        data-t1eq-qbit-scope={DASHBOARD_SCOPE}
-        className="text-base font-black text-white"
-      >
-        {title}
-      </h3>
-
-      <InfoBalloon
-        id={`dashboard-quick-action-${id}-information-balloon`}
-        description={description}
-      />
-    </Link>
-  );
-}
-
 export default function DashboardPage() {
   const [metrics, setMetrics] = useState<DashboardMetrics>(DEFAULT_METRICS);
 
@@ -1186,9 +1127,6 @@ export default function DashboardPage() {
   const [commandTileLayout, setCommandTileLayout] =
     useState<DashboardSectionLayout>(createEmptySectionLayout);
 
-  const [quickActionLayout, setQuickActionLayout] =
-    useState<DashboardSectionLayout>(createEmptySectionLayout);
-
   const router = useRouter();
 
   /*
@@ -1197,8 +1135,7 @@ export default function DashboardPage() {
    * menu — the feature is unusable if nobody can find it.
    */
   const commandCanvasRef = useRef<TileCanvasHandle | null>(null);
-  const quickActionCanvasRef = useRef<TileCanvasHandle | null>(null);
-  const reportCanvasRef = useRef<TileCanvasHandle | null>(null);
+
 
   /** Opens a picker directly beneath the button that asked for it. */
   function openPickerUnder(
@@ -1212,7 +1149,6 @@ export default function DashboardPage() {
 
   function loadSectionLayouts() {
     setCommandTileLayout(getDashboardSectionLayout("commandTiles"));
-    setQuickActionLayout(getDashboardSectionLayout("quickActions"));
   }
 
   function loadChartDefinitions() {
@@ -1255,20 +1191,6 @@ export default function DashboardPage() {
 
     loadChartDefinitions();
   }
-
-  const reportPickerItems: ArrangeableMenuItem[] = [
-    ...hiddenChartOptions.map((chart) => ({
-      label: `Add: ${chart.title}`,
-      description: `${chart.metric} · ${chart.timeRange}`,
-      onSelect: () => handleAddReportTile(chart.id),
-    })),
-    {
-      label: "Create Report Widget…",
-      description: "Build a new live chart from your operations data.",
-      onSelect: () =>
-        router.push("/settings/operational-dashboard-charts"),
-    },
-  ];
 
   useEffect(() => {
     const storedSubcategories = readSelectedSubcategories();
@@ -1444,16 +1366,6 @@ export default function DashboardPage() {
     [dashboardTiles, commandTileLayout]
   );
 
-  const arrangedQuickActions = useMemo(
-    () =>
-      arrangeDashboardTiles(
-        QUICK_ACTION_DEFINITIONS,
-        (quickAction) => quickAction.id,
-        quickActionLayout
-      ),
-    [quickActionLayout]
-  );
-
   /*
    * The trash takes a tile off the dashboard; it does not delete anything.
    * Every removed tile is listed in the right-click picker, so a tile is
@@ -1463,8 +1375,18 @@ export default function DashboardPage() {
     setCommandTileLayout(hideDashboardTile("commandTiles", tileId));
   }
 
-  function handleRemoveQuickAction(tileId: string) {
-    setQuickActionLayout(hideDashboardTile("quickActions", tileId));
+  /**
+   * The canvas holds two kinds of tile whose "hidden" state lives in two
+   * different places: a command tile in the layout store, a report on the
+   * chart record itself. The prefix says which.
+   */
+  function handleRemoveDashboardTile(tileId: string) {
+    if (tileId.startsWith(REPORT_TILE_PREFIX)) {
+      handleRemoveReportTile(tileId.slice(REPORT_TILE_PREFIX.length));
+      return;
+    }
+
+    handleRemoveCommandTile(tileId);
   }
 
   const hasCommandTileLayout =
@@ -1479,44 +1401,33 @@ export default function DashboardPage() {
         setCommandTileLayout(showDashboardTile("commandTiles", tile.id)),
     })),
 
+    /*
+     * Charts live on the same canvas as the command tiles now, so they
+     * come out of the same picker. A chart that is off the dashboard is
+     * still configured — it is hidden, not deleted.
+     */
+    ...hiddenChartOptions.map((chart) => ({
+      label: `Add: ${chart.title}`,
+      description: `${chart.metric} · ${chart.timeRange}`,
+      onSelect: () => handleAddReportTile(chart.id),
+    })),
+
+    {
+      label: "Create Report Widget…",
+      description: "Build a new live chart from your operations data.",
+      onSelect: () =>
+        router.push("/settings/operational-dashboard-charts"),
+    },
+
     ...(hasCommandTileLayout
       ? [
           {
-            label: "Reset Command Tiles",
+            label: "Reset Tile Arrangement",
             description:
-              "Return every command tile to its original place.",
+              "Return every tile and report to its original place.",
             onSelect: () =>
               setCommandTileLayout(
                 resetDashboardSectionLayout("commandTiles")
-              ),
-          },
-        ]
-      : []),
-  ];
-
-  const hasQuickActionLayout =
-    quickActionLayout.order.length > 0 ||
-    quickActionLayout.hidden.length > 0;
-
-  const quickActionPickerItems: ArrangeableMenuItem[] = [
-    ...arrangedQuickActions.hidden.map((quickAction) => ({
-      label: `Add: ${quickAction.title}`,
-      description: "Put this shortcut back on the dashboard.",
-      onSelect: () =>
-        setQuickActionLayout(
-          showDashboardTile("quickActions", quickAction.id)
-        ),
-    })),
-
-    ...(hasQuickActionLayout
-      ? [
-          {
-            label: "Reset Quick Actions",
-            description:
-              "Return every shortcut to its original place.",
-            onSelect: () =>
-              setQuickActionLayout(
-                resetDashboardSectionLayout("quickActions")
               ),
           },
         ]
@@ -1744,7 +1655,7 @@ export default function DashboardPage() {
           >
             <div>
               <p className="text-xs font-black uppercase tracking-[0.24em] text-slate-400">
-                Command Tiles
+                Tiles &amp; Reports
               </p>
 
               <h2 className="mt-1 text-2xl font-black text-white">
@@ -1776,8 +1687,19 @@ export default function DashboardPage() {
                   }
                   className="rounded-2xl border border-slate-600 bg-slate-800 px-4 py-3 text-xs font-black uppercase tracking-wide text-white transition hover:border-orange-300"
                 >
-                  + Add Tile
+                  + Add Tile/Report
                 </button>
+
+                <Link
+                  data-t1eq-action-button="true"
+                  data-t1eq-qbit-type="action-button"
+                  data-t1eq-qbit-id="dashboard-reports-configure"
+                  data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+                  href="/settings/operational-dashboard-charts"
+                  className="rounded-2xl border border-slate-600 bg-slate-800 px-4 py-3 text-xs font-black uppercase tracking-wide text-white transition hover:border-orange-300"
+                >
+                  Configure Reports
+                </Link>
 
                 <button
                   data-t1eq-action-button="true"
@@ -1794,7 +1716,7 @@ export default function DashboardPage() {
               </div>
 
               <p className="hidden text-xs font-bold uppercase tracking-[0.18em] text-slate-400 sm:block">
-                Hover for details · drag to arrange · right-click to add
+                Drag to arrange · corner to resize · trash to remove
               </p>
             </div>
           </div>
@@ -1804,21 +1726,56 @@ export default function DashboardPage() {
             sectionKey="commandTiles"
             qbitId="dashboard-command-tiles-grid"
             qbitScope={DASHBOARD_SCOPE}
-            tiles={arrangedCommandTiles.visible.map(
-              ({ tile, value, selectedSubcategories }) => ({
-                id: tile.id,
-                defaultColumnSpan: 4,
-                defaultRowSpan: 11,
+            tiles={[
+              ...arrangedCommandTiles.visible.map(
+                ({ tile, value, selectedSubcategories }) => ({
+                  id: tile.id,
+                  defaultColumnSpan: 4,
+                  defaultRowSpan: 11,
+                  content: (
+                    <DashboardTile
+                      tile={tile}
+                      value={value}
+                      selectedSubcategories={selectedSubcategories}
+                      onQuickAction={(href) => router.push(href)}
+                    />
+                  ),
+                })
+              ),
+
+              /*
+               * Reports share the canvas, so a chart can be dropped
+               * between two command tiles rather than living in a section
+               * of its own. Ids are prefixed because a chart id and a tile
+               * id are separate namespaces that must not be able to
+               * collide once they are placed side by side.
+               */
+              ...chartDefinitions.map((definition) => ({
+                id: `${REPORT_TILE_PREFIX}${definition.chart.id}`,
+                defaultColumnSpan:
+                  definition.chart.size === "Large"
+                    ? 12
+                    : definition.chart.size === "Medium"
+                    ? 8
+                    : 4,
+                defaultRowSpan: 12,
                 content: (
-                  <DashboardTile
-                    tile={tile}
-                    value={value}
-                    selectedSubcategories={selectedSubcategories}
-                  />
+                  <div
+                    data-t1eq-tile="true"
+                    data-t1eq-qbit-type="tile"
+                    data-t1eq-qbit-id={`dashboard-report-${definition.chart.id}`}
+                    data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+                    className="h-full"
+                  >
+                    <OperationalDashboardChartRenderer
+                      chart={definition.chart}
+                      data={definition.data}
+                    />
+                  </div>
                 ),
-              })
-            )}
-            onRemove={handleRemoveCommandTile}
+              })),
+            ]}
+            onRemove={handleRemoveDashboardTile}
             menuItems={commandTilePickerItems}
             emptyState={
               <div
@@ -1829,7 +1786,7 @@ export default function DashboardPage() {
                 className="rounded-[28px] border border-dashed border-slate-700 bg-slate-900/60 p-8 text-center"
               >
                 <p className="text-sm font-black text-white">
-                  No command tiles on the dashboard.
+                  Nothing on the dashboard.
                 </p>
 
                 <p className="mt-1 text-sm font-semibold text-slate-400">
@@ -1840,190 +1797,7 @@ export default function DashboardPage() {
           />
         </section>
 
-        <section
-          data-t1eq-qbit-type="section"
-          data-t1eq-qbit-id="dashboard-quick-actions-section"
-          data-t1eq-qbit-scope={DASHBOARD_SCOPE}
-          className="overflow-visible"
-        >
-          <div
-            data-t1eq-qbit-type="section"
-            data-t1eq-qbit-id="dashboard-quick-actions-header"
-            data-t1eq-qbit-scope={DASHBOARD_SCOPE}
-            className="mb-4"
-          >
-            <p className="text-xs font-black uppercase tracking-[0.24em] text-slate-400">
-              Quick Actions
-            </p>
-
-            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-              <h2 className="mt-1 text-2xl font-black text-white">
-                Start Common Workflows
-              </h2>
-
-              <button
-                data-t1eq-action-button="true"
-                data-t1eq-qbit-type="action-button"
-                data-t1eq-qbit-id="dashboard-add-quick-action-button"
-                data-t1eq-qbit-scope={DASHBOARD_SCOPE}
-                type="button"
-                onClick={(event) =>
-                  openPickerUnder(quickActionCanvasRef, event)
-                }
-                className="shrink-0 rounded-2xl border border-slate-600 bg-slate-800 px-4 py-3 text-xs font-black uppercase tracking-wide text-white transition hover:border-orange-300"
-              >
-                + Add Shortcut
-              </button>
-            </div>
-          </div>
-
-          <FreeformTileCanvas
-            ref={quickActionCanvasRef}
-            sectionKey="quickActions"
-            qbitId="dashboard-quick-actions-grid"
-            qbitScope={DASHBOARD_SCOPE}
-            tiles={arrangedQuickActions.visible.map((quickAction) => ({
-              id: quickAction.id,
-              defaultColumnSpan: 4,
-              defaultRowSpan: 4,
-              content: (
-                <ActionTile
-                  id={quickAction.id}
-                  title={quickAction.title}
-                  description={quickAction.description}
-                  href={quickAction.href}
-                />
-              ),
-            }))}
-            onRemove={handleRemoveQuickAction}
-            menuItems={quickActionPickerItems}
-            emptyState={
-              <div
-                data-t1eq-page-card="true"
-                data-t1eq-qbit-type="page-card"
-                data-t1eq-qbit-id="dashboard-quick-actions-empty"
-                data-t1eq-qbit-scope={DASHBOARD_SCOPE}
-                className="rounded-[24px] border border-dashed border-slate-700 bg-slate-900/60 p-8 text-center"
-              >
-                <p className="text-sm font-black text-white">
-                  No shortcuts on the dashboard.
-                </p>
-
-                <p className="mt-1 text-sm font-semibold text-slate-400">
-                  Right-click here to put them back. Nothing was deleted.
-                </p>
-              </div>
-            }
-          />
-        </section>
-
-        <section
-          data-t1eq-qbit-type="section"
-          data-t1eq-qbit-id="dashboard-reports-section"
-          data-t1eq-qbit-scope={DASHBOARD_SCOPE}
-          className="overflow-visible"
-        >
-          <div
-            data-t1eq-qbit-type="section"
-            data-t1eq-qbit-id="dashboard-reports-header"
-            data-t1eq-qbit-scope={DASHBOARD_SCOPE}
-            className="mb-4 flex flex-col gap-4 md:flex-row md:items-end md:justify-between"
-          >
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.24em] text-slate-400">
-                Information Tiles
-              </p>
-
-              <h2 className="mt-1 text-2xl font-black text-white">
-                Reports &amp; Charts
-              </h2>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              <button
-                data-t1eq-action-button="true"
-                data-t1eq-qbit-type="action-button"
-                data-t1eq-qbit-id="dashboard-add-report-tile-button"
-                data-t1eq-qbit-scope={DASHBOARD_SCOPE}
-                type="button"
-                onClick={(event) => openPickerUnder(reportCanvasRef, event)}
-                className="rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-black text-white transition hover:bg-white/20"
-              >
-                + Add Tile
-              </button>
-
-              <Link
-                data-t1eq-action-button="true"
-                data-t1eq-qbit-type="action-button"
-                data-t1eq-qbit-id="dashboard-reports-configure"
-                data-t1eq-qbit-scope={DASHBOARD_SCOPE}
-                href="/settings/operational-dashboard-charts"
-                className="rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-black text-white transition hover:bg-white/20"
-              >
-                Configure Reports
-              </Link>
-            </div>
-          </div>
-
-          <FreeformTileCanvas
-            ref={reportCanvasRef}
-            sectionKey="reportTiles"
-            qbitId="dashboard-reports-grid"
-            qbitScope={DASHBOARD_SCOPE}
-            tiles={chartDefinitions.map((definition) => ({
-              id: definition.chart.id,
-              /*
-               * The chart's configured size is only where it STARTS now.
-               * Once it has been resized on the canvas, that placement is
-               * what holds.
-               */
-              defaultColumnSpan:
-                definition.chart.size === "Large"
-                  ? 12
-                  : definition.chart.size === "Medium"
-                  ? 8
-                  : 4,
-              defaultRowSpan: 12,
-              content: (
-                <div
-                  data-t1eq-tile="true"
-                  data-t1eq-qbit-type="tile"
-                  data-t1eq-qbit-id={`dashboard-report-${definition.chart.id}`}
-                  data-t1eq-qbit-scope={DASHBOARD_SCOPE}
-                  className="h-full"
-                >
-                  <OperationalDashboardChartRenderer
-                    chart={definition.chart}
-                    data={definition.data}
-                  />
-                </div>
-              ),
-            }))}
-            onRemove={handleRemoveReportTile}
-            menuItems={reportPickerItems}
-            emptyState={
-              <div
-                data-t1eq-tile="true"
-                data-t1eq-page-card="true"
-                data-t1eq-qbit-type="tile"
-                data-t1eq-qbit-id="dashboard-reports-empty"
-                data-t1eq-qbit-scope={DASHBOARD_SCOPE}
-                className="rounded-2xl border border-dashed border-white/20 bg-white/5 p-8 text-center"
-              >
-                <p className="text-sm font-bold text-white/70">
-                  No report tiles yet.
-                </p>
-
-                <p className="mt-1 text-sm font-semibold text-white/50">
-                  Right-click here to add one, or use Configure Reports to
-                  build a chart from your repair orders, invoices,
-                  inventory, and purchase orders.
-                </p>
-              </div>
-            }
-          />
-        </section>
-      </div>
+     </div>
     </main>
   );
 }

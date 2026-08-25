@@ -10,7 +10,6 @@ const headerClass =
   "mb-6 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm";
 const sectionClass =
   "rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm";
-const cardGridClass = "grid gap-4 md:grid-cols-2 xl:grid-cols-3";
 const cardClass =
   "rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-zinc-400 hover:shadow-md";
 const cardTitleClass = "text-xl font-black text-black";
@@ -152,7 +151,6 @@ export default function InventoryPage() {
 
         <InventoryCategoryGrid
           categories={inventoryCategories}
-          gridClassName={cardGridClass}
           cardClassName={cardClass}
           cardTitleClassName={cardTitleClass}
           cardDescriptionClassName={cardDescriptionClass}

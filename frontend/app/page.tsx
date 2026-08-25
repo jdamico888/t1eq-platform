@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { CompanyTool } from "@/types/company-tool";
 import type { InventoryDiscrepancy } from "@/types/inventory-discrepancy";
@@ -14,9 +14,10 @@ import { getInventoryItems, getLowStockItems } from "@/services/inventory";
 import { getPurchaseOrders } from "@/services/purchase-orders";
 import { getTrucks } from "@/services/truck-stock";
 
-import ArrangeableTileGrid, {
-  type ArrangeableMenuItem,
-} from "@/components/dashboard/ArrangeableTileGrid";
+import { type ArrangeableMenuItem } from "@/components/dashboard/ArrangeableTileGrid";
+import FreeformTileCanvas, {
+  type TileCanvasHandle,
+} from "@/components/dashboard/FreeformTileCanvas";
 import {
   DASHBOARD_LAYOUT_CHANGED_EVENT,
   arrangeDashboardTiles,
@@ -24,7 +25,6 @@ import {
   getDashboardSectionLayout,
   hideDashboardTile,
   resetDashboardSectionLayout,
-  saveDashboardSectionOrder,
   showDashboardTile,
   type DashboardSectionLayout,
 } from "@/services/dashboard-layout";
@@ -71,11 +71,13 @@ const pageHeaderClass =
 const sectionClass =
   "rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm";
 
-const dashboardGridClass =
-  "grid auto-rows-fr gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4";
-
+/*
+ * No minimum height: the canvas decides how tall a tile is, and a floor
+ * here would mean dragging the resize corner smaller just produced a
+ * scrollbar instead of a smaller tile.
+ */
 const baseTileClass =
-  "flex h-full min-h-[250px] flex-col rounded-2xl border p-5 text-left shadow-sm transition hover:shadow-md";
+  "flex h-full flex-col rounded-2xl border p-5 text-left shadow-sm transition hover:shadow-md";
 
 const normalTileClass =
   `${baseTileClass} border-zinc-200 bg-white hover:border-zinc-400`;
@@ -589,6 +591,23 @@ export default function OperationsDashboardPage() {
     },
   ];
 
+  /*
+   * Right-click opens the picker, but nothing on screen says so. This lets
+   * the section header offer a plain button that opens the same menu.
+   */
+  const categoryCanvasRef = useRef<TileCanvasHandle | null>(null);
+
+  function openCategoryPicker(
+    event: React.MouseEvent<HTMLButtonElement>
+  ) {
+    const rect = event.currentTarget.getBoundingClientRect();
+
+    categoryCanvasRef.current?.openPicker({
+      x: rect.left,
+      y: rect.bottom + 8,
+    });
+  }
+
   const arrangedCategoryTiles = arrangeDashboardTiles(
     dashboardCategories,
     (category) => category.id,
@@ -600,12 +619,6 @@ export default function OperationsDashboardPage() {
    * Every removed tile is listed in the right-click picker, so a tile is
    * always one press away from coming back.
    */
-  function handleReorderCategoryTiles(orderedIds: string[]) {
-    setCategoryTileLayout(
-      saveDashboardSectionOrder("categoryTiles", orderedIds)
-    );
-  }
-
   function handleRemoveCategoryTile(tileId: string) {
     setCategoryTileLayout(hideDashboardTile("categoryTiles", tileId));
   }
@@ -748,20 +761,33 @@ export default function OperationsDashboardPage() {
             className="mt-1 text-sm font-semibold text-zinc-600"
           >
             Click any tile to open that category’s main menu. Drag to
-            arrange, drag to the trash to remove, right-click to add back.
+            arrange, drag a corner to resize, drag to the trash to remove.
           </p>
         </div>
 
-        <ArrangeableTileGrid
-          allowLinkDrag
+        <button
+          data-t1eq-action-button="true"
+          data-t1eq-qbit-type="action-button"
+          data-t1eq-qbit-id="operations-dashboard-add-category-tile"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          type="button"
+          onClick={openCategoryPicker}
+          className="mb-4 rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm font-black text-black shadow-sm transition hover:bg-zinc-50"
+        >
+          + Add Tile
+        </button>
+
+        <FreeformTileCanvas
+          ref={categoryCanvasRef}
+          sectionKey="categoryTiles"
           qbitId="operations-dashboard-tile-grid"
           qbitScope={QBIT_SCOPE}
-          gridClassName={dashboardGridClass}
           tiles={arrangedCategoryTiles.visible.map((category) => ({
             id: category.id,
+            defaultColumnSpan: 4,
+            defaultRowSpan: 12,
             content: <DashboardCategoryCard {...category} />,
           }))}
-          onReorder={handleReorderCategoryTiles}
           onRemove={handleRemoveCategoryTile}
           menuItems={categoryTilePickerItems}
           emptyState={

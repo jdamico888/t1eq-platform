@@ -17,7 +17,6 @@ const headerClass =
   "mb-6 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm";
 const sectionClass =
   "rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm";
-const metricGridClass = "mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4";
 const metricCardClass =
   "rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm";
 const inputClass =
@@ -253,7 +252,6 @@ export default function InventoryTransactionsPage() {
           sectionKey="inventoryTransactionMetrics"
           qbitId="inventory-transactions-metrics"
           qbitScope={QBIT_SCOPE}
-          gridClassName={metricGridClass}
           cardClassName={metricCardClass}
           tiles={[
             {

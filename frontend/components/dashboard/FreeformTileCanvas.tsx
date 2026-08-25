@@ -78,6 +78,15 @@ export type TileCanvasHandle = {
 const LONG_PRESS_MS = 400;
 const MOVE_TOLERANCE_PX = 8;
 
+/**
+ * Dragging a tile past the bottom of the window should carry the page with
+ * it, the way dragging a file to the edge of a folder window does. Within
+ * this many pixels of an edge the page starts moving, faster the closer to
+ * the edge the pointer gets.
+ */
+const AUTOSCROLL_EDGE_PX = 90;
+const AUTOSCROLL_MAX_SPEED_PX = 22;
+
 function isQBitEditing(): boolean {
   if (typeof document === "undefined") {
     return false;
@@ -109,6 +118,17 @@ type Gesture = {
   pointerId: number;
   startX: number;
   startY: number;
+
+  /**
+   * How far the page was scrolled when the drag began.
+   *
+   * Pointer coordinates are relative to the window, so scrolling moves the
+   * canvas underneath a finger that has not moved at all. Remembering
+   * where the page started lets the maths work in page space, where a
+   * stationary pointer over a scrolling page correctly means the tile is
+   * travelling.
+   */
+  startScrollY: number;
   originColumn: number;
   originRow: number;
   originColumnSpan: number;
@@ -183,6 +203,14 @@ const FreeformTileCanvas = forwardRef<
 
   const suppressNextClickRef = useRef(false);
   const suppressClickTimerRef = useRef<number | null>(null);
+
+  /*
+   * The autoscroll loop runs outside React's render cycle, so it reads
+   * these rather than state — a value captured in the animation callback
+   * would be whatever it was when the drag started.
+   */
+  const pointerRef = useRef({ x: 0, y: 0 });
+  const columnWidthRef = useRef(0);
 
   useImperativeHandle(ref, () => ({
     openPicker(anchor) {
@@ -292,6 +320,138 @@ const FreeformTileCanvas = forwardRef<
     );
   }, [tileIdsKey, layout, sizeHints]);
 
+  /**
+   * Places the dragged tile from a pointer position.
+   *
+   * Split out from the move handler because the autoscroll loop has to run
+   * it too: when the page scrolls under a finger that is holding still,
+   * the tile has moved even though no pointer event fired.
+   */
+  const applyPointerPosition = useCallback(
+    (clientX: number, clientY: number) => {
+      const activeGesture = gestureRef.current;
+      const width = columnWidthRef.current;
+
+      if (!activeGesture || width <= 0) {
+        return;
+      }
+
+      const deltaX = clientX - activeGesture.startX;
+
+      /* Page space, so a scroll counts as movement. */
+      const deltaY =
+        clientY + window.scrollY - (activeGesture.startY + activeGesture.startScrollY);
+
+      const deltaColumns = Math.round(deltaX / (width + CANVAS_GAP));
+      const deltaRows = Math.round(deltaY / CANVAS_ROW_UNIT);
+
+      if (activeGesture.kind === "move") {
+        setIsOverTrash(isTrashAtPoint(clientX, clientY));
+      }
+
+      const next = placementsRef.current.map((placement) => {
+        if (placement.id !== activeGesture.tileId) {
+          return placement;
+        }
+
+        if (activeGesture.kind === "resize") {
+          const columnSpan = clampColumnSpan(
+            activeGesture.originColumnSpan + deltaColumns
+          );
+
+          return {
+            ...placement,
+            columnSpan: Math.min(
+              columnSpan,
+              CANVAS_COLUMNS - activeGesture.originColumn
+            ),
+            rowSpan: clampRowSpan(activeGesture.originRowSpan + deltaRows),
+          };
+        }
+
+        return {
+          ...placement,
+          column: clampColumn(
+            activeGesture.originColumn + deltaColumns,
+            placement.columnSpan
+          ),
+          row: Math.max(0, activeGesture.originRow + deltaRows),
+        };
+      });
+
+      /*
+       * No settling: tiles are allowed to sit on top of each other. The
+       * moved tile simply lands where it was dropped, and paint order
+       * puts it in front.
+       */
+      setPlacements(next);
+
+      /*
+       * The tile snaps to cells, but the pointer does not. This is the
+       * leftover — it keeps the tile under the finger instead of lagging
+       * a half-cell behind it.
+       */
+      setPointerOffset({
+        x: deltaX - deltaColumns * (width + CANVAS_GAP),
+        y: deltaY - deltaRows * CANVAS_ROW_UNIT,
+      });
+    },
+    []
+  );
+
+  /* ---- carry the page along when dragging past an edge ------------ */
+
+  useEffect(() => {
+    if (!gesture) {
+      return;
+    }
+
+    let frame = 0;
+
+    function step() {
+      const { y } = pointerRef.current;
+      const viewportHeight = window.innerHeight;
+
+      /*
+       * How far into the edge zone the pointer is, 0 at the inner boundary
+       * and 1 at the very edge, so the page eases into motion instead of
+       * lurching the moment the zone is touched.
+       */
+      let speed = 0;
+
+      if (y < AUTOSCROLL_EDGE_PX) {
+        speed = -((AUTOSCROLL_EDGE_PX - y) / AUTOSCROLL_EDGE_PX);
+      } else if (y > viewportHeight - AUTOSCROLL_EDGE_PX) {
+        speed =
+          (y - (viewportHeight - AUTOSCROLL_EDGE_PX)) / AUTOSCROLL_EDGE_PX;
+      }
+
+      if (speed !== 0) {
+        const before = window.scrollY;
+
+        window.scrollBy(
+          0,
+          Math.max(-1, Math.min(1, speed)) * AUTOSCROLL_MAX_SPEED_PX
+        );
+
+        /*
+         * Only re-place the tile if the page actually moved. At the top or
+         * bottom of the document scrollBy does nothing, and recomputing
+         * anyway would just burn frames.
+         */
+        if (window.scrollY !== before) {
+          applyPointerPosition(pointerRef.current.x, pointerRef.current.y);
+        }
+      }
+
+      frame = window.requestAnimationFrame(step);
+    }
+
+    frame = window.requestAnimationFrame(step);
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [gesture, applyPointerPosition]);
+
   /* ---- scroll lock while dragging on touch ------------------------ */
 
   useEffect(() => {
@@ -363,6 +523,8 @@ const FreeformTileCanvas = forwardRef<
       ? (containerWidth - CANVAS_GAP * (CANVAS_COLUMNS - 1)) / CANVAS_COLUMNS
       : 0;
 
+  columnWidthRef.current = columnWidth;
+
   const clearLongPress = useCallback(() => {
     if (longPressTimerRef.current !== null) {
       window.clearTimeout(longPressTimerRef.current);
@@ -392,12 +554,15 @@ const FreeformTileCanvas = forwardRef<
     */
     setPlacements((current) => bringToFront(current, tileId));
 
+    pointerRef.current = { x: clientX, y: clientY };
+
     setGesture({
       kind,
       tileId,
       pointerId,
       startX: clientX,
       startY: clientY,
+      startScrollY: window.scrollY,
       originColumn: placement.column,
       originRow: placement.row,
       originColumnSpan: placement.columnSpan,
@@ -460,66 +625,13 @@ const FreeformTileCanvas = forwardRef<
     const pending = pendingPressRef.current;
 
     if (activeGesture) {
-      if (event.pointerId !== activeGesture.pointerId || columnWidth <= 0) {
+      if (event.pointerId !== activeGesture.pointerId) {
         return;
       }
 
-      const deltaX = event.clientX - activeGesture.startX;
-      const deltaY = event.clientY - activeGesture.startY;
+      pointerRef.current = { x: event.clientX, y: event.clientY };
 
-      const deltaColumns = Math.round(deltaX / (columnWidth + CANVAS_GAP));
-      const deltaRows = Math.round(deltaY / CANVAS_ROW_UNIT);
-
-      if (activeGesture.kind === "move") {
-        setIsOverTrash(isTrashAtPoint(event.clientX, event.clientY));
-      }
-
-      const next = placementsRef.current.map((placement) => {
-        if (placement.id !== activeGesture.tileId) {
-          return placement;
-        }
-
-        if (activeGesture.kind === "resize") {
-          const columnSpan = clampColumnSpan(
-            activeGesture.originColumnSpan + deltaColumns
-          );
-
-          return {
-            ...placement,
-            columnSpan: Math.min(
-              columnSpan,
-              CANVAS_COLUMNS - activeGesture.originColumn
-            ),
-            rowSpan: clampRowSpan(activeGesture.originRowSpan + deltaRows),
-          };
-        }
-
-        return {
-          ...placement,
-          column: clampColumn(
-            activeGesture.originColumn + deltaColumns,
-            placement.columnSpan
-          ),
-          row: Math.max(0, activeGesture.originRow + deltaRows),
-        };
-      });
-
-      /*
-       * No settling: tiles are allowed to sit on top of each other. The
-       * moved tile simply lands where it was dropped, and paint order
-       * puts it in front.
-       */
-      setPlacements(next);
-
-      /*
-       * The tile snaps to cells, but the pointer does not. This is the
-       * leftover — it keeps the tile under the finger instead of lagging
-       * a half-cell behind it.
-       */
-      setPointerOffset({
-        x: deltaX - deltaColumns * (columnWidth + CANVAS_GAP),
-        y: deltaY - deltaRows * CANVAS_ROW_UNIT,
-      });
+      applyPointerPosition(event.clientX, event.clientY);
 
       return;
     }
@@ -727,7 +839,15 @@ const FreeformTileCanvas = forwardRef<
                   .filter(Boolean)
                   .join(" ")}
               >
-                <div className="h-full overflow-auto">{tile.content}</div>
+                {/*
+                  Vertical scroll only. overflow-auto on both axes put a
+                  horizontal bar along the bottom of every tile the moment
+                  content was a pixel too wide — which was most of them,
+                  and it read as clutter rather than as a control.
+                */}
+                <div className="h-full overflow-y-auto overflow-x-hidden">
+                  {tile.content}
+                </div>
 
                 {/*
                   The resize corner. Hidden until the tile is hovered so it

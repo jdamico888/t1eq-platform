@@ -1,11 +1,10 @@
 /**
  * Where the dashboard remembers how each tile section has been arranged.
  *
- * The report tiles did not need this — a chart already carries `sortOrder`
- * and `showOnOperationsDashboard`, so dragging one wrote back to the chart
- * itself. Command tiles and quick actions are fixed definitions in code
- * with nowhere to put that, which is why they needed a small store of
- * their own.
+ * Most tile sections are fixed definitions in code with nowhere to record
+ * where someone dragged them, which is what this store is for. Charts are
+ * the exception — one already carries `showOnOperationsDashboard` — but
+ * they keep their canvas position here like everything else.
  *
  * Nothing is destroyed here. Dropping a tile on the trash records its id
  * as hidden; the tile stays defined and comes back from the picker.
@@ -14,10 +13,11 @@
 const STORAGE_KEY = "t1eq-dashboard-layout-v1";
 
 export type DashboardSectionKey =
+  /**
+   * The Operations Dashboard canvas — command tiles and report widgets
+   * share it, so one arrangement covers both.
+   */
   | "commandTiles"
-  | "quickActions"
-  /** The report / chart widgets on the Operations Dashboard. */
-  | "reportTiles"
   /** The Operational Category Tiles on the Operations Dashboard landing page. */
   | "categoryTiles"
   /** The category tiles on the Inventory hub. */
@@ -181,8 +181,6 @@ function readStore(): DashboardLayoutStore {
 
     return {
       commandTiles: normalizeSectionLayout(record.commandTiles),
-      quickActions: normalizeSectionLayout(record.quickActions),
-      reportTiles: normalizeSectionLayout(record.reportTiles),
       categoryTiles: normalizeSectionLayout(record.categoryTiles),
       inventoryCategories: normalizeSectionLayout(record.inventoryCategories),
       inventoryItemMetrics: normalizeSectionLayout(record.inventoryItemMetrics),
