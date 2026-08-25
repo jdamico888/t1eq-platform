@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 
-import PageContainer from "../components/layout/PageContainer";
+import PageContainer from "@/components/layout/PageContainer";
 import Card from "../components/ui/Card";
 import EmptyState from "../components/ui/EmptyState";
 import MetricCard from "../components/ui/MetricCard";

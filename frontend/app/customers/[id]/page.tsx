@@ -6,7 +6,7 @@ import Link from "next/link";
 
 import { useParams } from "next/navigation";
 
-import PageContainer from "../../components/layout/PageContainer";
+import PageContainer from "@/components/layout/PageContainer";
 
 import Card from "../../components/ui/Card";
 import EmptyState from "../../components/ui/EmptyState";

@@ -24,6 +24,7 @@ export default function ListPageLayout({
 }: ListPageLayoutProps) {
   return (
     <PageContainer
+      padded={false}
       qbitId={qbitId ? `${qbitId}-page-container` : undefined}
       qbitScope={qbitScope}
     >

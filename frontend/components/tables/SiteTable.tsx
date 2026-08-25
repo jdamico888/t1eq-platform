@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-
 import { Site } from "@/types/site";
 
 import DataTable from "@/components/ui/DataTable";
@@ -30,12 +28,14 @@ export default function SiteTable({
           header: "Site",
           render: (site) => (
             <div>
-              <Link
-                href={`/sites/${site.id}`}
-                className="font-medium text-cyan-300 hover:text-cyan-200"
-              >
+              {/*
+                * Not a link. Customers and Equipment have detail routes;
+                * Sites does not, so linking here only produced a 404. The
+                * Edit button on the right is how a site is opened.
+                */}
+              <div className="font-medium">
                 {site.name}
-              </Link>
+              </div>
 
               <div className="mt-1 text-xs text-slate-400">
                 {site.customerName}

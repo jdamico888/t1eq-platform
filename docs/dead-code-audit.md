@@ -253,3 +253,99 @@ never run.
    repoint imports, delete the loser. Do this after 1 so there is less to move.
 4. **Leave section 4 alone** unless a service is being touched anyway. Deleting an
    unused `getById` buys little and costs a diff.
+
+---
+
+# Round 2 — 2026-08-25, after the 80-file deletion
+
+Deleting the 80 components stranded more code behind them: a service whose only
+caller was a deleted panel is now dead itself, and so is the type file only that
+service imported. This round re-ran the same resolver over the tree as it stands
+and walked outward from the Next.js route entry points instead of just counting
+importers, which is a stricter test — a two-file cluster that imports only
+itself has importers but is still unreachable.
+
+| | |
+|---|---|
+| Files unreachable from any route | **32 files, 1605 lines** |
+| Links pointing at routes that no longer exist | **2** |
+| Same-name duplicates left | **1** (`StatusBadge`) |
+| Files left in the tree | **199, all reachable** |
+
+## 2.1 Two links that 404
+
+Both were collateral from earlier deletions, and both are things a person can
+click today.
+
+- **`app/page.tsx` — the "Users" category tile** pointed at `/users`, a route
+  that no longer exists. Repointed to `/employees`, which is where those records
+  are actually created and edited. Its metric read `localStorage["t1eq-users"]`,
+  the store that went away with `services/users.ts`, so it displayed `0` on every
+  dashboard; it now reads `t1eq-technician-profiles` like the rest of the app.
+  The tile's `id` stayed `"users"` on purpose — that id is the key for saved tile
+  arrangements and Q-Bit appearance overrides, and renaming it would orphan both.
+- **`components/tables/SiteTable.tsx`** linked each site name to
+  `/sites/${site.id}`. Customers and Equipment have detail routes; Sites does
+  not. The name is now plain text, and the row's existing Edit button is how a
+  site is opened.
+
+## 2.2 PageContainer collapsed
+
+The two copies were the same component with one difference: the `app/` copy
+added `min-h-screen p-6`. They are now one file, `components/layout/PageContainer.tsx`,
+with a `padded` prop defaulting to `true`. The seven pages that used the padded
+copy get identical output; `ListPageLayout` passes `padded={false}` because its
+content already sits inside a padded card.
+
+## 2.3 StatusBadge is NOT a duplicate — it needs a decision
+
+These two share a name and nothing else, so they cannot be merged mechanically:
+
+| | `components/ui/StatusBadge.tsx` | `app/components/ui/StatusBadge.tsx` |
+|---|---|---|
+| Props | `status: string` | `label: string`, `tone?: StatusTone` |
+| Tone | derived inside, from the string | passed in by the caller |
+| Palette | dark — `*-500/15` on `*-300` text | light — `*-500/20` on `*-900` text |
+| Q-Bit targeting | none | `qbitId` / `qbitScope` |
+| Used by | CustomerTable, EquipmentTable, SiteTable | dispatch, scheduling, suppliers |
+
+Merging means picking one palette, which changes how badges look on three pages
+either way. That is a design call, not a cleanup. Left alone deliberately.
+
+## 2.4 What was unreachable
+
+Nothing here had a live caller. Full list in `docs/dead-code-paths-2.txt`.
+
+| Cluster | Files | Why it died |
+|---|---|---|
+| The old app shell — `AppShell`, `AppBackground`, `SidebarHeader`, `SectionHeader`, `PageContainer` | 5 | `app/layout.tsx` inlines the shell now |
+| Seed data — `data/*.ts` | 8 | Hardcoded demo records; real data is in localStorage |
+| Superseded services — `action-items`, `part-entries`, `equipmentMetadata`, `equipmentService`, `inventory-transactions`, `organization`, `settings` | 7 | Replaced by `repair-orders.ts`, `equipment.ts`, `inventory-discrepancies.ts`, `app-settings.ts` |
+| Their type files — `action-item`, `part-entry`, `inventory-transaction`, `organization`, `settings`, `field-work-session` | 6 | Imported only by the services above |
+| Status constant lists — `constants/{dispatch,inspections,invoices,purchase-orders}.ts` | 4 | Each page defines its own now |
+| `services/repair-order-field-workflow.ts` | 1 | **Nine exported functions with empty bodies.** Worth deleting rather than keeping: an import of `startFieldWorkSession` compiles and silently does nothing |
+| `services/AddEquipmentModal.tsx` | 1 | Zero bytes |
+
+## 2.5 Non-code cruft still on disk
+
+Not deleted here, because none of it is code and some may be deliberate:
+
+- **`frontend/mkdir/appearance/AppearanceThemeClient.tsx`** — a directory
+  literally named `mkdir`, holding a stale copy of a component. Left behind by a
+  shell command that ran in the wrong shape.
+- **`frontend/5-29-26 Front End Recuced size.zip`** — a 1.5 MB archive committed
+  into the repo.
+- **Empty directories** — `app/components/{customers,equipment,shared}` and
+  `app/sites/[id]`, left when their files were deleted. Git does not track empty
+  directories, so these exist only on disk.
+
+## 2.6 What is left
+
+199 files, every one reachable from a route. The remaining structural oddity is
+that `app/components/` is a second, older UI kit — `Card`, `MetricCard`,
+`EmptyState`, `Field`, `Input`, `Select`, `Textarea`, `Button`, `ListCard`,
+`Modal`, `StatusBadge` — used almost exclusively by eight legacy pages
+(`analytics/technicians`, `customers/[id]`, `equipment/[id]`, `inspections/[id]`,
+`dispatch`, `payroll`, `scheduling`, `suppliers`). It is not dead and it is not
+duplicated; it is a different generation. Consolidating it means restyling those
+eight pages onto the `components/ui` kit, which is a visible change, not a sweep.

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import PageContainer from "../components/layout/PageContainer";
+import PageContainer from "@/components/layout/PageContainer";
 
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";

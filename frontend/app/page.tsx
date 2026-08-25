@@ -58,7 +58,7 @@ type LocalCounts = {
   customers: number;
   equipment: number;
   suppliers: number;
-  users: number;
+  employees: number;
 };
 
 const QBIT_SCOPE = "operations-dashboard";
@@ -183,7 +183,12 @@ function loadLocalCounts(): LocalCounts {
   const customers = safeReadLocalStorageArray("t1eq-customers");
   const equipment = safeReadLocalStorageArray("t1eq-equipment");
   const suppliers = safeReadLocalStorageArray("t1eq-suppliers");
-  const users = safeReadLocalStorageArray("t1eq-users");
+  /*
+   * Employees, not "users". The old t1eq-users store went away with
+   * services/users.ts; technician profiles are where people live now, so
+   * this counted zero on every dashboard until it was repointed.
+   */
+  const employees = safeReadLocalStorageArray("t1eq-technician-profiles");
 
   return {
     repairOrders: repairOrders.length,
@@ -210,7 +215,7 @@ function loadLocalCounts(): LocalCounts {
     customers: customers.length,
     equipment: equipment.length,
     suppliers: suppliers.length,
-    users: users.length,
+    employees: employees.length,
   };
 }
 
@@ -344,7 +349,7 @@ export default function OperationsDashboardPage() {
     customers: 0,
     equipment: 0,
     suppliers: 0,
-    users: 0,
+    employees: 0,
   });
 
   /*
@@ -449,7 +454,7 @@ export default function OperationsDashboardPage() {
         { label: "Total", value: localCounts.dispatchJobs },
         { label: "Active", value: localCounts.activeDispatchJobs },
         { label: "Routes", value: localCounts.dispatchJobs },
-        { label: "Techs", value: localCounts.users },
+        { label: "Techs", value: localCounts.employees },
       ],
     },
     {
@@ -546,7 +551,7 @@ export default function OperationsDashboardPage() {
       metrics: [
         { label: "Calendar", value: "Plan" },
         { label: "Dispatch", value: localCounts.dispatchJobs },
-        { label: "Techs", value: localCounts.users },
+        { label: "Techs", value: localCounts.employees },
         { label: "Open ROs", value: localCounts.openRepairOrders },
       ],
     },
@@ -557,7 +562,7 @@ export default function OperationsDashboardPage() {
         "Technician labor entries, flat-rate work, mileage, hourly time, completed jobs, and payroll approval.",
       href: "/payroll",
       metrics: [
-        { label: "Users", value: localCounts.users },
+        { label: "Employees", value: localCounts.employees },
         { label: "Open ROs", value: localCounts.openRepairOrders },
         { label: "Completed", value: localCounts.completedRepairOrders },
         { label: "Mileage", value: "Track" },
@@ -578,12 +583,17 @@ export default function OperationsDashboardPage() {
     },
     {
       id: "users",
-      title: "Users",
+      title: "Employees",
       description:
         "Technicians, owner access, office users, tax users, future inspectors, permissions, and role-based workflows.",
-      href: "/users",
+      /*
+       * Was /users, which no longer exists. Employee Setup is where these
+       * records are actually created and edited; roles and permissions
+       * live one level down under Settings.
+       */
+      href: "/employees",
       metrics: [
-        { label: "Users", value: localCounts.users },
+        { label: "Employees", value: localCounts.employees },
         { label: "Dispatch", value: localCounts.dispatchJobs },
         { label: "Payroll", value: "Pay" },
         { label: "Roles", value: "Access" },
