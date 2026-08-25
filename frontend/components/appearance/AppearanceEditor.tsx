@@ -258,6 +258,20 @@ function getDefaultPanelPosition(): Position {
   };
 }
 
+/**
+ * How close to the window edge Q-Bit is allowed to sit.
+ *
+ * The top is deliberately zero. Q-Bit edits the page it floats over, and
+ * the thing being edited is often at the very top of it — a page header, a
+ * logo, the sidebar's brand card. A gutter there meant the editor could
+ * never be moved fully clear of exactly the elements it exists to work on.
+ *
+ * The other three keep a small margin so the panel cannot be pushed
+ * half-off the window and become hard to grab.
+ */
+const editorTopGutter = 0;
+const editorEdgeGutter = 8;
+
 function clampDockPosition(
   position: Position
 ): Position {
@@ -267,18 +281,18 @@ function clampDockPosition(
 
   return {
     x: Math.min(
-      Math.max(8, position.x),
+      Math.max(editorEdgeGutter, position.x),
       Math.max(
-        8,
-        window.innerWidth - dockSize - 8
+        editorEdgeGutter,
+        window.innerWidth - dockSize - editorEdgeGutter
       )
     ),
 
     y: Math.min(
-      Math.max(8, position.y),
+      Math.max(editorTopGutter, position.y),
       Math.max(
-        8,
-        window.innerHeight - dockSize - 8
+        editorTopGutter,
+        window.innerHeight - dockSize - editorEdgeGutter
       )
     ),
   };
@@ -293,25 +307,25 @@ function clampPanelPosition(
 
   const effectiveHeight = Math.min(
     panelHeight,
-    window.innerHeight - 16
+    window.innerHeight - editorEdgeGutter
   );
 
   return {
     x: Math.min(
-      Math.max(8, position.x),
+      Math.max(editorEdgeGutter, position.x),
       Math.max(
-        8,
-        window.innerWidth - panelWidth - 8
+        editorEdgeGutter,
+        window.innerWidth - panelWidth - editorEdgeGutter
       )
     ),
 
     y: Math.min(
-      Math.max(8, position.y),
+      Math.max(editorTopGutter, position.y),
       Math.max(
-        8,
+        editorTopGutter,
         window.innerHeight -
           effectiveHeight -
-          8
+          editorEdgeGutter
       )
     ),
   };
