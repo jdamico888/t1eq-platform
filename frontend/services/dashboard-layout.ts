@@ -17,7 +17,9 @@ export type DashboardSectionKey =
   | "commandTiles"
   | "quickActions"
   /** The Operational Category Tiles on the Operations Dashboard landing page. */
-  | "categoryTiles";
+  | "categoryTiles"
+  /** The category tiles on the Inventory hub. */
+  | "inventoryCategories";
 
 export type DashboardSectionLayout = {
   /** Tile ids in the order the person arranged them. */
@@ -92,6 +94,7 @@ function readStore(): DashboardLayoutStore {
       commandTiles: normalizeSectionLayout(record.commandTiles),
       quickActions: normalizeSectionLayout(record.quickActions),
       categoryTiles: normalizeSectionLayout(record.categoryTiles),
+      inventoryCategories: normalizeSectionLayout(record.inventoryCategories),
     };
   } catch {
     return {};

@@ -1,6 +1,7 @@
-import Link from "next/link";
-
 import AddItemButton from "@/components/inventory/AddItemButton";
+import InventoryCategoryGrid, {
+  type InventoryCategoryTile,
+} from "@/components/inventory/InventoryCategoryGrid";
 
 const QBIT_SCOPE = "inventory-hub";
 
@@ -17,7 +18,7 @@ const cardDescriptionClass = "mt-2 text-sm font-semibold text-zinc-600";
 const cardActionClass =
   "mt-4 inline-flex rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm font-black text-black shadow-sm transition hover:bg-zinc-50";
 
-const inventoryCategories = [
+const inventoryCategories: InventoryCategoryTile[] = [
   {
     id: "items",
     title: "Inventory Items",
@@ -144,50 +145,20 @@ export default function InventoryPage() {
             data-t1eq-qbit-scope={QBIT_SCOPE}
             className="mt-1 text-sm font-semibold text-zinc-600"
           >
-            Select an inventory area to open.
+            Select an inventory area to open. Drag to arrange, drag to the
+            trash to remove, right-click to add back.
           </p>
         </div>
 
-        <div
-          data-t1eq-tile-grid="true"
-          data-t1eq-qbit-type="section"
-          data-t1eq-qbit-id="inventory-categories-grid"
-          data-t1eq-qbit-scope={QBIT_SCOPE}
-          className={cardGridClass}
-        >
-          {inventoryCategories.map((category) => (
-            <Link
-              key={category.href}
-              data-t1eq-tile="true"
-              data-t1eq-page-card="true"
-              data-t1eq-qbit-type="tile"
-              data-t1eq-qbit-id={`inventory-category-${category.id}`}
-              data-t1eq-qbit-scope={QBIT_SCOPE}
-              href={category.href}
-              className={cardClass}
-            >
-              <div
-                data-t1eq-qbit-type="text"
-                data-t1eq-qbit-id={`inventory-category-${category.id}-title`}
-                data-t1eq-qbit-scope={QBIT_SCOPE}
-                className={cardTitleClass}
-              >
-                {category.title}
-              </div>
-
-              <div
-                data-t1eq-qbit-type="text"
-                data-t1eq-qbit-id={`inventory-category-${category.id}-description`}
-                data-t1eq-qbit-scope={QBIT_SCOPE}
-                className={cardDescriptionClass}
-              >
-                {category.description}
-              </div>
-
-              <div className={cardActionClass}>{category.action}</div>
-            </Link>
-          ))}
-        </div>
+        <InventoryCategoryGrid
+          categories={inventoryCategories}
+          gridClassName={cardGridClass}
+          cardClassName={cardClass}
+          cardTitleClassName={cardTitleClass}
+          cardDescriptionClassName={cardDescriptionClass}
+          cardActionClassName={cardActionClass}
+          qbitScope={QBIT_SCOPE}
+        />
       </section>
     </div>
   );
