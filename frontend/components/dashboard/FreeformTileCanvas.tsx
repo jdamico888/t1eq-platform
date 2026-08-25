@@ -1,8 +1,10 @@
 "use client";
 
 import {
+  forwardRef,
   useCallback,
   useEffect,
+  useImperativeHandle,
   useMemo,
   useRef,
   useState,
@@ -61,6 +63,18 @@ type FreeformTileCanvasProps = {
   emptyState?: ReactNode;
 };
 
+/**
+ * Lets a page open the tile picker from its own button.
+ *
+ * Right-clicking works, but nothing on screen says so — the only hint
+ * lives in the empty state, which disappears the moment a section has a
+ * tile in it. A visible button is how anyone actually finds this; the
+ * right-click stays for people who already know.
+ */
+export type TileCanvasHandle = {
+  openPicker: (anchor?: { x: number; y: number }) => void;
+};
+
 const LONG_PRESS_MS = 400;
 const MOVE_TOLERANCE_PX = 8;
 
@@ -117,15 +131,21 @@ type Gesture = {
  * content, not an overlay, and this canvas measures its own container. A
  * tile has no coordinate that could put it under the sidebar.
  */
-export default function FreeformTileCanvas({
-  sectionKey,
-  tiles,
-  onRemove,
-  menuItems,
-  qbitId,
-  qbitScope,
-  emptyState,
-}: FreeformTileCanvasProps) {
+const FreeformTileCanvas = forwardRef<
+  TileCanvasHandle,
+  FreeformTileCanvasProps
+>(function FreeformTileCanvas(
+  {
+    sectionKey,
+    tiles,
+    onRemove,
+    menuItems,
+    qbitId,
+    qbitScope,
+    emptyState,
+  },
+  ref
+) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const longPressTimerRef = useRef<number | null>(null);
@@ -163,6 +183,23 @@ export default function FreeformTileCanvas({
 
   const suppressNextClickRef = useRef(false);
   const suppressClickTimerRef = useRef<number | null>(null);
+
+  useImperativeHandle(ref, () => ({
+    openPicker(anchor) {
+      /*
+       * With no anchor, open under the middle of the canvas — better than
+       * a corner when the caller has nothing sensible to point at.
+       */
+      const rect = containerRef.current?.getBoundingClientRect();
+
+      setMenuPosition(
+        anchor ?? {
+          x: rect ? rect.left + rect.width / 2 - 144 : 24,
+          y: rect ? rect.top + 24 : 24,
+        }
+      );
+    },
+  }));
 
   /* ---- saved layout ---------------------------------------------- */
 
@@ -773,4 +810,6 @@ export default function FreeformTileCanvas({
       )}
     </div>
   );
-}
+});
+
+export default FreeformTileCanvas;

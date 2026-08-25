@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useRouter } from "next/navigation";
 
@@ -14,7 +14,9 @@ import {
 import { resolveOperationalDashboardChartData } from "@/services/operational-dashboard-metrics";
 import OperationalDashboardChartRenderer from "@/components/dashboard/OperationalDashboardChartRenderer";
 import { type ArrangeableMenuItem } from "@/components/dashboard/ArrangeableTileGrid";
-import FreeformTileCanvas from "@/components/dashboard/FreeformTileCanvas";
+import FreeformTileCanvas, {
+  type TileCanvasHandle,
+} from "@/components/dashboard/FreeformTileCanvas";
 import {
   DASHBOARD_LAYOUT_CHANGED_EVENT,
   arrangeDashboardTiles,
@@ -1189,6 +1191,25 @@ export default function DashboardPage() {
 
   const router = useRouter();
 
+  /*
+   * Right-click opens the tile picker, but nothing on screen says so. These
+   * let each section's header offer a plain button that opens the same
+   * menu — the feature is unusable if nobody can find it.
+   */
+  const commandCanvasRef = useRef<TileCanvasHandle | null>(null);
+  const quickActionCanvasRef = useRef<TileCanvasHandle | null>(null);
+  const reportCanvasRef = useRef<TileCanvasHandle | null>(null);
+
+  /** Opens a picker directly beneath the button that asked for it. */
+  function openPickerUnder(
+    canvas: React.RefObject<TileCanvasHandle | null>,
+    event: React.MouseEvent<HTMLButtonElement>
+  ) {
+    const rect = event.currentTarget.getBoundingClientRect();
+
+    canvas.current?.openPicker({ x: rect.left, y: rect.bottom + 8 });
+  }
+
   function loadSectionLayouts() {
     setCommandTileLayout(getDashboardSectionLayout("commandTiles"));
     setQuickActionLayout(getDashboardSectionLayout("quickActions"));
@@ -1743,18 +1764,34 @@ export default function DashboardPage() {
                 </p>
               )}
 
-              <button
-                data-t1eq-action-button="true"
-                data-t1eq-accent-button="true"
-                data-t1eq-qbit-type="action-button"
-                data-t1eq-qbit-id="dashboard-edit-subcategories-button"
-                data-t1eq-qbit-scope={DASHBOARD_SCOPE}
-                type="button"
-                onClick={openSubcategoryChooser}
-                className="rounded-2xl border px-4 py-3 text-xs font-black uppercase tracking-wide transition"
-              >
-                Edit Tile Subcategories
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  data-t1eq-action-button="true"
+                  data-t1eq-qbit-type="action-button"
+                  data-t1eq-qbit-id="dashboard-add-command-tile-button"
+                  data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+                  type="button"
+                  onClick={(event) =>
+                    openPickerUnder(commandCanvasRef, event)
+                  }
+                  className="rounded-2xl border border-slate-600 bg-slate-800 px-4 py-3 text-xs font-black uppercase tracking-wide text-white transition hover:border-orange-300"
+                >
+                  + Add Tile
+                </button>
+
+                <button
+                  data-t1eq-action-button="true"
+                  data-t1eq-accent-button="true"
+                  data-t1eq-qbit-type="action-button"
+                  data-t1eq-qbit-id="dashboard-edit-subcategories-button"
+                  data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+                  type="button"
+                  onClick={openSubcategoryChooser}
+                  className="rounded-2xl border px-4 py-3 text-xs font-black uppercase tracking-wide transition"
+                >
+                  Edit Tile Subcategories
+                </button>
+              </div>
 
               <p className="hidden text-xs font-bold uppercase tracking-[0.18em] text-slate-400 sm:block">
                 Hover for details · drag to arrange · right-click to add
@@ -1763,6 +1800,7 @@ export default function DashboardPage() {
           </div>
 
           <FreeformTileCanvas
+            ref={commandCanvasRef}
             sectionKey="commandTiles"
             qbitId="dashboard-command-tiles-grid"
             qbitScope={DASHBOARD_SCOPE}
@@ -1818,12 +1856,29 @@ export default function DashboardPage() {
               Quick Actions
             </p>
 
-            <h2 className="mt-1 text-2xl font-black text-white">
-              Start Common Workflows
-            </h2>
+            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+              <h2 className="mt-1 text-2xl font-black text-white">
+                Start Common Workflows
+              </h2>
+
+              <button
+                data-t1eq-action-button="true"
+                data-t1eq-qbit-type="action-button"
+                data-t1eq-qbit-id="dashboard-add-quick-action-button"
+                data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+                type="button"
+                onClick={(event) =>
+                  openPickerUnder(quickActionCanvasRef, event)
+                }
+                className="shrink-0 rounded-2xl border border-slate-600 bg-slate-800 px-4 py-3 text-xs font-black uppercase tracking-wide text-white transition hover:border-orange-300"
+              >
+                + Add Shortcut
+              </button>
+            </div>
           </div>
 
           <FreeformTileCanvas
+            ref={quickActionCanvasRef}
             sectionKey="quickActions"
             qbitId="dashboard-quick-actions-grid"
             qbitScope={DASHBOARD_SCOPE}
@@ -1884,19 +1939,34 @@ export default function DashboardPage() {
               </h2>
             </div>
 
-            <Link
-              data-t1eq-action-button="true"
-              data-t1eq-qbit-type="action-button"
-              data-t1eq-qbit-id="dashboard-reports-configure"
-              data-t1eq-qbit-scope={DASHBOARD_SCOPE}
-              href="/settings/operational-dashboard-charts"
-              className="rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-black text-white transition hover:bg-white/20"
-            >
-              Configure Reports
-            </Link>
+            <div className="flex flex-wrap gap-2">
+              <button
+                data-t1eq-action-button="true"
+                data-t1eq-qbit-type="action-button"
+                data-t1eq-qbit-id="dashboard-add-report-tile-button"
+                data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+                type="button"
+                onClick={(event) => openPickerUnder(reportCanvasRef, event)}
+                className="rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-black text-white transition hover:bg-white/20"
+              >
+                + Add Tile
+              </button>
+
+              <Link
+                data-t1eq-action-button="true"
+                data-t1eq-qbit-type="action-button"
+                data-t1eq-qbit-id="dashboard-reports-configure"
+                data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+                href="/settings/operational-dashboard-charts"
+                className="rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-black text-white transition hover:bg-white/20"
+              >
+                Configure Reports
+              </Link>
+            </div>
           </div>
 
           <FreeformTileCanvas
+            ref={reportCanvasRef}
             sectionKey="reportTiles"
             qbitId="dashboard-reports-grid"
             qbitScope={DASHBOARD_SCOPE}
