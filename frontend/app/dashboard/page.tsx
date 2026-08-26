@@ -14,6 +14,7 @@ import {
 import { resolveOperationalDashboardChartData } from "@/services/operational-dashboard-metrics";
 import OperationalDashboardChartRenderer from "@/components/dashboard/OperationalDashboardChartRenderer";
 import { type ArrangeableMenuItem } from "@/components/dashboard/ArrangeableTileGrid";
+import { usePageHeader } from "@/components/navigation/page-header-slot";
 import FreeformTileCanvas, {
   type TileCanvasHandle,
 } from "@/components/dashboard/FreeformTileCanvas";
@@ -89,6 +90,21 @@ const DASHBOARD_SCOPE = "dashboard";
  */
 const REPORT_TILE_PREFIX = "report:";
 
+/*
+ * The hero card that used to sit at the top of this page is gone — its
+ * overline, title and description are published into the shared header
+ * tile instead, so there is one header on screen rather than two stacked
+ * on each other.
+ */
+const DASHBOARD_HEADER = {
+  overline: "Tier One Equipment",
+  title: "Operations Dashboard",
+  description:
+    "Manage customers, optional multi-site locations, equipment, repair " +
+    "orders, inventory, truck stock, purchase orders, invoices, and field " +
+    "operations.",
+};
+
 const DASHBOARD_SUBCATEGORY_STORAGE_KEY =
   "t1eq-dashboard-tile-subcategories-v4";
 
@@ -116,11 +132,32 @@ const DASHBOARD_TILE_DEFINITIONS: DashboardTileDefinition[] = [
     description:
       "Customer account records, billing information, contact details, service locations, and account-level service history.",
     quickAction: { label: "Add Customer", href: "/customers" },
-    /*
-     * A customer is created while booking an appointment or opening a
-     * repair order, not by coming here to file one.
-     */
-    subcategories: [],
+    subcategories: [
+      {
+        id: "accounts",
+        label: "Accounts",
+        description: "Customer account records and billing information.",
+        href: "/customers",
+      },
+      {
+        id: "contacts",
+        label: "Contacts",
+        description: "Contact names, phone numbers, and email addresses.",
+        href: "/customers",
+      },
+      {
+        id: "locations",
+        label: "Locations",
+        description: "Service addresses and sites belonging to the account.",
+        href: "/customers",
+      },
+      {
+        id: "history",
+        label: "History",
+        description: "Repair orders and service history for the account.",
+        href: "/repair-orders",
+      },
+    ],
   },
   {
     id: "equipment",
@@ -131,11 +168,32 @@ const DASHBOARD_TILE_DEFINITIONS: DashboardTileDefinition[] = [
     description:
       "Customer-owned equipment records, model and serial data, location assignment, service history, and inspection readiness.",
     quickAction: { label: "Add Equipment", href: "/equipment" },
-    /*
-     * Equipment is recorded against the customer it belongs to, in the
-     * same flow. Browsing to it to add one is the long way round.
-     */
-    subcategories: [],
+    subcategories: [
+      {
+        id: "assets",
+        label: "Assets",
+        description: "Customer-owned equipment records.",
+        href: "/equipment",
+      },
+      {
+        id: "model-serial",
+        label: "Model / Serial",
+        description: "Model numbers, serial numbers, and manufacturer data.",
+        href: "/equipment",
+      },
+      {
+        id: "locations",
+        label: "Locations",
+        description: "Where each unit is assigned or currently sits.",
+        href: "/equipment",
+      },
+      {
+        id: "service-history",
+        label: "Service History",
+        description: "Repair orders recorded against the equipment.",
+        href: "/repair-orders",
+      },
+    ],
   },
   {
     id: "repair-orders",
@@ -325,7 +383,7 @@ const DASHBOARD_TILE_DEFINITIONS: DashboardTileDefinition[] = [
   },
   {
     id: "purchase-orders",
-    label: "Purchase Orders",
+    label: "Purchase/Payment Orders",
     metricKey: "purchaseOrders",
     href: "/purchase-orders",
     accentClass: "bg-amber-500",
@@ -1055,6 +1113,20 @@ export default function DashboardPage() {
       createDefaultSelectedSubcategories()
     );
 
+  /*
+   * The saved selection, readable from a handler that outlived the render
+   * it was written in.
+   *
+   * The Edit Tile Subcategories button now lives in the shared header, and
+   * the header only re-publishes its buttons when the page says they
+   * changed. That means the button on screen is the one built on the first
+   * render, and anything it read straight from state would be frozen at
+   * whatever state held back then — so the editor would open showing the
+   * defaults instead of the current choices. A ref is always current.
+   */
+  const savedSubcategoriesRef = useRef(savedSubcategories);
+  savedSubcategoriesRef.current = savedSubcategories;
+
   const [draftSubcategories, setDraftSubcategories] =
     useState<SelectedSubcategoryMap>(() =>
       createDefaultSelectedSubcategories()
@@ -1279,10 +1351,73 @@ export default function DashboardPage() {
   }
 
   function openSubcategoryChooser() {
-    setDraftSubcategories(savedSubcategories);
+    setDraftSubcategories(savedSubcategoriesRef.current);
     setSubcategoryMessage("");
     setIsSubcategoryChooserOpen(true);
   }
+
+  /*
+   * This page's text and its three controls now live in the shared header
+   * tile, so there is one bar on screen instead of a page header stacked
+   * under the app header.
+   *
+   * It is published here rather than at the top of the component because
+   * the buttons call openPickerUnder and openSubcategoryChooser, and a
+   * const or function has to be declared before the line that reads it.
+   *
+   * The buttons keep their original Q-Bit ids and classes: any colour,
+   * size or position Joe has already set on them is stored against those
+   * ids and follows them into the header untouched.
+   */
+  usePageHeader(
+    {
+      ...DASHBOARD_HEADER,
+      actions: (
+        <>
+          <button
+            data-t1eq-action-button="true"
+            data-t1eq-qbit-type="action-button"
+            data-t1eq-qbit-id="dashboard-add-command-tile-button"
+            data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+            type="button"
+            onClick={(event) => openPickerUnder(commandCanvasRef, event)}
+            className="rounded-2xl border border-slate-600 bg-slate-800 px-4 py-3 text-xs font-black uppercase tracking-wide text-white transition hover:border-orange-300"
+          >
+            + Add Tile/Report
+          </button>
+
+          <Link
+            data-t1eq-action-button="true"
+            data-t1eq-qbit-type="action-button"
+            data-t1eq-qbit-id="dashboard-reports-configure"
+            data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+            href="/settings/operational-dashboard-charts"
+            className="inline-flex items-center justify-center rounded-2xl border border-slate-600 bg-slate-800 px-4 py-3 text-xs font-black uppercase tracking-wide text-white transition hover:border-orange-300"
+          >
+            Configure Reports
+          </Link>
+
+          <button
+            data-t1eq-action-button="true"
+            data-t1eq-accent-button="true"
+            data-t1eq-qbit-type="action-button"
+            data-t1eq-qbit-id="dashboard-edit-subcategories-button"
+            data-t1eq-qbit-scope={DASHBOARD_SCOPE}
+            type="button"
+            onClick={openSubcategoryChooser}
+            className="rounded-2xl border px-4 py-3 text-xs font-black uppercase tracking-wide transition"
+          >
+            Edit Tile Subcategories
+          </button>
+        </>
+      ),
+    },
+    /*
+     * The buttons themselves never change, so nothing after the first
+     * publish needs re-sending. A constant key says exactly that.
+     */
+    "dashboard-actions"
+  );
 
   const dashboardTiles = useMemo(
     () =>
@@ -1354,6 +1489,16 @@ export default function DashboardPage() {
     handleRemoveCommandTile(tileId);
   }
 
+  /** The exact reverse of the above, for the undo bar. */
+  function handleRestoreDashboardTile(tileId: string) {
+    if (tileId.startsWith(REPORT_TILE_PREFIX)) {
+      handleAddReportTile(tileId.slice(REPORT_TILE_PREFIX.length));
+      return;
+    }
+
+    setCommandTileLayout(showDashboardTile("commandTiles", tileId));
+  }
+
   const hasCommandTileLayout =
     commandTileLayout.order.length > 0 ||
     commandTileLayout.hidden.length > 0;
@@ -1417,58 +1562,6 @@ export default function DashboardPage() {
         data-t1eq-qbit-scope={DASHBOARD_SCOPE}
         className="mx-auto max-w-7xl space-y-8 overflow-visible"
       >
-        <section
-          data-t1eq-tile="true"
-          data-t1eq-tile-id="operations-dashboard-card"
-          data-t1eq-qbit-type="tile"
-          data-t1eq-qbit-id="dashboard-operations-hero"
-          data-t1eq-qbit-scope={DASHBOARD_SCOPE}
-          aria-label="Operations Dashboard. Main dashboard overview card."
-          className="group relative z-0 min-h-[250px] overflow-visible rounded-[32px] border border-slate-700 bg-slate-900 p-8 text-white shadow-2xl shadow-black/40 outline-none transition hover:z-50 hover:border-orange-300 focus-visible:z-50 focus-visible:border-orange-300"
-        >
-          <div
-            data-t1eq-qbit-type="section"
-            data-t1eq-qbit-id="dashboard-operations-hero-overlay"
-            data-t1eq-qbit-scope={DASHBOARD_SCOPE}
-            className="pointer-events-none absolute inset-y-0 left-0 z-[5] w-[58%] rounded-l-[32px] bg-gradient-to-r from-black/45 via-black/25 to-transparent"
-          />
-
-          <div
-            data-t1eq-qbit-type="section"
-            data-t1eq-qbit-id="dashboard-operations-hero-content"
-            data-t1eq-qbit-scope={DASHBOARD_SCOPE}
-            className="relative z-10 max-w-3xl"
-          >
-            <p
-              data-t1eq-qbit-type="text"
-              data-t1eq-qbit-id="dashboard-company-label"
-              data-t1eq-qbit-scope={DASHBOARD_SCOPE}
-              className="text-xs font-black uppercase tracking-[0.28em] text-orange-300"
-            >
-              Tier One Equipment
-            </p>
-
-            <h1
-              data-t1eq-qbit-type="text"
-              data-t1eq-qbit-id="dashboard-title"
-              data-t1eq-qbit-scope={DASHBOARD_SCOPE}
-              className="mt-3 text-4xl font-black tracking-tight text-white"
-            >
-              Operations Dashboard
-            </h1>
-
-            <p
-              data-t1eq-qbit-type="text"
-              data-t1eq-qbit-id="dashboard-description"
-              data-t1eq-qbit-scope={DASHBOARD_SCOPE}
-              className="mt-3 text-sm font-semibold leading-6 text-slate-300"
-            >
-              Manage customers, optional multi-site locations, equipment,
-              repair orders, inventory, truck stock, purchase orders, invoices,
-              and field operations.
-            </p>
-          </div>
-        </section>
 
         {isSubcategoryChooserOpen && (
           <section
@@ -1642,45 +1735,13 @@ export default function DashboardPage() {
                 </p>
               )}
 
-              <div className="flex flex-wrap gap-2">
-                <button
-                  data-t1eq-action-button="true"
-                  data-t1eq-qbit-type="action-button"
-                  data-t1eq-qbit-id="dashboard-add-command-tile-button"
-                  data-t1eq-qbit-scope={DASHBOARD_SCOPE}
-                  type="button"
-                  onClick={(event) =>
-                    openPickerUnder(commandCanvasRef, event)
-                  }
-                  className="rounded-2xl border border-slate-600 bg-slate-800 px-4 py-3 text-xs font-black uppercase tracking-wide text-white transition hover:border-orange-300"
-                >
-                  + Add Tile/Report
-                </button>
-
-                <Link
-                  data-t1eq-action-button="true"
-                  data-t1eq-qbit-type="action-button"
-                  data-t1eq-qbit-id="dashboard-reports-configure"
-                  data-t1eq-qbit-scope={DASHBOARD_SCOPE}
-                  href="/settings/operational-dashboard-charts"
-                  className="rounded-2xl border border-slate-600 bg-slate-800 px-4 py-3 text-xs font-black uppercase tracking-wide text-white transition hover:border-orange-300"
-                >
-                  Configure Reports
-                </Link>
-
-                <button
-                  data-t1eq-action-button="true"
-                  data-t1eq-accent-button="true"
-                  data-t1eq-qbit-type="action-button"
-                  data-t1eq-qbit-id="dashboard-edit-subcategories-button"
-                  data-t1eq-qbit-scope={DASHBOARD_SCOPE}
-                  type="button"
-                  onClick={openSubcategoryChooser}
-                  className="rounded-2xl border px-4 py-3 text-xs font-black uppercase tracking-wide transition"
-                >
-                  Edit Tile Subcategories
-                </button>
-              </div>
+              {/*
+                Add Tile/Report, Configure Reports and Edit Tile
+                Subcategories used to sit here. They are published into
+                the floating header instead, so they stay reachable no
+                matter how far down the canvas is scrolled — which is
+                exactly when a tile most often needs adding.
+              */}
 
               <p className="hidden text-xs font-bold uppercase tracking-[0.18em] text-slate-400 sm:block">
                 Drag to arrange · corner to resize · trash to remove
@@ -1697,6 +1758,7 @@ export default function DashboardPage() {
               ...arrangedCommandTiles.visible.map(
                 ({ tile, value, selectedSubcategories }) => ({
                   id: tile.id,
+                  label: tile.label,
                   defaultColumnSpan: 4,
                   defaultRowSpan: 11,
                   content: (
@@ -1719,6 +1781,7 @@ export default function DashboardPage() {
                */
               ...chartDefinitions.map((definition) => ({
                 id: `${REPORT_TILE_PREFIX}${definition.chart.id}`,
+                label: definition.chart.title,
                 defaultColumnSpan:
                   definition.chart.size === "Large"
                     ? 12
@@ -1743,6 +1806,7 @@ export default function DashboardPage() {
               })),
             ]}
             onRemove={handleRemoveDashboardTile}
+            onRestore={handleRestoreDashboardTile}
             menuItems={commandTilePickerItems}
             emptyState={
               <div

@@ -8,6 +8,9 @@ import AppearanceEditor from "@/components/appearance/AppearanceEditor";
 import AppearanceThemeClient from "@/components/appearance/AppearanceThemeClient";
 import CategorySubnavigation from "@/components/navigation/CategorySubnavigation";
 import SidebarNav from "@/app/components/layout/SidebarNav";
+import BusinessNameLabel from "@/components/layout/BusinessNameLabel";
+import StorageFullBanner from "@/components/layout/StorageFullBanner";
+import { PageHeaderProvider } from "@/components/navigation/page-header-slot";
 import AuthGate from "@/components/auth/AuthGate";
 import CurrentUserBadge from "@/components/auth/CurrentUserBadge";
 
@@ -28,6 +31,7 @@ export default function RootLayout({
         <AppearanceThemeClient />
 
         <AuthGate>
+        <PageHeaderProvider>
         <div
           data-t1eq-qbit-type="section"
           data-t1eq-qbit-id="app-shell"
@@ -66,14 +70,12 @@ export default function RootLayout({
                 </span>
               </div>
 
-              <div
-                data-t1eq-qbit-type="text"
-                data-t1eq-qbit-id="sidebar-company-name"
-                data-t1eq-qbit-scope="global"
+              <BusinessNameLabel
+                qbitId="sidebar-company-name"
+                qbitScope="global"
                 className="mt-3 text-lg font-bold"
-              >
-                Tier One Equipment
-              </div>
+                fallback="Tier One Equipment"
+              />
 
               <div
                 data-t1eq-qbit-type="text"
@@ -131,11 +133,40 @@ export default function RootLayout({
               </Link>
             </header>
 
-            <div
-              data-t1eq-qbit-type="section"
-              data-t1eq-qbit-id="category-subnavigation-container"
-              data-t1eq-qbit-scope="global"
-            >
+            {/*
+              * The header tile floats as the page scrolls.
+              *
+              * Two things have to be true, and each one has already been
+              * got wrong once.
+              *
+              * The sticky cannot live on the card itself: a sticky element
+              * only travels inside its own parent's box, and the card's
+              * parent is no taller than the card. It belongs on a wrapper
+              * whose parent is the content column, which runs the full
+              * height of the page.
+              *
+              * And the sticky element must be one Q-Bit cannot select.
+              * Q-Bit writes `position: relative !important` on anything
+              * that has been moved, which overrules `sticky` outright —
+              * so a single nudge on this wrapper was enough to ground the
+              * header permanently. Q-Bit only ever targets elements
+              * carrying both data-t1eq-qbit-id and data-t1eq-qbit-type,
+              * so this wrapper carries neither and is out of reach.
+              *
+              * There used to be a second, editable div in here —
+              * "category-subnavigation-container" — sitting directly
+              * behind the header card. It is gone. It was never visible:
+              * the card covers it exactly and paints over it, so every
+              * background and border set on it was applied faithfully to
+              * something nobody could ever see. That is what was
+              * swallowing header edits, and an element that can only
+              * absorb work is worth less than no element at all.
+              *
+              * z-30 sits above page content but below the Q-Bit editor
+              * and the arrangement trash, so neither gets covered while
+              * the bar is being edited.
+              */}
+            <div className="sticky top-0 z-30">
               <CategorySubnavigation />
             </div>
 
@@ -150,9 +181,12 @@ export default function RootLayout({
             </main>
           </div>
         </div>
+        </PageHeaderProvider>
         </AuthGate>
 
         <AppearanceEditor />
+
+        <StorageFullBanner />
       </body>
     </html>
   );

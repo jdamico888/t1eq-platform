@@ -1,6 +1,8 @@
 "use client";
 
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
+
+import { usePageHeader } from "@/components/navigation/page-header-slot";
 
 import type {
   AdvertisingBlock,
@@ -36,9 +38,9 @@ import {
   tileSizeOptions,
 } from "@/services/appearance-settings";
 
+import { downscaleImageFile } from "@/lib/storage";
+
 const pageClass = "min-h-screen bg-zinc-100 p-6 text-black";
-const headerClass =
-  "mb-6 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm";
 const sectionClass =
   "rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm";
 const labelClass = "text-sm font-black uppercase tracking-wide text-zinc-500";
@@ -55,26 +57,6 @@ const secondaryButtonClass =
 const dangerButtonClass =
   "rounded-xl border border-red-300 bg-red-50 px-5 py-3 text-sm font-black text-red-700 shadow-sm transition hover:bg-red-100";
 
-function readFileAsDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      if (typeof reader.result === "string") {
-        resolve(reader.result);
-        return;
-      }
-
-      reject(new Error("Unable to read uploaded image."));
-    };
-
-    reader.onerror = () => {
-      reject(new Error("Unable to read uploaded image."));
-    };
-
-    reader.readAsDataURL(file);
-  });
-}
 
 function createId(prefix: string) {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -135,6 +117,19 @@ function getTemplateAllowedAdvertisingPlacements(
 
 const QBIT_SCOPE = "appearance-settings";
 
+/*
+ * This page used to draw its own header card directly under the shared
+ * header bar, so the screen carried two. The text and its buttons are
+ * published upward now, and there is one.
+ */
+const APPEARANCE_HEADER = {
+  overline: "Settings",
+  title: "Appearance",
+  description:
+    "Control the app appearance, Q-Bit page scopes, invoice/work order " +
+    "output templates, and reusable advertising blocks.",
+};
+
 function getOutputTemplateDescription(scope: QBitOutputScope) {
   switch (scope) {
     case "Printable Invoice":
@@ -155,6 +150,15 @@ export default function AppearanceSettingsPage() {
     defaultAppearanceSettings
   );
   const [statusMessage, setStatusMessage] = useState("");
+
+  /*
+   * The header publishes its buttons once, so the Save button's closure
+   * would otherwise keep the settings from the very first render — the
+   * defaults, saved over whatever the user had. It reads the live draft
+   * through this ref instead.
+   */
+  const settingsRef = useRef(settings);
+  settingsRef.current = settings;
 
   useEffect(() => {
     setSettings(getAppearanceSettings());
@@ -272,7 +276,7 @@ export default function AppearanceSettingsPage() {
     }
 
     try {
-      const logoUrl = await readFileAsDataUrl(file);
+      const logoUrl = await downscaleImageFile(file);
 
       updateDraft({
         logoUrl,
@@ -306,7 +310,7 @@ export default function AppearanceSettingsPage() {
     }
 
     try {
-      const imageUrl = await readFileAsDataUrl(file);
+      const imageUrl = await downscaleImageFile(file, 1024);
 
       updateAdvertisingBlock(blockId, {
         imageUrl,
@@ -319,7 +323,7 @@ export default function AppearanceSettingsPage() {
   }
 
   function handleSave() {
-    const updatedSettings = saveAppearanceSettings(settings);
+    const updatedSettings = saveAppearanceSettings(settingsRef.current);
 
     setSettings(updatedSettings);
     setStatusMessage("Appearance and output settings saved.");
@@ -342,54 +346,50 @@ export default function AppearanceSettingsPage() {
     setStatusMessage("Logo removed.");
   }
 
+  /*
+   * Declared here, below every handler the buttons call, because a `const`
+   * is not hoisted and the hook reads them as it runs.
+   *
+   * The buttons hold no page state of their own, so nothing needs to go in
+   * actionsKey: Save reads the draft through settingsRef, and Reset takes
+   * no input at all.
+   */
+  usePageHeader({
+    ...APPEARANCE_HEADER,
+    actions: (
+      <>
+        <button data-t1eq-action-button="true"
+          type="button"
+          onClick={handleSave}
+          data-t1eq-qbit-id="appearance-settings-save"
+          data-t1eq-qbit-type="action-button"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className={primaryButtonClass}
+        >
+          Save Appearance
+        </button>
+
+        <button data-t1eq-action-button="true"
+          type="button"
+          onClick={handleReset}
+          data-t1eq-qbit-id="appearance-settings-reset"
+          data-t1eq-qbit-type="action-button"
+          data-t1eq-qbit-scope={QBIT_SCOPE}
+          className={dangerButtonClass}
+        >
+          Reset
+        </button>
+      </>
+    ),
+  });
+
   return (
     <div className={pageClass}>
-      <header data-t1eq-page-card="true" data-t1eq-qbit-id="appearance-settings-header" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className={headerClass}>
-        <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
-          <div>
-            <p data-t1eq-qbit-id="appearance-settings-overline" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="text-sm font-black uppercase tracking-wide text-zinc-500">
-              Settings
-            </p>
-            <h1 data-t1eq-qbit-id="appearance-settings-title" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 text-4xl font-black text-black">
-              Appearance
-            </h1>
-            <p data-t1eq-qbit-id="appearance-settings-description" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-2 max-w-4xl text-base font-semibold text-zinc-600">
-              Control the app appearance, Q-Bit page scopes, invoice/work order
-              output templates, and reusable advertising blocks.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap gap-3">
-            <button data-t1eq-action-button="true"
-              type="button"
-              onClick={handleSave}
-              data-t1eq-qbit-id="appearance-settings-save"
-              data-t1eq-qbit-type="action-button"
-              data-t1eq-qbit-scope={QBIT_SCOPE}
-              className={primaryButtonClass}
-            >
-              Save Appearance
-            </button>
-
-            <button data-t1eq-action-button="true"
-              type="button"
-              onClick={handleReset}
-              data-t1eq-qbit-id="appearance-settings-reset"
-              data-t1eq-qbit-type="action-button"
-              data-t1eq-qbit-scope={QBIT_SCOPE}
-              className={dangerButtonClass}
-            >
-              Reset
-            </button>
-          </div>
+      {statusMessage && (
+        <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="appearance-settings-status-message" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-4 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-bold text-green-800">
+          {statusMessage}
         </div>
-
-        {statusMessage && (
-          <div data-t1eq-tile="true" data-t1eq-page-card="true" data-t1eq-qbit-id="appearance-settings-status-message" data-t1eq-qbit-type="text" data-t1eq-qbit-scope={QBIT_SCOPE} className="mt-4 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-bold text-green-800">
-            {statusMessage}
-          </div>
-        )}
-      </header>
+      )}
 
       <div className="grid gap-6 xl:grid-cols-[1fr_420px]">
         <section data-t1eq-page-card="true" data-t1eq-qbit-id="appearance-settings-logo" data-t1eq-qbit-type="page-card" data-t1eq-qbit-scope={QBIT_SCOPE} className={sectionClass}>

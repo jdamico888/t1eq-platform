@@ -20,6 +20,8 @@ import type {
   TileSize,
 } from "@/types/appearance-settings";
 
+import { safeSetJson } from "@/lib/storage";
+
 const STORAGE_KEY = "t1eq-appearance-settings";
 
 export const qBitPageScopes: QBitPageScope[] = [
@@ -728,7 +730,7 @@ export function saveAppearanceSettings(
   };
 
   if (typeof window !== "undefined") {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedSettings));
+    safeSetJson(STORAGE_KEY, updatedSettings);
     dispatchAppearanceChange();
   }
 
@@ -742,7 +744,7 @@ export function resetAppearanceSettings(): AppearanceSettings {
   };
 
   if (typeof window !== "undefined") {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(resetSettings));
+    safeSetJson(STORAGE_KEY, resetSettings);
     dispatchAppearanceChange();
   }
 

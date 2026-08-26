@@ -1,6 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+
+import {
+  getBusinessDisplayName,
+  getBusinessProfile,
+} from "@/services/business-profile";
 
 import type { AppSettings } from "@/services/app-settings";
 import {
@@ -16,6 +22,8 @@ import {
   validateMarkupTiers,
 } from "@/services/pricing";
 
+import { usePageHeader } from "@/components/navigation/page-header-slot";
+
 type AppearanceSettings = {
   themeName: string;
   accentColor: string;
@@ -27,17 +35,16 @@ type AppearanceSettings = {
   shadowDepth: string;
 };
 
-type BrandSettings = {
-  companyName: string;
-  logoDataUrl: string;
-  logoFileName: string;
-  updatedDate: string;
-};
-
 const QBIT_SCOPE = "settings-page";
 
-const BRAND_STORAGE_KEY = "t1eq-brand-settings";
 const APPEARANCE_STORAGE_KEY = "t1eq-appearance-settings";
+
+const SETTINGS_HEADER = {
+  overline: "Tier One Equipment",
+  title: "Settings",
+  description:
+    "Manage the application logo and appearance settings. Changes are saved locally and applied immediately.",
+};
 
 const DEFAULT_APPEARANCE: AppearanceSettings = {
   themeName: "Tier One Command",
@@ -49,34 +56,6 @@ const DEFAULT_APPEARANCE: AppearanceSettings = {
   glassOpacity: "0.72",
   shadowDepth: "0 24px 80px rgba(0, 0, 0, 0.38)",
 };
-
-const DEFAULT_BRAND: BrandSettings = {
-  companyName: "Tier One Equipment",
-  logoDataUrl: "",
-  logoFileName: "",
-  updatedDate: "",
-};
-
-function readStoredBrandSettings(): BrandSettings {
-  if (typeof window === "undefined") {
-    return DEFAULT_BRAND;
-  }
-
-  try {
-    const storedValue = localStorage.getItem(BRAND_STORAGE_KEY);
-
-    if (!storedValue) {
-      return DEFAULT_BRAND;
-    }
-
-    return {
-      ...DEFAULT_BRAND,
-      ...(JSON.parse(storedValue) as Partial<BrandSettings>),
-    };
-  } catch {
-    return DEFAULT_BRAND;
-  }
-}
 
 function readStoredAppearanceSettings(): AppearanceSettings {
   if (typeof window === "undefined") {
@@ -117,16 +96,6 @@ function applyAppearanceSettings(settings: AppearanceSettings) {
   root.dataset.t1eqTheme = settings.themeName;
 }
 
-function saveBrandSettings(settings: BrandSettings) {
-  localStorage.setItem(BRAND_STORAGE_KEY, JSON.stringify(settings));
-
-  window.dispatchEvent(
-    new CustomEvent("t1eq-brand-settings-changed", {
-      detail: settings,
-    })
-  );
-}
-
 function saveAppearanceSettings(settings: AppearanceSettings) {
   localStorage.setItem(APPEARANCE_STORAGE_KEY, JSON.stringify(settings));
 
@@ -147,32 +116,16 @@ function saveAppearanceSettings(settings: AppearanceSettings) {
   );
 }
 
-function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      if (typeof reader.result === "string") {
-        resolve(reader.result);
-        return;
-      }
-
-      reject(new Error("Unable to read selected logo file."));
-    };
-
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
-  });
-}
-
 export default function SettingsPage() {
-  const [brandSettings, setBrandSettings] = useState<BrandSettings>(
-    DEFAULT_BRAND
-  );
+  usePageHeader(SETTINGS_HEADER);
+
+  /*
+   * Just the name, for the preview below. The record itself is edited on
+   * Business Setup — this page only shows what it is called.
+   */
+  const [businessName, setBusinessName] = useState("");
   const [appearanceSettings, setAppearanceSettings] =
     useState<AppearanceSettings>(DEFAULT_APPEARANCE);
-  const [selectedLogoFileName, setSelectedLogoFileName] = useState("");
-  const [selectedLogoDataUrl, setSelectedLogoDataUrl] = useState("");
   const [saveMessage, setSaveMessage] = useState("");
 
   const [appSettings, setAppSettings] = useState<AppSettings>(
@@ -180,50 +133,14 @@ export default function SettingsPage() {
   );
 
   useEffect(() => {
-    const storedBrandSettings = readStoredBrandSettings();
     const storedAppearanceSettings = readStoredAppearanceSettings();
 
-    setBrandSettings(storedBrandSettings);
     setAppearanceSettings(storedAppearanceSettings);
     setAppSettings(getAppSettings());
-    setSelectedLogoDataUrl(storedBrandSettings.logoDataUrl);
-    setSelectedLogoFileName(storedBrandSettings.logoFileName);
+    setBusinessName(getBusinessDisplayName(getBusinessProfile()));
 
     applyAppearanceSettings(storedAppearanceSettings);
   }, []);
-
-  const logoPreview = useMemo(() => {
-    return selectedLogoDataUrl || brandSettings.logoDataUrl;
-  }, [selectedLogoDataUrl, brandSettings.logoDataUrl]);
-
-  async function handleLogoFileChange(
-    event: React.ChangeEvent<HTMLInputElement>
-  ) {
-    const file = event.target.files?.[0];
-
-    if (!file) {
-      return;
-    }
-
-    const dataUrl = await fileToDataUrl(file);
-
-    setSelectedLogoDataUrl(dataUrl);
-    setSelectedLogoFileName(file.name);
-    setSaveMessage("");
-  }
-
-  function handleSaveLogo() {
-    const nextBrandSettings: BrandSettings = {
-      ...brandSettings,
-      logoDataUrl: selectedLogoDataUrl,
-      logoFileName: selectedLogoFileName,
-      updatedDate: new Date().toISOString(),
-    };
-
-    setBrandSettings(nextBrandSettings);
-    saveBrandSettings(nextBrandSettings);
-    setSaveMessage("Logo saved.");
-  }
 
   function handleSaveAppearance() {
     saveAppearanceSettings(appearanceSettings);
@@ -338,47 +255,15 @@ export default function SettingsPage() {
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-8 text-slate-50">
       <div className="mx-auto max-w-6xl space-y-8">
-        <header data-t1eq-tile="true" data-t1eq-page-card="true"
-          data-t1eq-qbit-type="page-card"
-          data-t1eq-qbit-id="settings-page-header"
-          data-t1eq-qbit-scope={QBIT_SCOPE}
-          className="rounded-[28px] border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur">
-          <p
+        {saveMessage && (
+          <div data-t1eq-tile="true" data-t1eq-page-card="true"
             data-t1eq-qbit-type="text"
-            data-t1eq-qbit-id="settings-page-overline"
+            data-t1eq-qbit-id="settings-page-save-message"
             data-t1eq-qbit-scope={QBIT_SCOPE}
-            className="text-xs font-black uppercase tracking-[0.28em] text-orange-300"
-          >
-            Tier One Equipment
-          </p>
-          <h1
-            data-t1eq-qbit-type="text"
-            data-t1eq-qbit-id="settings-page-title"
-            data-t1eq-qbit-scope={QBIT_SCOPE}
-            className="mt-2 text-3xl font-black tracking-tight"
-          >
-            Settings
-          </h1>
-          <p
-            data-t1eq-qbit-type="text"
-            data-t1eq-qbit-id="settings-page-description"
-            data-t1eq-qbit-scope={QBIT_SCOPE}
-            className="mt-2 max-w-3xl text-sm font-medium text-slate-300"
-          >
-            Manage the application logo and appearance settings. Changes are
-            saved locally and applied immediately.
-          </p>
-
-          {saveMessage && (
-            <div data-t1eq-tile="true" data-t1eq-page-card="true"
-              data-t1eq-qbit-type="text"
-              data-t1eq-qbit-id="settings-page-save-message"
-              data-t1eq-qbit-scope={QBIT_SCOPE}
-              className="mt-4 rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm font-black text-emerald-200">
-              {saveMessage}
-            </div>
-          )}
-        </header>
+            className="mt-4 rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm font-black text-emerald-200">
+            {saveMessage}
+          </div>
+        )}
 
         <section data-t1eq-tile="true" data-t1eq-page-card="true"
           data-t1eq-qbit-type="page-card"
@@ -904,6 +789,207 @@ export default function SettingsPage() {
             </div>
           </div>
 
+          {/*
+            Turn categories.
+
+            A turn is the stocking quantity selling through once: shelf set
+            to 4, twelve went out, three turns. Each tier is set in the
+            unit a shop naturally uses for parts at that speed, which is
+            why the three boxes are not in the same unit — they are all
+            checked against the same underlying rate.
+          */}
+          <div className="mt-6">
+            <p
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="settings-page-turn-heading"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="text-xs font-black uppercase tracking-wide text-slate-400"
+            >
+              Turn Categories For Stocked Parts
+            </p>
+
+            <p
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="settings-page-turn-explainer"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-2 max-w-3xl text-xs font-semibold text-slate-400"
+            >
+              One turn is the stocking quantity selling through once — a
+              part set to stock 4 that sold 12 turned 3 times. Measured
+              against Ideal Stock, so a part is judged against how deep its
+              shelf is meant to be rather than what happens to be on it
+              today. A part that clears none of these bars is reported as
+              not turning.
+            </p>
+
+            <div className="mt-4 grid gap-5 md:grid-cols-3">
+              <label className="block">
+                <span
+                  data-t1eq-qbit-type="text"
+                  data-t1eq-qbit-id="settings-page-turn-fast-label"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
+                  className="text-xs font-black uppercase tracking-wide text-emerald-300"
+                >
+                  Fast Turn — Turns Per Week
+                </span>
+
+                <input data-t1eq-field="true"
+                  data-t1eq-qbit-type="field"
+                  data-t1eq-qbit-id="settings-page-turn-fast"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
+                  type="number"
+                  min="0"
+                  step="0.25"
+                  value={appSettings.turnFastPerWeek}
+                  onChange={(event) =>
+                    updateBusinessSetting(
+                      "turnFastPerWeek",
+                      Number(event.target.value)
+                    )
+                  }
+                  className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm font-bold text-white outline-none focus:border-orange-400"
+                />
+
+                <span className="mt-2 block text-xs font-semibold text-slate-400">
+                  Sells through its shelf this often each week.
+                </span>
+              </label>
+
+              <label className="block">
+                <span
+                  data-t1eq-qbit-type="text"
+                  data-t1eq-qbit-id="settings-page-turn-medium-label"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
+                  className="text-xs font-black uppercase tracking-wide text-sky-300"
+                >
+                  Medium Turn — Turns Per Month
+                </span>
+
+                <input data-t1eq-field="true"
+                  data-t1eq-qbit-type="field"
+                  data-t1eq-qbit-id="settings-page-turn-medium"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
+                  type="number"
+                  min="0"
+                  step="0.25"
+                  value={appSettings.turnMediumPerMonth}
+                  onChange={(event) =>
+                    updateBusinessSetting(
+                      "turnMediumPerMonth",
+                      Number(event.target.value)
+                    )
+                  }
+                  className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm font-bold text-white outline-none focus:border-orange-400"
+                />
+
+                <span className="mt-2 block text-xs font-semibold text-slate-400">
+                  Anything below the weekly bar that clears this.
+                </span>
+              </label>
+
+              <label className="block">
+                <span
+                  data-t1eq-qbit-type="text"
+                  data-t1eq-qbit-id="settings-page-turn-slow-label"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
+                  className="text-xs font-black uppercase tracking-wide text-amber-300"
+                >
+                  Slow Turn — Turns Per Year
+                </span>
+
+                <input data-t1eq-field="true"
+                  data-t1eq-qbit-type="field"
+                  data-t1eq-qbit-id="settings-page-turn-slow"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
+                  type="number"
+                  min="0"
+                  step="0.25"
+                  value={appSettings.turnSlowPerYear}
+                  onChange={(event) =>
+                    updateBusinessSetting(
+                      "turnSlowPerYear",
+                      Number(event.target.value)
+                    )
+                  }
+                  className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm font-bold text-white outline-none focus:border-orange-400"
+                />
+
+                <span className="mt-2 block text-xs font-semibold text-slate-400">
+                  Below this, the part is not turning at all.
+                </span>
+              </label>
+            </div>
+
+            <div className="mt-5 grid gap-5 md:grid-cols-2">
+              <label className="block">
+                <span
+                  data-t1eq-qbit-type="text"
+                  data-t1eq-qbit-id="settings-page-turn-fast-sales-label"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
+                  className="text-xs font-black uppercase tracking-wide text-slate-400"
+                >
+                  Fast Turn Also Needs — Sales Per Month
+                </span>
+
+                <input data-t1eq-field="true"
+                  data-t1eq-qbit-type="field"
+                  data-t1eq-qbit-id="settings-page-turn-fast-sales"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={appSettings.turnFastMinSalesPerMonth}
+                  onChange={(event) =>
+                    updateBusinessSetting(
+                      "turnFastMinSalesPerMonth",
+                      Number(event.target.value)
+                    )
+                  }
+                  className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm font-bold text-white outline-none focus:border-orange-400"
+                />
+
+                <span className="mt-2 block text-xs font-semibold text-slate-400">
+                  A part stocked one deep turns every time it sells. This
+                  is the volume floor under Fast. Set 0 to judge on turns
+                  alone.
+                </span>
+              </label>
+
+              <label className="block">
+                <span
+                  data-t1eq-qbit-type="text"
+                  data-t1eq-qbit-id="settings-page-turn-lookback-label"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
+                  className="text-xs font-black uppercase tracking-wide text-slate-400"
+                >
+                  Measured Over — Days
+                </span>
+
+                <input data-t1eq-field="true"
+                  data-t1eq-qbit-type="field"
+                  data-t1eq-qbit-id="settings-page-turn-lookback"
+                  data-t1eq-qbit-scope={QBIT_SCOPE}
+                  type="number"
+                  min="30"
+                  step="1"
+                  value={appSettings.turnLookbackDays}
+                  onChange={(event) =>
+                    updateBusinessSetting(
+                      "turnLookbackDays",
+                      Number(event.target.value)
+                    )
+                  }
+                  className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm font-bold text-white outline-none focus:border-orange-400"
+                />
+
+                <span className="mt-2 block text-xs font-semibold text-slate-400">
+                  A part newer than this is measured over its own age
+                  instead, and its rate is marked as an estimate.
+                </span>
+              </label>
+            </div>
+          </div>
+
           <div className="mt-6">
             <p
               data-t1eq-qbit-type="text"
@@ -1058,111 +1144,44 @@ export default function SettingsPage() {
                 data-t1eq-qbit-scope={QBIT_SCOPE}
                 className="mt-2 text-2xl font-black"
               >
-                Logo
+                Company Name &amp; Logo
               </h2>
             </div>
 
-            <div className="space-y-5">
-              <label className="block">
-                <span
-                  data-t1eq-qbit-type="text"
-                  data-t1eq-qbit-id="settings-page-company-name-label"
-                  data-t1eq-qbit-scope={QBIT_SCOPE}
-                  className="text-xs font-black uppercase tracking-wide text-slate-400"
-                >
-                  Company Name
-                </span>
-                <input data-t1eq-field="true"
-                  data-t1eq-qbit-type="field"
-                  data-t1eq-qbit-id="settings-page-company-name"
-                  data-t1eq-qbit-scope={QBIT_SCOPE}
-                  value={brandSettings.companyName}
-                  onChange={(event) =>
-                    setBrandSettings((current) => ({
-                      ...current,
-                      companyName: event.target.value,
-                    }))
-                  }
-                  className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm font-bold text-white outline-none focus:border-orange-400"
-                />
-              </label>
+            <p
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="settings-page-branding-moved"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="text-sm font-medium text-slate-300"
+            >
+              These moved to Business Setup, along with the rest of the
+              company&rsquo;s own details — address, phone numbers, FEIN,
+              owner. The name and logo belong with them rather than sitting
+              on their own.
+            </p>
 
-              <label className="block">
-                <span
-                  data-t1eq-qbit-type="text"
-                  data-t1eq-qbit-id="settings-page-logo-upload-label"
-                  data-t1eq-qbit-scope={QBIT_SCOPE}
-                  className="text-xs font-black uppercase tracking-wide text-slate-400"
-                >
-                  Upload Logo
-                </span>
-                <input data-t1eq-field="true"
-                  data-t1eq-qbit-type="field"
-                  data-t1eq-qbit-id="settings-page-logo-upload"
-                  data-t1eq-qbit-scope={QBIT_SCOPE}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleLogoFileChange}
-                  className="mt-2 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm font-bold text-white file:mr-4 file:rounded-xl file:border-0 file:bg-orange-500 file:px-4 file:py-2 file:text-sm file:font-black file:text-white"
-                />
-              </label>
+            <p
+              data-t1eq-qbit-type="text"
+              data-t1eq-qbit-id="settings-page-branding-moved-note"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              className="mt-3 text-xs font-medium text-slate-500"
+            >
+              The logo control here never worked: it saved to a store
+              nothing read, so uploading one changed nothing on screen. The
+              one on Business Setup edits the logo the sidebar actually
+              paints.
+            </p>
 
-              <div data-t1eq-tile="true" data-t1eq-page-card="true"
-                data-t1eq-qbit-type="page-card"
-                data-t1eq-qbit-id="settings-page-logo-preview"
-                data-t1eq-qbit-scope={QBIT_SCOPE}
-                className="rounded-2xl border border-white/10 bg-black/30 p-5">
-                <p
-                  data-t1eq-qbit-type="text"
-                  data-t1eq-qbit-id="settings-page-logo-preview-label"
-                  data-t1eq-qbit-scope={QBIT_SCOPE}
-                  className="mb-3 text-xs font-black uppercase tracking-wide text-slate-400"
-                >
-                  Preview
-                </p>
-
-                {logoPreview ? (
-                  <img
-                    src={logoPreview}
-                    alt="Saved company logo preview"
-                    data-t1eq-qbit-type="logo"
-                    data-t1eq-qbit-id="settings-page-logo-image"
-                    data-t1eq-qbit-scope={QBIT_SCOPE}
-                    className="max-h-32 max-w-full rounded-xl object-contain"
-                  />
-                ) : (
-                  <div data-t1eq-tile="true" data-t1eq-page-card="true"
-                    data-t1eq-qbit-type="text"
-                    data-t1eq-qbit-id="settings-page-logo-empty"
-                    data-t1eq-qbit-scope={QBIT_SCOPE}
-                    className="flex h-32 items-center justify-center rounded-xl border border-dashed border-white/20 text-sm font-bold text-slate-500">
-                    No logo selected
-                  </div>
-                )}
-
-                {selectedLogoFileName && (
-                  <p
-                    data-t1eq-qbit-type="text"
-                    data-t1eq-qbit-id="settings-page-logo-filename"
-                    data-t1eq-qbit-scope={QBIT_SCOPE}
-                    className="mt-3 text-xs font-bold text-slate-400"
-                  >
-                    {selectedLogoFileName}
-                  </p>
-                )}
-              </div>
-
-              <button data-t1eq-action-button="true"
-                data-t1eq-qbit-type="action-button"
-                data-t1eq-qbit-id="settings-page-save-logo"
-                data-t1eq-qbit-scope={QBIT_SCOPE}
-                type="button"
-                onClick={handleSaveLogo}
-                className="w-full rounded-2xl bg-orange-500 px-5 py-3 text-sm font-black uppercase tracking-wide text-white shadow-xl shadow-orange-950/30 hover:bg-orange-400"
-              >
-                Save Logo
-              </button>
-            </div>
+            <Link
+              data-t1eq-action-button="true"
+              data-t1eq-qbit-type="action-button"
+              data-t1eq-qbit-id="settings-page-branding-link"
+              data-t1eq-qbit-scope={QBIT_SCOPE}
+              href="/settings/business"
+              className="mt-6 inline-block rounded-2xl bg-orange-500 px-5 py-3 text-sm font-black uppercase tracking-wide text-white shadow-xl shadow-orange-950/30 hover:bg-orange-400"
+            >
+              Open Business Setup
+            </Link>
           </div>
 
           <div data-t1eq-tile="true" data-t1eq-page-card="true"
@@ -1405,7 +1424,7 @@ export default function SettingsPage() {
             data-t1eq-qbit-scope={QBIT_SCOPE}
             className="mt-2 text-2xl font-black"
           >
-            {brandSettings.companyName || "Tier One Equipment"}
+            {businessName || "Tier One Equipment"}
           </h2>
           <p
             data-t1eq-qbit-type="text"

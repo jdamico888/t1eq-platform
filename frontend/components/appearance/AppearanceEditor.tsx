@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -47,6 +48,7 @@ import {
   type QBitFontFamily,
   type QBitOverride,
   type QBitTextAlign,
+  type QBitVerticalAlign,
 } from "@/services/qbit-appearance";
 
 type Position = {
@@ -82,6 +84,20 @@ type DragStart = {
   descriptor: QBitDescriptor;
 
   originalTransition: string;
+
+  /**
+   * How far the pointer may travel before the element would leave the box
+   * it belongs to, measured once when the drag begins.
+   *
+   * Captured rather than recalculated because both rectangles are needed
+   * as they were *before* this gesture moved anything — the element's
+   * current rectangle already includes the movement so far, and clamping
+   * against a moving target drifts.
+   */
+  minDeltaX: number;
+  maxDeltaX: number;
+  minDeltaY: number;
+  maxDeltaY: number;
 };
 
 type ResizeStart = {
@@ -178,11 +194,192 @@ const qbitDrawnHeight = qbitGraphicWidth / qbitGraphicAspect;
 const qbitRestEmptyTopFraction = 0.223;
 const qbitEditEmptyTopFraction = 0.117;
 
-/** Used by the clamps, so the avatar can reach the bottom edge too. */
-const dockHeight = Math.round(qbitDrawnHeight);
+/**
+ * Q-Bit is not one height. He has two states, and they are not the same
+ * size on screen.
+ *
+ * Because each PNG is cropped by its own empty top band, and those bands
+ * differ (22.3% at rest, 11.7% in edit), the button ends up about 83px
+ * tall at rest and about 94px in edit mode — neither of which is the
+ * 107px of the uncropped graphic. Clamping every state against that one
+ * number held him short of the bottom edge by a different amount in each
+ * state, and let his feet slip past it when he grew on entering edit mode.
+ *
+ * These are the fallbacks. The clamps prefer the live measurement of the
+ * button, which stays right through a state change and through any future
+ * change to the artwork.
+ */
+const qbitRestHeight = Math.round(
+  qbitDrawnHeight * (1 - qbitRestEmptyTopFraction)
+);
+
+const qbitEditHeight = Math.round(
+  qbitDrawnHeight * (1 - qbitEditEmptyTopFraction)
+);
 
 const objectMinWidth = 32;
 const objectMinHeight = 32;
+
+/**
+ * The box an element is not allowed to leave.
+ *
+ * The card it sits on, not its immediate parent: a header button's parent
+ * is the little column it lives in, so the parent would be far too tight
+ * a leash to arrange anything. The search starts at the parent so that a
+ * card being edited is bounded by whatever contains it rather than by
+ * itself.
+ *
+ * Returns null when there is nothing sensible to measure against, and
+ * every caller treats that as "no limit". That matters more than it
+ * sounds: an inline element reports a client box of zero, so a naive
+ * reading made the limit smaller than the element itself and every resize
+ * snapped straight back to the minimum — the gesture looked broken
+ * because the answer was nonsense, not because the clamp was wrong.
+ */
+function getBoundingContainer(
+  element: HTMLElement
+): HTMLElement | null {
+  const parent = element.parentElement;
+
+  if (!parent) {
+    return null;
+  }
+
+  const container =
+    parent.closest<HTMLElement>(
+      "[data-t1eq-page-card='true']"
+    ) ?? parent;
+
+  const rect =
+    container.getBoundingClientRect();
+
+  if (
+    rect.width < 1 ||
+    rect.height < 1
+  ) {
+    return null;
+  }
+
+  return container;
+}
+
+/**
+ * How far an element may be dragged before it would leave its container.
+ *
+ * A move is stored as a transform, and a transform takes no part in
+ * layout — so a nudged element will happily paint outside the box it
+ * belongs to, and resizing that box afterwards leaves it stranded further
+ * out still. That is how the header's buttons ended up sitting above and
+ * beside the bar rather than in it.
+ *
+ * Clamping the gesture is better than clipping the container: an element
+ * dragged too far stops at the edge and stays where it can be seen,
+ * rather than disappearing into a hidden overflow with no way back.
+ *
+ * If the element is already larger than its container there is no range
+ * to speak of; the maximum collapses below the minimum and the caller
+ * pins it to the near edge.
+ */
+function getDragBounds(element: HTMLElement): {
+  minDeltaX: number;
+  maxDeltaX: number;
+  minDeltaY: number;
+  maxDeltaY: number;
+} {
+  const container =
+    getBoundingContainer(element);
+
+  if (!container) {
+    return {
+      minDeltaX: Number.NEGATIVE_INFINITY,
+      maxDeltaX: Number.POSITIVE_INFINITY,
+      minDeltaY: Number.NEGATIVE_INFINITY,
+      maxDeltaY: Number.POSITIVE_INFINITY,
+    };
+  }
+
+  const elementRect =
+    element.getBoundingClientRect();
+
+  const containerRect =
+    container.getBoundingClientRect();
+
+  return {
+    minDeltaX:
+      containerRect.left - elementRect.left,
+
+    maxDeltaX:
+      containerRect.right - elementRect.right,
+
+    minDeltaY:
+      containerRect.top - elementRect.top,
+
+    maxDeltaY:
+      containerRect.bottom - elementRect.bottom,
+  };
+}
+
+/** Holds a delta inside its range, pinning to the near edge if inverted. */
+function clampDelta(
+  value: number,
+  minimum: number,
+  maximum: number
+): number {
+  if (maximum < minimum) {
+    return minimum;
+  }
+
+  return Math.min(Math.max(value, minimum), maximum);
+}
+
+/**
+ * The widest an element may be dragged to.
+ *
+ * The container's content box, or the element's present width — whichever
+ * is larger. That second half is the important one: a limit that comes
+ * out narrower than the element already is would clamp every frame of the
+ * gesture to the same number, so the element would snap to that width and
+ * then refuse to move. Nothing may be forced *smaller* by a rule that
+ * exists to stop things growing.
+ */
+function getMaxObjectWidth(
+  element: HTMLElement,
+  widthAtGestureStart: number
+): number {
+  const container =
+    getBoundingContainer(element);
+
+  if (
+    !container ||
+    typeof window === "undefined"
+  ) {
+    return Number.POSITIVE_INFINITY;
+  }
+
+  const containerStyles =
+    window.getComputedStyle(container);
+
+  const available =
+    container.clientWidth -
+    (parseFloat(
+      containerStyles.paddingLeft
+    ) || 0) -
+    (parseFloat(
+      containerStyles.paddingRight
+    ) || 0);
+
+  /*
+   * The width the gesture began at, not the live one. Reading the live
+   * width would raise the ceiling by exactly as much as the element had
+   * just grown, so the cap would follow it out of the container and never
+   * bite.
+   */
+  return Math.max(
+    objectMinWidth,
+    available,
+    widthAtGestureStart
+  );
+}
 
 const fieldLabelClass =
   "block text-[10px] font-black uppercase tracking-wide text-zinc-700";
@@ -246,7 +443,9 @@ function savePosition(
   );
 }
 
-function getDefaultDockPosition(): Position {
+function getDefaultDockPosition(
+  dockHeight: number
+): Position {
   if (typeof window === "undefined") {
     return {
       x: 32,
@@ -300,7 +499,8 @@ const editorTopGutter = 0;
 const editorEdgeGutter = 8;
 
 function clampDockPosition(
-  position: Position
+  position: Position,
+  dockHeight: number
 ): Position {
   if (typeof window === "undefined") {
     return position;
@@ -589,10 +789,46 @@ export default function AppearanceEditor() {
       null
     );
 
-  const sessionSnapshotRef =
-    useRef<QBitSessionSnapshot | null>(
-      null
-    );
+  /*
+   * What every element touched in this session looked like before it was
+   * touched.
+   *
+   * This used to hold one element. A session was one element: pick it,
+   * edit it, Save. Cancel had one thing to put back, and moving to the
+   * next element meant starting again from the Q-Bit button.
+   *
+   * A session is now everything edited between opening the editor and
+   * pressing Save, so there is one snapshot per element and the first one
+   * wins — re-selecting an element already in here must not overwrite its
+   * original with its half-edited state, or Cancel would only undo the
+   * last visit to it.
+   */
+  const sessionSnapshotsRef =
+    useRef<
+      Map<string, QBitSessionSnapshot>
+    >(new Map());
+
+  /*
+   * How many elements this session has touched. A ref cannot drive the
+   * banner, so the count is state as well.
+   */
+  const [
+    touchedCount,
+    setTouchedCount,
+  ] = useState(0);
+
+  /*
+   * Whether an element is being dragged or resized right now.
+   *
+   * The gesture itself is tracked in refs, which is right for the
+   * pointer maths — they must not cause a render on every mouse move.
+   * But the message has to disappear the moment a drag starts and come
+   * back when it ends, and only state can do that, so this mirrors them.
+   */
+  const [
+    gestureActive,
+    setGestureActive,
+  ] = useState(false);
 
   const dragStartRef =
     useRef<DragStart | null>(
@@ -637,6 +873,47 @@ export default function AppearanceEditor() {
     setEditorOpen,
   ] = useState(false);
 
+  /*
+   * Whether Q-Bit is being dragged right now.
+   *
+   * Only used to switch off the hover animation while he is moving — see
+   * the button's className.
+   */
+  const [
+    dockDragging,
+    setDockDragging,
+  ] = useState(false);
+
+  /*
+   * Which state Q-Bit is in, readable from inside the listeners the
+   * initialization effect registers once on mount. Those closures capture
+   * editorActive as it was at mount — always false — so they cannot ask
+   * the state variable directly.
+   */
+  const editorActiveRef = useRef(false);
+
+  useEffect(() => {
+    editorActiveRef.current = editorActive;
+  }, [editorActive]);
+
+  /*
+   * How tall Q-Bit currently is. The rendered button is the honest answer
+   * because it is the state that is actually on screen; the constants are
+   * only for the first clamp, before anything has been painted.
+   */
+  const measureDockHeight = useCallback(() => {
+    const measured =
+      dockButtonRef.current?.offsetHeight ?? 0;
+
+    if (measured > 0) {
+      return measured;
+    }
+
+    return editorActiveRef.current
+      ? qbitEditHeight
+      : qbitRestHeight;
+  }, []);
+
   const [
     selectedDescriptor,
     setSelectedDescriptor,
@@ -668,6 +945,46 @@ export default function AppearanceEditor() {
     useState<Position | null>(
       null
     );
+
+  /*
+   * Entering edit mode makes Q-Bit about 11px taller, because there is
+   * less empty space above his head in that artwork. If he was already
+   * resting against the bottom edge, growing pushed his feet past it. The
+   * reverse is harmless, but re-clamping both ways keeps one rule.
+   *
+   * This runs after paint, so the button has already been re-rendered at
+   * the new state's height and measureDockHeight reads the real one.
+   */
+  useEffect(() => {
+    setDockPosition((current) => {
+      if (!current) {
+        return current;
+      }
+
+      const next =
+        clampDockPosition(
+          current,
+          measureDockHeight()
+        );
+
+      if (
+        next.x === current.x &&
+        next.y === current.y
+      ) {
+        return current;
+      }
+
+      savePosition(
+        dockPositionStorageKey,
+        next
+      );
+
+      return next;
+    });
+  }, [
+    editorActive,
+    measureDockHeight,
+  ]);
 
   const [
     panelPosition,
@@ -832,8 +1149,30 @@ export default function AppearanceEditor() {
       });
   }
 
+  /**
+   * Marks the selected element, and optionally makes every other one
+   * untouchable.
+   *
+   * The second half used to be unconditional, and it is the reason the
+   * editor could only ever edit one element per session: every editable
+   * element outside the selected one was given
+   * `pointer-events: none !important`, so the next element could not be
+   * clicked at all. Turning selection back on would not have helped —
+   * there was nothing left to click.
+   *
+   * That lock exists for dragging: while an element is being moved or
+   * resized, the pointer must not be able to catch a neighbour. It is
+   * needed for exactly that long, so it is now applied when a gesture
+   * starts and released when it ends. Between gestures every element is
+   * live and any of them can be picked up next.
+   *
+   * Nothing escapes to the page underneath in the meantime: the
+   * document-level click handler runs in the capture phase and stops
+   * clicks on editable elements before the page's own handlers see them.
+   */
   function applyQBitLockState(
-    activeElement: HTMLElement | null
+    activeElement: HTMLElement | null,
+    lockOtherElements = false
   ): void {
     if (
       typeof document === "undefined"
@@ -844,6 +1183,15 @@ export default function AppearanceEditor() {
     clearQBitLockState();
 
     if (!activeElement) {
+      return;
+    }
+
+    if (!lockOtherElements) {
+      activeElement.setAttribute(
+        "data-t1eq-qbit-active",
+        "true"
+      );
+
       return;
     }
 
@@ -929,12 +1277,34 @@ export default function AppearanceEditor() {
     const existingOverride =
       getQBitOverride(descriptor);
 
-    sessionSnapshotRef.current = {
-      descriptor,
-      override: existingOverride
-        ? { ...existingOverride }
-        : null,
-    };
+    /*
+     * First visit only. Coming back to an element already in this
+     * session must keep the snapshot taken the first time, otherwise
+     * Cancel would restore it to how it looked halfway through rather
+     * than how it started.
+     */
+    const key = `${descriptor.scope}::${descriptor.id}`;
+
+    if (
+      !sessionSnapshotsRef.current.has(
+        key
+      )
+    ) {
+      sessionSnapshotsRef.current.set(
+        key,
+        {
+          descriptor,
+          override: existingOverride
+            ? { ...existingOverride }
+            : null,
+        }
+      );
+
+      setTouchedCount(
+        sessionSnapshotsRef.current
+          .size
+      );
+    }
 
     activeElementRef.current =
       element;
@@ -951,7 +1321,15 @@ export default function AppearanceEditor() {
       element.getBoundingClientRect()
     );
 
-    setEditorActive(false);
+    /*
+     * Selection stays live. This used to switch it off the moment an
+     * element was picked, which ended the hunt: to reach the next
+     * element you had to press the Q-Bit button again and start a fresh
+     * session. Now the panel opens and the page stays pickable, so the
+     * next element is one click away and everything edited along the way
+     * belongs to the same Save.
+     */
+    setEditorActive(true);
     setEditorOpen(true);
 
     window.requestAnimationFrame(
@@ -965,18 +1343,25 @@ export default function AppearanceEditor() {
     );
   }
 
-  function clearEditSession(): void {
+  /** Lets go of the current element, keeping the session's history. */
+  function clearSelection(): void {
     clearQBitLockState();
 
     activeElementRef.current =
       null;
 
-    sessionSnapshotRef.current =
-      null;
-
     setSelectedDescriptor(null);
     setSelectedOverride(null);
     setActiveRect(null);
+  }
+
+  /** Ends the session: nothing selected, nothing left to undo. */
+  function clearEditSession(): void {
+    clearSelection();
+
+    sessionSnapshotsRef.current.clear();
+
+    setTouchedCount(0);
   }
 
   /* =========================================================
@@ -1040,6 +1425,8 @@ export default function AppearanceEditor() {
         selectedElement.style.getPropertyValue(
           "transition"
         ),
+
+      ...getDragBounds(selectedElement),
     };
 
     selectedElement.style.setProperty(
@@ -1047,6 +1434,18 @@ export default function AppearanceEditor() {
       "none",
       "important"
     );
+
+    /*
+     * Neighbours go inert for the length of the drag, so the pointer
+     * cannot catch one on the way past. finishObjectGesture gives them
+     * back.
+     */
+    applyQBitLockState(
+      selectedElement,
+      true
+    );
+
+    setGestureActive(true);
   }
 
   /* =========================================================
@@ -1133,6 +1532,14 @@ export default function AppearanceEditor() {
       "none",
       "important"
     );
+
+    /* Same as a drag: neighbours are inert until the gesture ends. */
+    applyQBitLockState(
+      selectedElement,
+      true
+    );
+
+    setGestureActive(true);
   }
 
   /* =========================================================
@@ -1165,13 +1572,27 @@ export default function AppearanceEditor() {
         dragStart.moved = true;
       }
 
+      /*
+       * The element stops at the edge of the box it belongs to. Dragging
+       * further moves the pointer, not the element — so nothing can be
+       * pushed outside the header, and nothing ends up somewhere it
+       * cannot be reached to be dragged back.
+       */
       const offsetX =
         dragStart.originalOffsetX +
-        deltaX;
+        clampDelta(
+          deltaX,
+          dragStart.minDeltaX,
+          dragStart.maxDeltaX
+        );
 
       const offsetY =
         dragStart.originalOffsetY +
-        deltaY;
+        clampDelta(
+          deltaY,
+          dragStart.minDeltaY,
+          dragStart.maxDeltaY
+        );
 
       dragStart.latestOffsetX =
         offsetX;
@@ -1270,30 +1691,50 @@ export default function AppearanceEditor() {
       direction === "bottom-left" ||
       direction === "bottom-right";
 
+    /*
+     * The handle stops at the edge of the container rather than dragging
+     * the element out of it. Measured on every move, not once at the
+     * start, because the layout around the element reflows as it grows.
+     */
+    const maxWidth = getMaxObjectWidth(
+      resizeStart.element,
+      resizeStart.originalWidth
+    );
+
     if (resizingRight) {
-      nextWidth = Math.max(
-        objectMinWidth,
-        resizeStart.originalWidth +
-          deltaX
+      nextWidth = Math.min(
+        maxWidth,
+        Math.max(
+          objectMinWidth,
+          resizeStart.originalWidth +
+            deltaX
+        )
       );
     }
 
     if (resizingLeft) {
-      const proposedWidth =
-        resizeStart.originalWidth -
-        deltaX;
+      /*
+       * Clamped rather than abandoned. Skipping the whole branch when the
+       * proposal was out of range froze the left edge instead of stopping
+       * it at the limit, which felt like the handle had stopped working.
+       * The offset follows whatever width was actually accepted, so the
+       * right edge stays put.
+       */
+      const proposedWidth = Math.min(
+        maxWidth,
+        Math.max(
+          objectMinWidth,
+          resizeStart.originalWidth -
+            deltaX
+        )
+      );
 
-      if (
-        proposedWidth >=
-        objectMinWidth
-      ) {
-        nextWidth =
-          proposedWidth;
+      nextWidth = proposedWidth;
 
-        nextOffsetX =
-          resizeStart.originalOffsetX +
-          deltaX;
-      }
+      nextOffsetX =
+        resizeStart.originalOffsetX +
+        (resizeStart.originalWidth -
+          proposedWidth);
     }
 
     if (resizingBottom) {
@@ -1305,21 +1746,23 @@ export default function AppearanceEditor() {
     }
 
     if (resizingTop) {
-      const proposedHeight =
+      /*
+       * Clamped, for the same reason as the left edge: an out-of-range
+       * proposal used to skip the branch, which reverted the element to
+       * the size it started at rather than holding it at the limit.
+       */
+      const proposedHeight = Math.max(
+        objectMinHeight,
         resizeStart.originalHeight -
-        deltaY;
+          deltaY
+      );
 
-      if (
-        proposedHeight >=
-        objectMinHeight
-      ) {
-        nextHeight =
-          proposedHeight;
+      nextHeight = proposedHeight;
 
-        nextOffsetY =
-          resizeStart.originalOffsetY +
-          deltaY;
-      }
+      nextOffsetY =
+        resizeStart.originalOffsetY +
+        (resizeStart.originalHeight -
+          proposedHeight);
     }
 
     resizeStart.latestWidth =
@@ -1479,6 +1922,17 @@ export default function AppearanceEditor() {
         null;
     }
 
+    /*
+     * The gesture is over, so the rest of the page becomes clickable
+     * again and the next element can be picked without leaving the
+     * session.
+     */
+    applyQBitLockState(
+      activeElementRef.current
+    );
+
+    setGestureActive(false);
+
     window.requestAnimationFrame(
       refreshActiveRect
     );
@@ -1497,13 +1951,18 @@ export default function AppearanceEditor() {
     clearEditSession();
   }
 
+  /**
+   * Puts back every element this session touched, not just the last one.
+   *
+   * A session can now span several elements, so Cancel has to walk the
+   * whole set. They are restored in the order they were first picked,
+   * which does not matter to the result but makes the sequence easy to
+   * follow if this ever needs stepping through.
+   */
   function cancelEditor(): void {
     finishObjectGesture();
 
-    const snapshot =
-      sessionSnapshotRef.current;
-
-    if (snapshot) {
+    for (const snapshot of sessionSnapshotsRef.current.values()) {
       const element =
         getQBitElement(
           snapshot.descriptor
@@ -1886,12 +2345,18 @@ export default function AppearanceEditor() {
      ========================================================= */
 
   useEffect(() => {
+    const initialDockHeight =
+      measureDockHeight();
+
     const initialDockPosition =
       clampDockPosition(
         safeReadPosition(
           dockPositionStorageKey,
-          getDefaultDockPosition()
-        )
+          getDefaultDockPosition(
+            initialDockHeight
+          )
+        ),
+        initialDockHeight
       );
 
     const initialPanelPosition =
@@ -1952,7 +2417,8 @@ export default function AppearanceEditor() {
 
           const next =
             clampDockPosition(
-              current
+              current,
+              measureDockHeight()
             );
 
           savePosition(
@@ -1987,6 +2453,44 @@ export default function AppearanceEditor() {
       refreshActiveRect();
     }
 
+    /*
+     * Put the overrides back whenever React replaces the elements they
+     * were written to.
+     *
+     * A Q-Bit override lives in storage, but on screen it is an inline
+     * style written onto a DOM node. Until now it was written exactly
+     * three times: when the editor mounts, when an override changes, and
+     * when the appearance settings change. Nothing put it back after a
+     * re-render — and React re-renders constantly, discarding and
+     * rebuilding nodes as it goes. The edit was saved, and the element
+     * carrying it was gone.
+     *
+     * That is why edits looked temporary rather than permanent, and why
+     * the subcategory bar was the worst of it: it lives in the layout and
+     * rebuilds on every navigation, so its styling was lost the moment
+     * you went anywhere.
+     *
+     * Only childList is observed. Q-Bit's own writes are attribute
+     * changes, so applying a style cannot retrigger this and spin.
+     */
+    let reapplyFrame = 0;
+
+    const overrideObserver = new MutationObserver(() => {
+      if (reapplyFrame) {
+        return;
+      }
+
+      reapplyFrame = window.requestAnimationFrame(() => {
+        reapplyFrame = 0;
+        applyAllQBitOverrides();
+      });
+    });
+
+    overrideObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
     window.addEventListener(
       "t1eq-appearance-settings-changed",
       handleAppearanceChanged
@@ -2003,6 +2507,12 @@ export default function AppearanceEditor() {
     );
 
     return () => {
+      overrideObserver.disconnect();
+
+      if (reapplyFrame) {
+        window.cancelAnimationFrame(reapplyFrame);
+      }
+
       window.removeEventListener(
         "t1eq-appearance-settings-changed",
         handleAppearanceChanged
@@ -2265,6 +2775,32 @@ export default function AppearanceEditor() {
       return;
     }
 
+    /*
+     * Without this, a fast drag loses him.
+     *
+     * pointermove is bound to the button, so it only fires while the
+     * cursor is actually over the button. Move faster than he can follow
+     * and the cursor leaves his box between two frames — the events stop,
+     * he freezes where he was, and then snaps forward when the cursor
+     * happens to cross back over him. That is the stumble.
+     *
+     * Capturing the pointer redirects every move to this button until
+     * release, however far ahead the cursor gets. It also guarantees the
+     * matching pointerup lands here rather than on whatever the cursor
+     * was over, so a drag that ends off-target cannot leave the drag
+     * state set and swallow the next click.
+     */
+    try {
+      event.currentTarget.setPointerCapture(
+        event.pointerId
+      );
+    } catch {
+      /*
+       * Throws if the pointer is already gone. Nothing to capture then,
+       * and the drag below is still safe to start.
+       */
+    }
+
     dockDragStartRef.current = {
       pointerId:
         event.pointerId,
@@ -2311,19 +2847,26 @@ export default function AppearanceEditor() {
       Math.abs(deltaX) > 3 ||
       Math.abs(deltaY) > 3
     ) {
+      if (!start.moved) {
+        setDockDragging(true);
+      }
+
       start.moved = true;
     }
 
     setDockPosition(
-      clampDockPosition({
-        x:
-          start.originalX +
-          deltaX,
+      clampDockPosition(
+        {
+          x:
+            start.originalX +
+            deltaX,
 
-        y:
-          start.originalY +
-          deltaY,
-      })
+          y:
+            start.originalY +
+            deltaY,
+        },
+        measureDockHeight()
+      )
     );
   }
 
@@ -2352,12 +2895,18 @@ export default function AppearanceEditor() {
       if (
         selectedDescriptor
       ) {
+        /*
+         * Tapping the Q-Bit mid-session brings the panel back. It used
+         * to switch selection off at the same time, which would now end
+         * the hunt for the next element — so the session stays live and
+         * only Save or Cancel closes it.
+         */
         setEditorOpen(
           true
         );
 
         setEditorActive(
-          false
+          true
         );
       } else {
         clearQBitLockState();
@@ -2375,6 +2924,16 @@ export default function AppearanceEditor() {
 
     dockDragStartRef.current =
       null;
+
+    setDockDragging(false);
+
+    try {
+      event.currentTarget.releasePointerCapture(
+        event.pointerId
+      );
+    } catch {
+      /* Already released, or the pointer is gone. */
+    }
   }
 
   /* =========================================================
@@ -2398,6 +2957,15 @@ export default function AppearanceEditor() {
       )
     ) {
       return;
+    }
+
+    /* Same reason as the Q-Bit dock — see handleDockPointerDown. */
+    try {
+      event.currentTarget.setPointerCapture(
+        event.pointerId
+      );
+    } catch {
+      /* Already gone; the drag below is still safe to start. */
     }
 
     panelDragStartRef.current = {
@@ -2470,11 +3038,33 @@ export default function AppearanceEditor() {
 
     panelDragStartRef.current =
       null;
+
+    try {
+      event.currentTarget.releasePointerCapture(
+        event.pointerId
+      );
+    } catch {
+      /* Already released, or the pointer is gone. */
+    }
   }
 
   /* =========================================================
      POSITION STYLES
      ========================================================= */
+
+  /*
+   * The hover scale is deliberately dropped mid-drag.
+   *
+   * While he is moving fast the cursor keeps crossing his edge, so hover
+   * flickers on and off and the 150ms transition pulses him between 100%
+   * and 105% — a wobble that reads as part of the stumble even once the
+   * pointer capture has fixed the tracking.
+   */
+  const dockButtonClassName = `fixed z-[10000] flex touch-none select-none items-start justify-center bg-transparent p-0 ${
+    dockDragging
+      ? ""
+      : "transition hover:scale-105"
+  }`;
 
   const dockStyle: CSSProperties =
     dockPosition
@@ -2536,14 +3126,50 @@ export default function AppearanceEditor() {
      RENDER
      ========================================================= */
 
+  /*
+   * Which end of the screen the message sits at.
+   *
+   * It was pinned to the top, centred — which is exactly where the
+   * floating page header lives, so the one element most often being
+   * edited was the one element the message covered. It now moves to
+   * whichever end the selection is not at: something in the top half of
+   * the window pushes the message to the bottom, something in the bottom
+   * half pushes it to the top. With nothing selected it waits at the
+   * bottom, clear of the header.
+   *
+   * A gesture is different again — while an element is actually being
+   * dragged or resized the message goes away entirely, because the whole
+   * point of that moment is seeing the element move.
+   */
+  const messageAtTop =
+    activeRect !== null &&
+    activeRect.top >=
+      window.innerHeight / 2;
+
+  const showEditorMessage =
+    editorActive && !gestureActive;
+
   return (
     <>
-      {editorActive && (
+      {showEditorMessage && (
         <div
           data-t1eq-appearance-editor="true"
-          className="fixed left-1/2 top-6 z-[10001] -translate-x-1/2 rounded-2xl border border-orange-400 bg-orange-50 px-5 py-3 text-sm font-black uppercase tracking-wide text-orange-700 shadow-xl"
+          /*
+           * pointer-events: none — the message can never take a click
+           * meant for something underneath it, wherever it happens to be
+           * sitting. It is a label, not a control.
+           */
+          className={`pointer-events-none fixed left-1/2 z-[10001] -translate-x-1/2 rounded-2xl border border-orange-400 bg-orange-50/95 px-5 py-3 text-sm font-black uppercase tracking-wide text-orange-700 shadow-xl ${
+            messageAtTop
+              ? "top-6"
+              : "bottom-6"
+          }`}
         >
-          Select an element to edit
+          {touchedCount === 0
+            ? "Select an element to edit"
+            : `Editing ${touchedCount} element${
+                touchedCount === 1 ? "" : "s"
+              } — click another, or Save when done`}
         </div>
       )}
 
@@ -2567,9 +3193,21 @@ export default function AppearanceEditor() {
         onPointerUp={
           handleDockPointerUp
         }
-        onPointerCancel={() => {
+        onPointerCancel={(
+          event
+        ) => {
           dockDragStartRef.current =
             null;
+
+          setDockDragging(false);
+
+          try {
+            event.currentTarget.releasePointerCapture(
+              event.pointerId
+            );
+          } catch {
+            /* Already released, or the pointer is gone. */
+          }
         }}
         onDoubleClick={(
           event
@@ -2586,7 +3224,7 @@ export default function AppearanceEditor() {
             true
           );
         }}
-        className="fixed z-[10000] flex touch-none select-none items-start justify-center bg-transparent p-0 transition hover:scale-105"
+        className={dockButtonClassName}
         style={
           dockStyle
         }
@@ -2621,9 +3259,19 @@ export default function AppearanceEditor() {
               onPointerUp={
                 handlePanelPointerUp
               }
-              onPointerCancel={() => {
+              onPointerCancel={(
+                event
+              ) => {
                 panelDragStartRef.current =
                   null;
+
+                try {
+                  event.currentTarget.releasePointerCapture(
+                    event.pointerId
+                  );
+                } catch {
+                  /* Already released, or the pointer is gone. */
+                }
               }}
             >
               <div className="min-w-0">
@@ -2666,7 +3314,14 @@ export default function AppearanceEditor() {
                   event.stopPropagation()
                 }
               >
-                {selectedDescriptor && (
+                {/*
+                  Cancel stays available once the session has touched
+                  anything, even with nothing selected right now — it
+                  undoes every element edited since the editor opened,
+                  not just the one on screen.
+                */}
+                {(selectedDescriptor ||
+                  touchedCount > 0) && (
                   <button
                     type="button"
                     onClick={
@@ -2674,6 +3329,11 @@ export default function AppearanceEditor() {
                     }
                     className={
                       secondaryButtonClass
+                    }
+                    title={
+                      touchedCount > 1
+                        ? `Undo all ${touchedCount} elements edited in this session`
+                        : "Undo this element"
                     }
                   >
                     Cancel
@@ -3159,7 +3819,7 @@ export default function AppearanceEditor() {
 
                     <div>
                       <span className={fieldLabelClass}>
-                        Alignment
+                        Horizontal Alignment
                       </span>
 
                       <div className="mt-1 flex gap-2">
@@ -3189,6 +3849,52 @@ export default function AppearanceEditor() {
                           </button>
                         ))}
                       </div>
+                    </div>
+
+                    {/*
+                      Vertical alignment. It has nothing to push against
+                      until the element is taller than its contents, which
+                      normally means after a resize — so the note says so
+                      rather than leaving the buttons looking broken.
+                    */}
+                    <div>
+                      <span className={fieldLabelClass}>
+                        Vertical Alignment
+                      </span>
+
+                      <div className="mt-1 flex gap-2">
+                        {(
+                          [
+                            "top",
+                            "middle",
+                            "bottom",
+                          ] as QBitVerticalAlign[]
+                        ).map((alignment) => (
+                          <button
+                            key={alignment}
+                            type="button"
+                            onClick={() =>
+                              updateSelectedOverride({
+                                verticalAlign:
+                                  alignment,
+                              })
+                            }
+                            className={
+                              selectedOverride?.verticalAlign ===
+                              alignment
+                                ? "flex-1 rounded-lg border border-orange-400 bg-orange-100 px-2 py-2 text-[11px] font-black capitalize text-orange-900"
+                                : "flex-1 rounded-lg border border-zinc-300 bg-white px-2 py-2 text-[11px] font-black capitalize text-black hover:bg-zinc-50"
+                            }
+                          >
+                            {alignment}
+                          </button>
+                        ))}
+                      </div>
+
+                      <p className="mt-1 text-[10px] font-semibold text-zinc-500">
+                        Needs spare height to move within — give the
+                        element a taller size first.
+                      </p>
                     </div>
                   </div>
 
